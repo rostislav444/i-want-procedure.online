@@ -27,3 +27,14 @@ class UserCreate(BaseModel):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+
+
+class TelegramAuthData(BaseModel):
+    """Telegram Login Widget authentication data"""
+    id: int  # Telegram user ID
+    first_name: str
+    last_name: Optional[str] = None
+    username: Optional[str] = None
+    photo_url: Optional[str] = None
+    auth_date: int  # Unix timestamp
+    hash: str  # HMAC-SHA-256 signature

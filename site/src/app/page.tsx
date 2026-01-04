@@ -6,352 +6,350 @@ import {
   Bell,
   CheckCircle2,
   BarChart3,
-  Settings,
-  Bot,
   UserCircle,
   Stethoscope,
   ArrowRight,
-  Sparkles
+  Sparkles,
+  Heart,
+  Star,
+  Zap
 } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
+import ScreenshotGallery from '@/components/ScreenshotGallery'
+import Header from '@/components/Header'
+import Footer from '@/components/Footer'
+import WaveDivider from '@/components/WaveDivider'
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-background overflow-hidden">
+      <Header />
+
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/5 to-background" />
-        <div className="relative max-w-6xl mx-auto px-4 py-20 sm:py-32">
-          <div className="text-center max-w-4xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 text-blue-600 text-sm font-medium mb-8">
-              <Sparkles className="w-4 h-4" />
-              <span>Платформа для косметологів</span>
+      <section className="relative min-h-screen flex items-center pt-20 overflow-hidden">
+        {/* Decorative blobs */}
+        <div className="absolute w-96 h-96 bg-pink-300 top-20 -left-48 rounded-full blur-3xl opacity-50 animate-blob" />
+        <div className="absolute w-80 h-80 bg-yellow-200 top-40 -right-20 rounded-full blur-3xl opacity-50 animate-blob" style={{ animationDelay: '-2s' }} />
+        <div className="absolute w-72 h-72 bg-purple-200 bottom-40 left-1/4 rounded-full blur-3xl opacity-40 animate-blob" style={{ animationDelay: '-4s' }} />
+
+        <div className="relative max-w-6xl mx-auto px-4 py-20">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-pink-100 text-pink-600 text-sm font-medium mb-6 animate-float">
+                <Sparkles className="w-4 h-4" />
+                <span>Платформа для косметологів</span>
+              </div>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
+                Більше клієнтів,
+                <span className="gradient-text"> менше рутини</span>
+              </h1>
+              <p className="text-xl text-muted-foreground max-w-xl mb-8">
+                Автоматизуйте записи через Telegram-бота. Клієнти записуються самі — ви отримуєте сповіщення та фокусуєтесь на роботі.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                <Link
+                  href="#demo"
+                  className="group inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full font-medium hover:shadow-xl hover:shadow-pink-500/30 transition-all hover:-translate-y-1"
+                >
+                  Спробувати безкоштовно
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+                <Link
+                  href="#screenshots"
+                  className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-card border-2 border-pink-200 dark:border-pink-800 text-foreground rounded-full font-medium hover:border-pink-400 hover:bg-pink-50 dark:hover:bg-pink-900/30 transition-all"
+                >
+                  Переглянути демо
+                </Link>
+              </div>
             </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground mb-6">
-              Автоматизація запису
-              <span className="text-blue-500"> на процедури</span>
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
-              CRM-система з Telegram-ботами для клієнтів та косметологів.
-              Онлайн-запис, управління розкладом, база клієнтів — все в одному місці.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                href="#demo"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-blue-500 hover:bg-blue-600 text-white rounded-full font-medium transition-colors"
-              >
-                Спробувати безкоштовно
-                <ArrowRight className="w-5 h-5" />
-              </Link>
-              <Link
-                href="#features"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-secondary hover:bg-secondary/80 text-foreground rounded-full font-medium transition-colors"
-              >
-                Детальніше
-              </Link>
+
+            {/* Hero Image */}
+            <div className="relative">
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl shadow-pink-500/20 border border-pink-100 animate-float" style={{ animationDuration: '4s' }}>
+                <Image
+                  src="/screens/main.png"
+                  alt="Procedure CRM"
+                  width={800}
+                  height={500}
+                  className="w-full h-auto"
+                />
+              </div>
+              {/* Floating badges */}
+              <div className="absolute -top-4 -right-4 px-4 py-2 bg-card rounded-2xl shadow-lg border border-pink-100 dark:border-pink-900/30 animate-float" style={{ animationDelay: '-1s' }}>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <CheckCircle2 className="w-4 h-4 text-green-500" />
+                  </div>
+                  <span className="font-medium text-sm">Новий запис!</span>
+                </div>
+              </div>
+              <div className="absolute -bottom-4 -left-4 px-4 py-2 bg-card rounded-2xl shadow-lg border border-pink-100 dark:border-pink-900/30 animate-float" style={{ animationDelay: '-2s' }}>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
+                    <Star className="w-4 h-4 text-yellow-500" />
+                  </div>
+                  <span className="font-medium text-sm">+45 послуг</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+
+        <WaveDivider />
       </section>
 
       {/* Stats Section */}
-      <section className="py-12 border-y bg-card">
+      <section className="py-16 bg-secondary">
         <div className="max-w-6xl mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="text-3xl sm:text-4xl font-bold text-blue-500 mb-2">24/7</div>
-              <div className="text-muted-foreground">Онлайн запис</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl sm:text-4xl font-bold text-blue-500 mb-2">2</div>
-              <div className="text-muted-foreground">Telegram боти</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl sm:text-4xl font-bold text-blue-500 mb-2">100%</div>
-              <div className="text-muted-foreground">Автоматизація</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl sm:text-4xl font-bold text-blue-500 mb-2">0</div>
-              <div className="text-muted-foreground">Пропущених записів</div>
-            </div>
+            {[
+              { value: '24/7', label: 'Онлайн запис', icon: Clock },
+              { value: '2', label: 'Telegram боти', icon: MessageCircle },
+              { value: '100%', label: 'Автоматизація', icon: Zap },
+              { value: '∞', label: 'Клієнтів', icon: Heart },
+            ].map((stat, i) => (
+              <div key={i} className="text-center group">
+                <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center text-white shadow-lg shadow-pink-500/30 group-hover:scale-110 transition-transform">
+                  <stat.icon className="w-6 h-6" />
+                </div>
+                <div className="text-3xl font-bold gradient-text mb-1">{stat.value}</div>
+                <div className="text-muted-foreground text-sm">{stat.label}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Telegram Bots Section */}
-      <section id="bots" className="py-20 sm:py-28">
-        <div className="max-w-6xl mx-auto px-4">
+      <section id="bots" className="py-24 relative overflow-hidden">
+        <div className="absolute w-64 h-64 bg-pink-200 -top-20 -right-32 rounded-full blur-3xl opacity-50 animate-blob" />
+
+        <div className="max-w-6xl mx-auto px-4 relative">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sky-500/10 text-sky-600 text-sm font-medium mb-4">
-              <Bot className="w-4 h-4" />
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-pink-100 to-yellow-100 text-pink-600 text-sm font-medium mb-4">
+              <MessageCircle className="w-4 h-4" />
               <span>Telegram інтеграція</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-              Два боти для повної автоматизації
+              Два боти — <span className="gradient-text">повна автоматизація</span>
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Клієнти записуються через бота, а ви отримуєте сповіщення та керуєте записами прямо в Telegram
+              Клієнти записуються через бота, ви керуєте записами прямо з телефону
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
             {/* Client Bot */}
-            <div className="relative p-8 rounded-3xl border bg-gradient-to-br from-blue-500/5 to-transparent">
-              <div className="absolute top-8 right-8">
-                <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center">
-                  <UserCircle className="w-6 h-6 text-blue-500" />
+            <div className="group relative p-8 rounded-3xl bg-card border border-pink-100 dark:border-pink-900/30 shadow-soft hover:shadow-xl hover:shadow-pink-500/10 transition-all hover:-translate-y-2">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-pink-100 dark:from-pink-900/30 to-transparent rounded-bl-full opacity-50" />
+              <div className="relative">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center mb-6 shadow-lg shadow-pink-500/30 group-hover:scale-110 transition-transform">
+                  <UserCircle className="w-8 h-8 text-white" />
                 </div>
+                <h3 className="text-2xl font-bold mb-3">Бот для клієнтів</h3>
+                <p className="text-muted-foreground mb-6">
+                  Клієнти записуються без дзвінків — через Telegram у будь-який час доби
+                </p>
+                <ul className="space-y-3">
+                  {[
+                    'Каталог послуг з цінами',
+                    'Вибір зручної дати та часу',
+                    'Перегляд історії записів',
+                    'Підтримка UK, RU, EN',
+                    'Автореєстрація клієнта'
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                        <CheckCircle2 className="w-4 h-4 text-green-500" />
+                      </div>
+                      <span className="text-sm">{item}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <h3 className="text-2xl font-bold mb-4">Бот для клієнтів</h3>
-              <p className="text-muted-foreground mb-6">
-                Ваші клієнти записуються на процедури без дзвінків та очікування —
-                просто через Telegram в будь-який час.
-              </p>
-              <ul className="space-y-3">
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span>Вибір послуги з каталогу з цінами</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span>Вибір дати та вільного часу</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span>Перегляд своїх записів та історії</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span>Підтримка 3 мов: UK, RU, EN</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span>Автоматична реєстрація клієнта</span>
-                </li>
-              </ul>
             </div>
 
             {/* Doctor Bot */}
-            <div className="relative p-8 rounded-3xl border bg-gradient-to-br from-purple-500/5 to-transparent">
-              <div className="absolute top-8 right-8">
-                <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center">
-                  <Stethoscope className="w-6 h-6 text-purple-500" />
+            <div className="group relative p-8 rounded-3xl bg-card border border-yellow-100 dark:border-yellow-900/30 shadow-soft hover:shadow-xl hover:shadow-yellow-500/10 transition-all hover:-translate-y-2">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-yellow-100 dark:from-yellow-900/30 to-transparent rounded-bl-full opacity-50" />
+              <div className="relative">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center mb-6 shadow-lg shadow-yellow-500/30 group-hover:scale-110 transition-transform">
+                  <Stethoscope className="w-8 h-8 text-white" />
                 </div>
+                <h3 className="text-2xl font-bold mb-3">Бот для косметолога</h3>
+                <p className="text-muted-foreground mb-6">
+                  Миттєві сповіщення та управління записами прямо з телефону
+                </p>
+                <ul className="space-y-3">
+                  {[
+                    'Push-сповіщення про записи',
+                    'Підтвердження одним кліком',
+                    'Записи на сьогодні',
+                    'Всі майбутні записи',
+                    'Контакти клієнта'
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                        <CheckCircle2 className="w-4 h-4 text-green-500" />
+                      </div>
+                      <span className="text-sm">{item}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <h3 className="text-2xl font-bold mb-4">Бот для косметолога</h3>
-              <p className="text-muted-foreground mb-6">
-                Миттєві сповіщення про нові записи та можливість керувати ними
-                прямо з телефону.
-              </p>
-              <ul className="space-y-3">
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span>Push-сповіщення про нові записи</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span>Підтвердження або скасування запису</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span>Перегляд записів на сьогодні</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span>Список всіх майбутніх записів</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span>Контакти клієнта в один клік</span>
-                </li>
-              </ul>
             </div>
           </div>
         </div>
       </section>
 
-      {/* CRM Features Section */}
-      <section id="features" className="py-20 sm:py-28 bg-card border-y">
+      {/* Screenshots Section */}
+      <section id="screenshots" className="py-24 bg-gradient-to-b from-secondary to-background">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 text-emerald-600 text-sm font-medium mb-4">
-              <Settings className="w-4 h-4" />
-              <span>CRM система</span>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-pink-100 text-pink-600 text-sm font-medium mb-4">
+              <Sparkles className="w-4 h-4" />
+              <span>Інтерфейс</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-              Повний контроль над бізнесом
+              Зручна <span className="gradient-text">CRM-система</span>
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Веб-панель для управління всіма аспектами вашої косметологічної практики
+              Сучасний інтерфейс для управління вашою косметологічною практикою
             </p>
           </div>
 
+          <ScreenshotGallery />
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section id="features" className="py-24 relative overflow-hidden">
+        <div className="absolute w-80 h-80 bg-yellow-200 -bottom-40 -left-40 rounded-full blur-3xl opacity-40 animate-blob" />
+
+        <div className="max-w-6xl mx-auto px-4 relative">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-yellow-100 to-pink-100 text-pink-600 text-sm font-medium mb-4">
+              <Star className="w-4 h-4" />
+              <span>Можливості</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+              Все для вашого <span className="gradient-text">бізнесу</span>
+            </h2>
+          </div>
+
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="p-6 rounded-2xl border bg-background">
-              <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center mb-4">
-                <Calendar className="w-6 h-6 text-blue-500" />
+            {[
+              { icon: Calendar, title: 'Календар записів', desc: 'Перегляд по днях, тижнях та місяцях з кольоровим маркуванням', color: 'pink' },
+              { icon: Users, title: 'База клієнтів', desc: 'Історія візитів, контакти та статистика витрат', color: 'purple' },
+              { icon: Sparkles, title: 'Каталог послуг', desc: 'Категорії, ціни, тривалість, етапи процедур', color: 'yellow' },
+              { icon: Clock, title: 'Розклад роботи', desc: 'Робочі години, вихідні, перерви та особливі дні', color: 'green' },
+              { icon: BarChart3, title: 'Статистика', desc: 'Виручка, кількість записів, популярні послуги', color: 'blue' },
+              { icon: Bell, title: 'Сповіщення', desc: 'Автоматичні нагадування про візити', color: 'rose' },
+            ].map((feature, i) => (
+              <div key={i} className="group p-6 rounded-2xl bg-card border border-pink-100 dark:border-pink-900/30 shadow-soft hover:shadow-xl transition-all hover:-translate-y-2">
+                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br from-${feature.color}-400 to-${feature.color}-500 flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}
+                  style={{
+                    background: feature.color === 'pink' ? 'linear-gradient(to bottom right, #ec4899, #f43f5e)' :
+                               feature.color === 'purple' ? 'linear-gradient(to bottom right, #a855f7, #9333ea)' :
+                               feature.color === 'yellow' ? 'linear-gradient(to bottom right, #fbbf24, #f59e0b)' :
+                               feature.color === 'green' ? 'linear-gradient(to bottom right, #22c55e, #16a34a)' :
+                               feature.color === 'blue' ? 'linear-gradient(to bottom right, #3b82f6, #2563eb)' :
+                               'linear-gradient(to bottom right, #f43f5e, #e11d48)'
+                  }}
+                >
+                  <feature.icon className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
+                <p className="text-muted-foreground text-sm">{feature.desc}</p>
               </div>
-              <h3 className="text-lg font-semibold mb-2">Календар записів</h3>
-              <p className="text-muted-foreground">
-                Перегляд по днях, тижнях та місяцях. Кольорове маркування статусів записів.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl border bg-background">
-              <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center mb-4">
-                <Users className="w-6 h-6 text-purple-500" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2">База клієнтів</h3>
-              <p className="text-muted-foreground">
-                Історія візитів, контакти, статистика витрат кожного клієнта.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl border bg-background">
-              <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-4">
-                <Sparkles className="w-6 h-6 text-emerald-500" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Каталог послуг</h3>
-              <p className="text-muted-foreground">
-                Категорії, ціни, тривалість, етапи процедур та використані препарати.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl border bg-background">
-              <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center mb-4">
-                <Clock className="w-6 h-6 text-amber-500" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Управління розкладом</h3>
-              <p className="text-muted-foreground">
-                Робочі години, вихідні, перерви, особливі дні — повний контроль.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl border bg-background">
-              <div className="w-12 h-12 rounded-xl bg-rose-500/10 flex items-center justify-center mb-4">
-                <BarChart3 className="w-6 h-6 text-rose-500" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Статистика</h3>
-              <p className="text-muted-foreground">
-                Виручка за день, кількість записів, популярні послуги.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl border bg-background">
-              <div className="w-12 h-12 rounded-xl bg-sky-500/10 flex items-center justify-center mb-4">
-                <Bell className="w-6 h-6 text-sky-500" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Сповіщення</h3>
-              <p className="text-muted-foreground">
-                Автоматичні нагадування клієнтам про майбутні візити.
-              </p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* How It Works */}
-      <section className="py-20 sm:py-28">
-        <div className="max-w-6xl mx-auto px-4">
+      <section className="py-24 bg-secondary relative overflow-hidden">
+        <div className="absolute inset-0 opacity-30">
+          <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="dots" width="30" height="30" patternUnits="userSpaceOnUse">
+                <circle cx="2" cy="2" r="1" fill="#ec4899" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#dots)" />
+          </svg>
+        </div>
+
+        <div className="max-w-6xl mx-auto px-4 relative">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-              Як це працює
+              Як <span className="gradient-text">почати?</span>
             </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Простий процес від реєстрації до першого клієнта
-            </p>
+            <p className="text-muted-foreground text-lg">4 прості кроки до автоматизації</p>
           </div>
 
           <div className="grid md:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 rounded-full bg-blue-500 text-white flex items-center justify-center text-2xl font-bold mx-auto mb-4">
-                1
+            {[
+              { num: '1', title: 'Реєстрація', desc: 'Створіть акаунт за 2 хвилини' },
+              { num: '2', title: 'Налаштування', desc: 'Додайте послуги та розклад' },
+              { num: '3', title: 'Підключення', desc: 'Отримайте посилання на бота' },
+              { num: '4', title: 'Готово!', desc: 'Клієнти записуються самі' },
+            ].map((step, i) => (
+              <div key={i} className="text-center group">
+                <div className="relative mb-6">
+                  <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center text-white text-3xl font-bold shadow-xl shadow-pink-500/30 group-hover:scale-110 transition-transform">
+                    {step.num}
+                  </div>
+                  {i < 3 && (
+                    <div className="hidden md:block absolute top-1/2 left-full w-full h-0.5 bg-gradient-to-r from-pink-300 to-transparent -translate-y-1/2" />
+                  )}
+                </div>
+                <h3 className="font-semibold mb-2">{step.title}</h3>
+                <p className="text-muted-foreground text-sm">{step.desc}</p>
               </div>
-              <h3 className="font-semibold mb-2">Реєстрація</h3>
-              <p className="text-muted-foreground text-sm">
-                Створіть акаунт та налаштуйте профіль компанії
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 rounded-full bg-blue-500 text-white flex items-center justify-center text-2xl font-bold mx-auto mb-4">
-                2
-              </div>
-              <h3 className="font-semibold mb-2">Налаштування</h3>
-              <p className="text-muted-foreground text-sm">
-                Додайте послуги, ціни та налаштуйте розклад
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 rounded-full bg-blue-500 text-white flex items-center justify-center text-2xl font-bold mx-auto mb-4">
-                3
-              </div>
-              <h3 className="font-semibold mb-2">Підключення</h3>
-              <p className="text-muted-foreground text-sm">
-                Отримайте посилання на бота для ваших клієнтів
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 rounded-full bg-blue-500 text-white flex items-center justify-center text-2xl font-bold mx-auto mb-4">
-                4
-              </div>
-              <h3 className="font-semibold mb-2">Робота</h3>
-              <p className="text-muted-foreground text-sm">
-                Клієнти записуються, ви отримуєте сповіщення
-              </p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section id="demo" className="py-20 sm:py-28 bg-gradient-to-br from-blue-500 to-purple-600">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
+      <section id="demo" className="py-24 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-pink-500 via-rose-500 to-pink-600 animate-gradient" />
+        <div className="absolute w-96 h-96 bg-white/20 -top-20 -right-48 rounded-full blur-3xl animate-blob" />
+        <div className="absolute w-80 h-80 bg-yellow-300/20 -bottom-20 -left-40 rounded-full blur-3xl animate-blob" style={{ animationDelay: '-3s' }} />
+
+        <div className="max-w-4xl mx-auto px-4 text-center relative">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 text-white text-sm font-medium mb-6 backdrop-blur-sm">
+            <Heart className="w-4 h-4" />
+            <span>14 днів безкоштовно</span>
+          </div>
+          <h2 className="text-3xl sm:text-5xl font-bold text-white mb-6">
             Готові автоматизувати записи?
           </h2>
           <p className="text-xl text-white/80 mb-10 max-w-2xl mx-auto">
-            Почніть використовувати систему вже сьогодні.
-            Безкоштовний пробний період 14 днів.
+            Приєднуйтесь до косметологів, які вже економлять час на рутині
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="https://t.me/your_bot"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-blue-600 rounded-full font-medium hover:bg-white/90 transition-colors"
+              className="group inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-pink-600 rounded-full font-medium hover:shadow-2xl hover:shadow-white/30 transition-all hover:-translate-y-1"
             >
               <MessageCircle className="w-5 h-5" />
               Написати в Telegram
             </Link>
             <Link
               href="/register"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white border border-white/20 rounded-full font-medium hover:bg-white/20 transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white border border-white/30 rounded-full font-medium hover:bg-white/20 transition-all backdrop-blur-sm"
             >
               Зареєструватися
+              <ArrowRight className="w-5 h-5" />
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-12 border-t">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="text-muted-foreground">
-              &copy; {new Date().getFullYear()} Procedure. Всі права захищені.
-            </div>
-            <div className="flex gap-6 text-sm text-muted-foreground">
-              <Link href="#" className="hover:text-foreground transition-colors">
-                Політика конфіденційності
-              </Link>
-              <Link href="#" className="hover:text-foreground transition-colors">
-                Умови використання
-              </Link>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </main>
   )
 }

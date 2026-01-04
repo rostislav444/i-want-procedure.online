@@ -1,38 +1,38 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { authApi } from '@/lib/api'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { authApi, TelegramAuthData } from '@/lib/api'
+import TelegramLoginButton from '@/components/TelegramLoginButton'
+
+const TELEGRAM_BOT_NAME = process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME || ''
 
 export default function LoginPage() {
   const router = useRouter()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleTelegramAuth = useCallback(async (user: TelegramAuthData) => {
     setError('')
     setLoading(true)
 
     try {
-      const data = await authApi.login(email, password)
+      const data = await authApi.telegramLogin(user)
       localStorage.setItem('token', data.access_token)
-      // Also set cookie for SSR
-      document.cookie = `token=${data.access_token}; path=/; max-age=${60 * 60 * 24 * 7}` // 7 days
+      document.cookie = `token=${data.access_token}; path=/; max-age=${60 * 60 * 24 * 7}`
       router.push('/services')
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Помилка входу')
+      const detail = err.response?.data?.detail
+      if (detail?.includes('not found')) {
+        setError('Користувача не знайдено. Спочатку зареєструйтесь через Telegram бота @' + TELEGRAM_BOT_NAME)
+      } else {
+        setError(detail || 'Помилка входу через Telegram')
+      }
     } finally {
       setLoading(false)
     }
-  }
+  }, [router])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -40,50 +40,47 @@ export default function LoginPage() {
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl text-center">Вхід</CardTitle>
           <CardDescription className="text-center">
-            Введіть свої дані для входу в систему
+            Увійдіть через Telegram для доступу до системи
           </CardDescription>
         </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            {error && (
-              <div className="bg-red-50 text-red-500 p-3 rounded-md text-sm">
-                {error}
-              </div>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="email@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
+        <CardContent className="space-y-4">
+          {error && (
+            <div className="bg-red-50 text-red-500 p-3 rounded-md text-sm">
+              {error}
+            </div>
+          )}
+
+          {loading ? (
+            <div className="text-center py-4 text-gray-500">
+              Вхід...
+            </div>
+          ) : TELEGRAM_BOT_NAME ? (
+            <div className="flex justify-center py-4">
+              <TelegramLoginButton
+                botName={TELEGRAM_BOT_NAME}
+                onAuth={handleTelegramAuth}
+                buttonSize="large"
+                cornerRadius={8}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Пароль</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+          ) : (
+            <div className="text-center py-4 text-gray-500">
+              Telegram бот не налаштований
             </div>
-          </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Вхід...' : 'Увійти'}
-            </Button>
-            <p className="text-sm text-center text-gray-600">
-              Немає акаунту?{' '}
-              <Link href="/register" className="text-primary hover:underline">
-                Зареєструватися
-              </Link>
-            </p>
-          </CardFooter>
-        </form>
+          )}
+
+          <p className="text-sm text-center text-gray-500 mt-4">
+            Немає акаунту? Зареєструйтесь через бота{' '}
+            <a
+              href={`https://t.me/${TELEGRAM_BOT_NAME}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              @{TELEGRAM_BOT_NAME}
+            </a>
+          </p>
+        </CardContent>
       </Card>
     </div>
   )

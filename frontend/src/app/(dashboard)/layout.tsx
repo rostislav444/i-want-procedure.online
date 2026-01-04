@@ -91,16 +91,16 @@ export default function DashboardLayout({
         <div className="fixed inset-0 bg-foreground/50" onClick={() => setSidebarOpen(false)} />
         <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-card">
           <div className="flex h-20 items-center justify-between px-4 border-b">
-            <div className="relative h-14 w-[180px]">
+            <div className="relative h-14 w-[160px]">
               <Image
-                src="/images/logo-light.png"
+                src="/images/logo-orbit-light-new.png"
                 alt="Procedure"
                 fill
                 className="object-contain object-left dark:hidden"
                 priority
               />
               <Image
-                src="/images/logo-dark.png"
+                src="/images/logo-orbit-dark-new.png"
                 alt="Procedure"
                 fill
                 className="object-contain object-left hidden dark:block"
@@ -169,16 +169,16 @@ export default function DashboardLayout({
               </button>
             ) : (
               <>
-                <div className="relative h-14 w-[200px]">
+                <div className="relative h-14 w-[160px]">
                   <Image
-                    src="/images/logo-light.png"
+                    src="/images/logo-orbit-light-new.png"
                     alt="Procedure"
                     fill
                     className="object-contain object-left dark:hidden"
                     priority
                   />
                   <Image
-                    src="/images/logo-dark.png"
+                    src="/images/logo-orbit-dark-new.png"
                     alt="Procedure"
                     fill
                     className="object-contain object-left hidden dark:block"
@@ -287,16 +287,16 @@ export default function DashboardLayout({
           <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)}>
             <Menu className="h-5 w-5" />
           </Button>
-          <div className="relative h-10 w-[150px]">
+          <div className="relative h-10 w-[115px]">
             <Image
-              src="/images/logo-light.png"
+              src="/images/logo-orbit-light-new.png"
               alt="Procedure"
               fill
               className="object-contain object-left dark:hidden"
               priority
             />
             <Image
-              src="/images/logo-dark.png"
+              src="/images/logo-orbit-dark-new.png"
               alt="Procedure"
               fill
               className="object-contain object-left hidden dark:block"

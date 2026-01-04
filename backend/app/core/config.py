@@ -13,11 +13,16 @@ class Settings(BaseSettings):
 
     # Telegram Bots
     CLIENT_BOT_TOKEN: Optional[str] = None
+    CLIENT_BOT_NAME: Optional[str] = None
     DOCTOR_BOT_TOKEN: Optional[str] = None
+    DOCTOR_BOT_NAME: Optional[str] = None
 
     # API
     API_URL: str = "http://localhost:8000"
     API_V1_PREFIX: str = "/api/v1"
+
+    # Frontend
+    FRONTEND_URL: str = "http://localhost:3000"
 
     # CORS
     CORS_ORIGINS: list[str] = ["http://localhost:3000"]

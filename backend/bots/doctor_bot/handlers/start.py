@@ -32,9 +32,10 @@ async def cmd_start(message: Message, session: AsyncSession):
         )
     else:
         await message.answer(
-            "Вітаємо! Цей бот призначений для лікарів/спеціалістів.\n\n"
-            "Для використання бота, будь ласка, прив'яжіть свій Telegram акаунт "
-            "до облікового запису в системі.",
+            "Вітаємо! Цей бот призначений для лікарів та косметологів.\n\n"
+            "Оберіть дію:\n"
+            "• Прив'яжіть існуючий акаунт (якщо реєструвались на сайті)\n"
+            "• Або зареєструйтесь через бота",
             reply_markup=link_account_keyboard(),
         )
 
@@ -61,12 +62,14 @@ async def process_email(message: Message, state: FSMContext, session: AsyncSessi
     if not user:
         await message.answer(
             "Користувача з таким email не знайдено. Переконайтеся, що ви "
-            "зареєстровані в системі та введіть правильний email."
+            "зареєстровані в системі та введіть правильний email.\n\n"
+            "Або натисніть /start щоб зареєструватися через бота."
         )
         return
 
     # Link telegram account
     user.telegram_id = message.from_user.id
+    user.telegram_username = message.from_user.username
     await session.commit()
 
     await state.clear()

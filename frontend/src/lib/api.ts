@@ -34,6 +34,17 @@ api.interceptors.response.use(
   }
 )
 
+// Telegram auth data type
+export interface TelegramAuthData {
+  id: number
+  first_name: string
+  last_name?: string
+  username?: string
+  photo_url?: string
+  auth_date: number
+  hash: string
+}
+
 // Auth API
 export const authApi = {
   login: async (email: string, password: string) => {
@@ -43,6 +54,10 @@ export const authApi = {
     const response = await api.post('/auth/login', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
+    return response.data
+  },
+  telegramLogin: async (authData: TelegramAuthData) => {
+    const response = await api.post('/auth/telegram', authData)
     return response.data
   },
   register: async (data: {
@@ -63,6 +78,8 @@ export const authApi = {
   updateMe: async (data: {
     first_name?: string
     last_name?: string
+    patronymic?: string
+    phone?: string
     telegram_id?: number | null
   }) => {
     const response = await api.patch('/auth/me', data)

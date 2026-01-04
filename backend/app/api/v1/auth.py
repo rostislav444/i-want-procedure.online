@@ -4,10 +4,11 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
 
 from app.api.deps import DbSession, CurrentUser
-from app.core.security import verify_password, get_password_hash, create_access_token
+from app.core.config import settings
+from app.core.security import verify_password, get_password_hash, create_access_token, verify_telegram_auth
 from app.models.user import User, UserRole
 from app.models.company import Company
-from app.schemas.auth import Token, UserCreate, UserLogin
+from app.schemas.auth import Token, UserCreate, UserLogin, TelegramAuthData
 from app.schemas.user import UserResponse, UserUpdate
 
 router = APIRouter(prefix="/auth")
@@ -82,7 +83,8 @@ async def login(db: DbSession, form_data: OAuth2PasswordRequestForm = Depends())
     result = await db.execute(select(User).where(User.email == form_data.username))
     user = result.scalar_one_or_none()
 
-    if not user or not verify_password(form_data.password, user.hashed_password):
+    # Check user exists, has password (not Telegram-only), and password is correct
+    if not user or not user.hashed_password or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
@@ -94,6 +96,55 @@ async def login(db: DbSession, form_data: OAuth2PasswordRequestForm = Depends())
             status_code=status.HTTP_403_FORBIDDEN,
             detail="User is inactive",
         )
+
+    access_token = create_access_token(data={"sub": str(user.id)})
+    return Token(access_token=access_token)
+
+
+@router.post("/telegram", response_model=Token)
+async def telegram_auth(auth_data: TelegramAuthData, db: DbSession):
+    """
+    Authenticate user via Telegram Login Widget.
+
+    The widget sends user data with HMAC-SHA-256 signature.
+    We verify the signature and return JWT token if user exists.
+    """
+    if not settings.DOCTOR_BOT_TOKEN:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Telegram authentication not configured",
+        )
+
+    # Verify Telegram hash
+    auth_dict = auth_data.model_dump()
+    if not verify_telegram_auth(auth_dict, settings.DOCTOR_BOT_TOKEN):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid Telegram authentication data",
+        )
+
+    # Find user by telegram_id
+    result = await db.execute(
+        select(User).where(User.telegram_id == auth_data.id)
+    )
+    user = result.scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found. Please register via Telegram bot first.",
+        )
+
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User is inactive",
+        )
+
+    # Update telegram_username if changed
+    if auth_data.username and user.telegram_username != auth_data.username:
+        user.telegram_username = auth_data.username
+        await db.commit()
 
     access_token = create_access_token(data={"sub": str(user.id)})
     return Token(access_token=access_token)
