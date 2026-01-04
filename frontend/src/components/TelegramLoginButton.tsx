@@ -22,6 +22,9 @@ interface TelegramLoginButtonProps {
   lang?: string
 }
 
+// Global callback name to avoid recreating on each render
+const CALLBACK_NAME = 'TelegramLoginWidgetCallback'
+
 export default function TelegramLoginButton({
   botName,
   onAuth,
@@ -32,12 +35,17 @@ export default function TelegramLoginButton({
   lang = 'uk',
 }: TelegramLoginButtonProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const onAuthRef = useRef(onAuth)
+
+  // Keep onAuth ref updated without triggering useEffect
+  useEffect(() => {
+    onAuthRef.current = onAuth
+  }, [onAuth])
 
   useEffect(() => {
-    // Create unique callback function name
-    const callbackName = `TelegramLoginWidgetCallback_${Date.now()}`
-    ;(window as any)[callbackName] = (user: TelegramUser) => {
-      onAuth(user)
+    // Set up global callback that uses ref
+    ;(window as any)[CALLBACK_NAME] = (user: TelegramUser) => {
+      onAuthRef.current(user)
     }
 
     // Create script element
@@ -46,7 +54,7 @@ export default function TelegramLoginButton({
     script.async = true
     script.setAttribute('data-telegram-login', botName)
     script.setAttribute('data-size', buttonSize)
-    script.setAttribute('data-onauth', `${callbackName}(user)`)
+    script.setAttribute('data-onauth', `${CALLBACK_NAME}(user)`)
     script.setAttribute('data-lang', lang)
 
     if (requestAccess) {
@@ -66,9 +74,9 @@ export default function TelegramLoginButton({
     }
 
     return () => {
-      delete (window as any)[callbackName]
+      delete (window as any)[CALLBACK_NAME]
     }
-  }, [botName, buttonSize, cornerRadius, requestAccess, showUserPhoto, lang, onAuth])
+  }, [botName, buttonSize, cornerRadius, requestAccess, showUserPhoto, lang])
 
   return <div ref={containerRef} className="flex justify-center" />
 }
