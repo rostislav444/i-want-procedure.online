@@ -1,6 +1,6 @@
 from aiogram import Router, F
 from aiogram.filters import CommandStart, Command, CommandObject
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, ReplyKeyboardMarkup, KeyboardButton
 from aiogram.fsm.context import FSMContext
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,6 +9,15 @@ from app.models.client import Client, Language
 from app.models.company import Company
 from bots.i18n import t
 from bots.client_bot.keyboards import language_keyboard, main_menu_keyboard
+
+
+def prefill_keyboard(value: str) -> ReplyKeyboardMarkup:
+    """Keyboard with prefilled value"""
+    return ReplyKeyboardMarkup(
+        keyboard=[[KeyboardButton(text=f"✓ {value}")]],
+        resize_keyboard=True,
+        one_time_keyboard=True,
+    )
 
 router = Router()
 
@@ -118,7 +127,16 @@ async def process_language(callback: CallbackQuery, session: AsyncSession, state
 
         await state.set_state(RegistrationStates.waiting_for_name)
         await callback.message.edit_text(t("language_selected", lang))
-        await callback.message.answer(t("registration.ask_name", lang))
+
+        # Prefill first name from Telegram if available
+        telegram_first_name = callback.from_user.first_name
+        if telegram_first_name:
+            await callback.message.answer(
+                t("registration.ask_name", lang),
+                reply_markup=prefill_keyboard(telegram_first_name),
+            )
+        else:
+            await callback.message.answer(t("registration.ask_name", lang))
 
     await callback.answer()
 
