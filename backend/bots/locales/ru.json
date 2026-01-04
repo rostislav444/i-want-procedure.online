@@ -1,0 +1,45 @@
+{
+  "welcome": "Добро пожаловать! Выберите язык:",
+  "language_selected": "Язык выбран: Русский",
+  "main_menu": "Главное меню",
+  "book_appointment": "Записаться на процедуру",
+  "my_appointments": "Мои записи",
+  "change_language": "Изменить язык",
+  "share_contact": "Поделиться контактом",
+  "skip": "Пропустить",
+  "cancel": "Отмена",
+  "back": "Назад",
+  "confirm": "Подтвердить",
+
+  "registration": {
+    "ask_name": "Пожалуйста, введите ваше имя:",
+    "ask_surname": "Введите вашу фамилию:",
+    "ask_phone": "Поделитесь номером телефона или введите вручную:",
+    "registration_complete": "Регистрация завершена! Теперь вы можете записаться на процедуру."
+  },
+
+  "booking": {
+    "select_service": "Выберите услугу:",
+    "select_date": "Выберите дату:",
+    "select_time": "Выберите время:",
+    "no_available_slots": "К сожалению, нет свободных слотов на эту дату. Выберите другую дату.",
+    "confirm_booking": "Подтвердите запись:\n\nУслуга: {service}\nДата: {date}\nВремя: {time}\nЦена: {price} руб",
+    "booking_confirmed": "Ваша запись подтверждена! Ожидайте подтверждения от специалиста.",
+    "booking_cancelled": "Запись отменена."
+  },
+
+  "appointments": {
+    "no_appointments": "У вас нет записей.",
+    "appointment_info": "Услуга: {service}\nДата: {date}\nВремя: {time}\nСтатус: {status}",
+    "status_pending": "Ожидает подтверждения",
+    "status_confirmed": "Подтверждено",
+    "status_cancelled": "Отменено",
+    "status_completed": "Завершено"
+  },
+
+  "notifications": {
+    "appointment_confirmed": "Ваша запись подтверждена!\n\nУслуга: {service}\nДата: {date}\nВремя: {time}",
+    "appointment_cancelled": "К сожалению, ваша запись была отменена.\n\nУслуга: {service}\nДата: {date}",
+    "reminder": "Напоминание: завтра в {time} у вас запись на {service}."
+  }
+}

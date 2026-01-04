@@ -1,0 +1,45 @@
+{
+  "welcome": "Welcome! Choose your language:",
+  "language_selected": "Language selected: English",
+  "main_menu": "Main menu",
+  "book_appointment": "Book an appointment",
+  "my_appointments": "My appointments",
+  "change_language": "Change language",
+  "share_contact": "Share contact",
+  "skip": "Skip",
+  "cancel": "Cancel",
+  "back": "Back",
+  "confirm": "Confirm",
+
+  "registration": {
+    "ask_name": "Please enter your first name:",
+    "ask_surname": "Enter your last name:",
+    "ask_phone": "Share your phone number or enter manually:",
+    "registration_complete": "Registration complete! Now you can book an appointment."
+  },
+
+  "booking": {
+    "select_service": "Select a service:",
+    "select_date": "Select a date:",
+    "select_time": "Select a time:",
+    "no_available_slots": "Sorry, no available slots for this date. Please choose another date.",
+    "confirm_booking": "Confirm your booking:\n\nService: {service}\nDate: {date}\nTime: {time}\nPrice: {price}",
+    "booking_confirmed": "Your appointment is booked! Waiting for confirmation from the specialist.",
+    "booking_cancelled": "Booking cancelled."
+  },
+
+  "appointments": {
+    "no_appointments": "You have no appointments.",
+    "appointment_info": "Service: {service}\nDate: {date}\nTime: {time}\nStatus: {status}",
+    "status_pending": "Pending confirmation",
+    "status_confirmed": "Confirmed",
+    "status_cancelled": "Cancelled",
+    "status_completed": "Completed"
+  },
+
+  "notifications": {
+    "appointment_confirmed": "Your appointment is confirmed!\n\nService: {service}\nDate: {date}\nTime: {time}",
+    "appointment_cancelled": "Unfortunately, your appointment was cancelled.\n\nService: {service}\nDate: {date}",
+    "reminder": "Reminder: tomorrow at {time} you have an appointment for {service}."
+  }
+}

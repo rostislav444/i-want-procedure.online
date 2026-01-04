@@ -1,0 +1,45 @@
+{
+  "welcome": "Вітаємо! Оберіть мову:",
+  "language_selected": "Мову обрано: Українська",
+  "main_menu": "Головне меню",
+  "book_appointment": "Записатися на процедуру",
+  "my_appointments": "Мої записи",
+  "change_language": "Змінити мову",
+  "share_contact": "Поділитися контактом",
+  "skip": "Пропустити",
+  "cancel": "Скасувати",
+  "back": "Назад",
+  "confirm": "Підтвердити",
+
+  "registration": {
+    "ask_name": "Будь ласка, введіть ваше ім'я:",
+    "ask_surname": "Введіть ваше прізвище:",
+    "ask_phone": "Поділіться номером телефону або введіть вручну:",
+    "registration_complete": "Реєстрацію завершено! Тепер ви можете записатися на процедуру."
+  },
+
+  "booking": {
+    "select_service": "Оберіть послугу:",
+    "select_date": "Оберіть дату:",
+    "select_time": "Оберіть час:",
+    "no_available_slots": "На жаль, немає вільних слотів на цю дату. Оберіть іншу дату.",
+    "confirm_booking": "Підтвердіть запис:\n\nПослуга: {service}\nДата: {date}\nЧас: {time}\nЦіна: {price} грн",
+    "booking_confirmed": "Ваш запис підтверджено! Очікуйте на підтвердження від спеціаліста.",
+    "booking_cancelled": "Запис скасовано."
+  },
+
+  "appointments": {
+    "no_appointments": "У вас немає записів.",
+    "appointment_info": "Послуга: {service}\nДата: {date}\nЧас: {time}\nСтатус: {status}",
+    "status_pending": "Очікує підтвердження",
+    "status_confirmed": "Підтверджено",
+    "status_cancelled": "Скасовано",
+    "status_completed": "Завершено"
+  },
+
+  "notifications": {
+    "appointment_confirmed": "Ваш запис підтверджено!\n\nПослуга: {service}\nДата: {date}\nЧас: {time}",
+    "appointment_cancelled": "На жаль, ваш запис було скасовано.\n\nПослуга: {service}\nДата: {date}",
+    "reminder": "Нагадування: завтра о {time} у вас запис на {service}."
+  }
+}
