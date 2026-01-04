@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root, .light {
   color-scheme: light;
   --background: #fffbfc;
@@ -143,10 +145,11 @@ html {
   -webkit-backdrop-filter: blur(12px);
 }
 
+html.dark .glass,
 :root.dark .glass,
 .dark .glass {
-  background: rgba(15, 15, 26, 0.95);
-  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(15, 15, 26, 0.95) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
 }
 
 /* Soft shadow */

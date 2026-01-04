@@ -3,8 +3,8 @@
 import { useTheme } from './ThemeProvider'
 
 export default function WaveDivider() {
-  const { theme } = useTheme()
-  const fillColor = theme === 'dark' ? '#1f1f35' : '#fef3f6'
+  const { theme, mounted } = useTheme()
+  const fillColor = mounted && theme === 'dark' ? '#1f1f35' : '#fef3f6'
 
   return (
     <div className="absolute bottom-0 left-0 right-0">

@@ -1,0 +1,22 @@
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: procedure_nginx
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - /var/www/certbot:/var/www/certbot:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    networks:
+      - procedure_network
+    depends_on:
+      - api
+      - frontend-admin
+      - frontend-site
+    restart: unless-stopped
+
+networks:
+  procedure_network:
+    external: true

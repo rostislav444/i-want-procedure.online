@@ -10,11 +10,14 @@ interface LogoProps {
 }
 
 export default function Logo({ className = 'h-10 w-auto', width = 180, height = 60 }: LogoProps) {
-  const { theme } = useTheme()
+  const { theme, mounted } = useTheme()
+
+  // Dark theme = logo with light text, Light theme = logo with dark text
+  const logoSrc = mounted && theme === 'dark' ? '/logo-dark.png' : '/logo-light.png'
 
   return (
     <Image
-      src={theme === 'dark' ? '/logo-light.png' : '/logo-dark.png'}
+      src={logoSrc}
       alt="Procedure"
       width={width}
       height={height}

@@ -1,0 +1,30 @@
+services:
+  frontend-admin:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_BASE_PATH=/admin
+        - NEXT_PUBLIC_API_URL=https://i-want-procedure.online
+        - NEXT_PUBLIC_TELEGRAM_BOT_NAME=doctor_i_want_procedure_bot
+    container_name: procedure_frontend_admin
+    expose:
+      - '3000'
+    networks:
+      - procedure_network
+    restart: unless-stopped
+
+  frontend-site:
+    build:
+      context: ./site
+      dockerfile: Dockerfile
+    container_name: procedure_frontend_site
+    expose:
+      - '3001'
+    networks:
+      - procedure_network
+    restart: unless-stopped
+
+networks:
+  procedure_network:
+    external: true

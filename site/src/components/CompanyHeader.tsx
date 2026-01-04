@@ -7,7 +7,7 @@ import ThemeToggle from './ThemeToggle'
 
 export default function CompanyHeader() {
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 glass border-b">
+    <header className="fixed top-0 left-0 right-0 z-50 glass border-b bg-white/85 dark:bg-[#0f0f1a]/95">
       <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
         <Link
           href="/"
