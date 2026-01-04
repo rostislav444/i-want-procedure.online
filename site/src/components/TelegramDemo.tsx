@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import Image from 'next/image'
 import { Send, Check, CheckCheck } from 'lucide-react'
 
@@ -166,7 +165,7 @@ export default function TelegramDemo() {
     {
       id: 1,
       from: 'bot',
-      text: '🆕 Новий запис!\n\n━━━━━━━━━━━━━━━\n\n📋 Мезотерапія\n📅 07.01.2026\n⏰ 14:00 - 15:00\n💰 1500 грн\n\n━━━━━━━━━━━━━━━\n\n👤 Олена Петренко\n📱 +380 67 123 4567\n💬 @olena_p',
+      text: '🆕 Новий запис!\n\n📋 Мезотерапія\n\n📅  07.01.2026\n⏰  14:00 - 15:00\n💰  1500 грн\n\n━━━━━━━━━━━━━━━\n\n👤  Олена Петренко\n\n📞  +380 67 123 4567\n\n✈️  @olena_p\n\n━━━━━━━━━━━━━━━\n\n📊  ⏳ Очікує',
       buttons: [
         { text: '✅ Підтвердити', selected: true },
         { text: '❌ Скасувати' },
@@ -182,7 +181,7 @@ export default function TelegramDemo() {
     {
       id: 3,
       from: 'bot',
-      text: '✅ Запис підтверджено!\n\nКлієнт отримав сповіщення.',
+      text: '📋 Мезотерапія\n\n📅  07.01.2026\n⏰  14:00 - 15:00\n💰  1500 грн\n\n━━━━━━━━━━━━━━━\n\n👤  Олена Петренко\n\n📞  +380 67 123 4567\n\n✈️  @olena_p\n\n━━━━━━━━━━━━━━━\n\n📊  ✅ Підтверджено',
       time: '14:25',
     },
     {
@@ -194,7 +193,7 @@ export default function TelegramDemo() {
     {
       id: 5,
       from: 'bot',
-      text: '📅 Записи на сьогодні:\n\n1️⃣ 10:00 — Чистка обличчя\n    👤 Марія Іваненко\n    ✅ Підтверджено\n\n2️⃣ 14:00 — Мезотерапія\n    👤 Олена Петренко\n    ✅ Підтверджено\n\n3️⃣ 16:30 — Пілінг\n    👤 Анна Сидоренко\n    ⏳ Очікує',
+      text: '📋 Чистка обличчя\n\n📅  07.01.2026\n⏰  10:00 - 11:00\n💰  800 грн\n\n━━━━━━━━━━━━━━━\n\n👤  Марія Іваненко\n\n📞  +380 50 111 2233\n\n━━━━━━━━━━━━━━━\n\n📊  ✅ Підтверджено',
       time: '14:30',
     },
   ]
@@ -219,14 +218,6 @@ export default function TelegramDemo() {
           accentColor="bg-gradient-to-r from-pink-500 to-rose-500"
           notification={{ text: 'Запис створено!', subtext: 'Мезотерапія, 7 січня' }}
         />
-        <div className="mt-4 space-y-2">
-          <p className="text-xs text-muted-foreground font-medium">Команди:</p>
-          <div className="flex flex-wrap gap-2">
-            {['/start', '/book', '/appointments', '/language'].map((cmd) => (
-              <code key={cmd} className="px-2 py-1 bg-muted rounded text-xs">{cmd}</code>
-            ))}
-          </div>
-        </div>
       </div>
 
       {/* Doctor Bot Demo */}
@@ -247,14 +238,6 @@ export default function TelegramDemo() {
           accentColor="bg-gradient-to-r from-amber-500 to-orange-500"
           notification={{ text: 'Запис підтверджено', subtext: 'Олена отримала сповіщення' }}
         />
-        <div className="mt-4 space-y-2">
-          <p className="text-xs text-muted-foreground font-medium">Команди:</p>
-          <div className="flex flex-wrap gap-2">
-            {['/start', '/today', '/week', '/appointments'].map((cmd) => (
-              <code key={cmd} className="px-2 py-1 bg-muted rounded text-xs">{cmd}</code>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   )

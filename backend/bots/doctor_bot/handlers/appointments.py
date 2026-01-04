@@ -1,6 +1,7 @@
-from datetime import date
+from datetime import date, timedelta
 
 from aiogram import Router, F
+from aiogram.filters import Command
 from aiogram.types import Message, CallbackQuery
 from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -62,6 +63,7 @@ async def format_appointment(session: AsyncSession, appt: Appointment) -> str:
     )
 
 
+@router.message(Command("today"))
 @router.message(F.text == "📅 Записи на сьогодні")
 async def today_appointments(message: Message, session: AsyncSession):
     doctor = await get_doctor(session, message.from_user.id)
@@ -97,6 +99,7 @@ async def today_appointments(message: Message, session: AsyncSession):
             await message.answer(text)
 
 
+@router.message(Command("appointments"))
 @router.message(F.text == "📋 Всі записи")
 async def all_appointments(message: Message, session: AsyncSession):
     doctor = await get_doctor(session, message.from_user.id)
