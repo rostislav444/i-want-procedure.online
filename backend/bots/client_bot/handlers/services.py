@@ -69,11 +69,14 @@ async def my_appointments(message: Message, session: AsyncSession):
         await message.answer("Client not found")
         return
 
-    # Get appointments
+    # Get active appointments (pending/confirmed only)
     result = await session.execute(
         select(Appointment)
-        .where(Appointment.client_id == client.id)
-        .order_by(Appointment.date.desc(), Appointment.start_time.desc())
+        .where(
+            Appointment.client_id == client.id,
+            Appointment.status.in_([AppointmentStatus.PENDING, AppointmentStatus.CONFIRMED])
+        )
+        .order_by(Appointment.date.asc(), Appointment.start_time.asc())
         .limit(10)
     )
     appointments = result.scalars().all()

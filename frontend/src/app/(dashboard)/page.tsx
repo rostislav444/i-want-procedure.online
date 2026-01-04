@@ -103,8 +103,10 @@ export default function DashboardPage() {
         servicesApi.getAll(),
       ])
 
-      // Today's appointments
-      const todayAppts = appointmentsData.filter((a: Appointment) => a.date === today)
+      // Today's appointments (excluding cancelled)
+      const todayAppts = appointmentsData.filter((a: Appointment) =>
+        a.date === today && a.status !== 'cancelled'
+      )
       setTodayAppointments(todayAppts.sort((a: Appointment, b: Appointment) =>
         a.start_time.localeCompare(b.start_time)
       ))

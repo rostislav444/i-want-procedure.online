@@ -1,4 +1,7 @@
-import { notFound } from 'next/navigation'
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { uk } from 'date-fns/locale'
@@ -16,7 +19,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { serverClientsApi } from '@/lib/server-api'
+import { clientsApi, Client, Appointment } from '@/lib/api'
 
 const statusConfig = {
   pending: { label: 'Очікує', color: 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800', Icon: AlertCircle },
@@ -31,29 +34,71 @@ const languageLabels: Record<string, string> = {
   en: 'English',
 }
 
-interface Props {
-  params: Promise<{ id: string }>
-}
+export default function ClientDetailPage() {
+  const params = useParams()
+  const router = useRouter()
+  const [client, setClient] = useState<Client | null>(null)
+  const [appointments, setAppointments] = useState<Appointment[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-export default async function ClientDetailPage({ params }: Props) {
-  const { id } = await params
-  const clientId = Number(id)
+  const clientId = Number(params.id)
 
-  if (isNaN(clientId)) {
-    notFound()
+  useEffect(() => {
+    if (isNaN(clientId)) {
+      router.push('/clients')
+      return
+    }
+
+    const loadData = async () => {
+      try {
+        const [clientData, appointmentsData] = await Promise.all([
+          clientsApi.getById(clientId),
+          clientsApi.getAppointments(clientId),
+        ])
+        setClient(clientData)
+        setAppointments(appointmentsData)
+      } catch (err) {
+        console.error('Error loading client:', err)
+        setError('Не вдалося завантажити дані клієнта')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadData()
+  }, [clientId, router])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    )
   }
 
-  let client
-  let appointments
-
-  try {
-    ;[client, appointments] = await Promise.all([
-      serverClientsApi.getById(clientId),
-      serverClientsApi.getAppointments(clientId),
-    ])
-  } catch (error) {
-    console.error('Error loading client:', error)
-    notFound()
+  if (error || !client) {
+    return (
+      <div className="min-h-screen">
+        <div className="flex items-center gap-3 mb-6">
+          <Link href="/clients">
+            <Button variant="ghost" size="icon" className="rounded-full">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          </Link>
+          <span className="text-muted-foreground">Клієнти</span>
+        </div>
+        <Card>
+          <CardContent className="p-12 text-center">
+            <User className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <p className="text-muted-foreground">{error || 'Клієнта не знайдено'}</p>
+            <Button className="mt-4" onClick={() => router.push('/clients')}>
+              Повернутися до списку
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   // Calculate stats
