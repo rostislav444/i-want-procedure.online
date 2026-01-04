@@ -1,7 +1,7 @@
 """Add appointment cancellation fields
 
 Revision ID: 008
-Revises: 7d9a7b100dba
+Revises: 007
 Create Date: 2026-01-04
 
 """
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '008_cancellation'
-down_revision: Union[str, None] = '7d9a7b100dba'
+revision: str = '008'
+down_revision: Union[str, None] = '007'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
