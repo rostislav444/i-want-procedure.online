@@ -4,8 +4,27 @@ Notification utilities for sending messages via Telegram bots
 from aiogram import Bot
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from app.core.config import settings
+
+
+def appointment_action_keyboard(appointment_id: int) -> InlineKeyboardMarkup:
+    """Inline keyboard for appointment actions"""
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="✅ Підтвердити",
+                    callback_data=f"confirm_{appointment_id}"
+                ),
+                InlineKeyboardButton(
+                    text="❌ Скасувати",
+                    callback_data=f"cancel_{appointment_id}"
+                ),
+            ],
+        ]
+    )
 
 
 async def notify_doctor_new_appointment(
@@ -14,6 +33,7 @@ async def notify_doctor_new_appointment(
     service_name: str,
     appointment_date: str,
     appointment_time: str,
+    appointment_id: int = None,
 ):
     """Send notification to doctor about new appointment"""
     if not settings.DOCTOR_BOT_TOKEN or not doctor_telegram_id:
@@ -30,10 +50,12 @@ async def notify_doctor_new_appointment(
             f"👤 Клієнт: {client_name}\n"
             f"💆 Послуга: {service_name}\n"
             f"📅 Дата: {appointment_date}\n"
-            f"🕐 Час: {appointment_time}\n\n"
-            f"Перейдіть в адмін-панель для підтвердження."
+            f"🕐 Час: {appointment_time}"
         )
-        await bot.send_message(doctor_telegram_id, message)
+
+        # Add action buttons if appointment_id provided
+        keyboard = appointment_action_keyboard(appointment_id) if appointment_id else None
+        await bot.send_message(doctor_telegram_id, message, reply_markup=keyboard)
     except Exception as e:
         print(f"Failed to send notification to doctor: {e}")
     finally:

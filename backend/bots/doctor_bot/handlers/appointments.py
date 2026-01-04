@@ -131,6 +131,8 @@ async def all_appointments(message: Message, session: AsyncSession):
 
 @router.callback_query(F.data.startswith("confirm_"))
 async def confirm_appointment(callback: CallbackQuery, session: AsyncSession):
+    from bots.notifications import notify_client_appointment_confirmed
+
     appointment_id = int(callback.data.split("_")[1])
 
     result = await session.execute(
@@ -149,11 +151,35 @@ async def confirm_appointment(callback: CallbackQuery, session: AsyncSession):
     await callback.message.edit_text(text)
     await callback.answer("Запис підтверджено ✅")
 
-    # TODO: Send notification to client
+    # Send notification to client
+    result = await session.execute(
+        select(Client).where(Client.id == appt.client_id)
+    )
+    client = result.scalar_one_or_none()
+
+    result = await session.execute(
+        select(Service).where(Service.id == appt.service_id)
+    )
+    service = result.scalar_one()
+
+    doctor = await get_doctor(session, callback.from_user.id)
+    doctor_name = f"{doctor.first_name} {doctor.last_name or ''}".strip() if doctor else "Спеціаліст"
+
+    if client and client.telegram_id:
+        await notify_client_appointment_confirmed(
+            client_telegram_id=client.telegram_id,
+            doctor_name=doctor_name,
+            service_name=service.name,
+            appointment_date=appt.date.strftime("%d.%m.%Y"),
+            appointment_time=appt.start_time.strftime("%H:%M"),
+            lang=client.language.value if client.language else "uk",
+        )
 
 
 @router.callback_query(F.data.startswith("cancel_"))
 async def cancel_appointment(callback: CallbackQuery, session: AsyncSession):
+    from bots.notifications import notify_client_appointment_cancelled
+
     appointment_id = int(callback.data.split("_")[1])
 
     result = await session.execute(
@@ -172,7 +198,25 @@ async def cancel_appointment(callback: CallbackQuery, session: AsyncSession):
     await callback.message.edit_text(text)
     await callback.answer("Запис скасовано ❌")
 
-    # TODO: Send notification to client
+    # Send notification to client
+    result = await session.execute(
+        select(Client).where(Client.id == appt.client_id)
+    )
+    client = result.scalar_one_or_none()
+
+    result = await session.execute(
+        select(Service).where(Service.id == appt.service_id)
+    )
+    service = result.scalar_one()
+
+    if client and client.telegram_id:
+        await notify_client_appointment_cancelled(
+            client_telegram_id=client.telegram_id,
+            service_name=service.name,
+            appointment_date=appt.date.strftime("%d.%m.%Y"),
+            appointment_time=appt.start_time.strftime("%H:%M"),
+            lang=client.language.value if client.language else "uk",
+        )
 
 
 @router.callback_query(F.data.startswith("complete_"))

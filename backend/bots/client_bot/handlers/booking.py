@@ -274,6 +274,7 @@ async def confirm_booking(callback: CallbackQuery, state: FSMContext, session: A
     )
     session.add(appointment)
     await session.commit()
+    await session.refresh(appointment)  # Get the generated ID
 
     await state.clear()
 
@@ -284,7 +285,7 @@ async def confirm_booking(callback: CallbackQuery, state: FSMContext, session: A
     )
     await callback.answer()
 
-    # Send notification to doctor
+    # Send notification to doctor with action buttons
     if doctor and doctor.telegram_id:
         client_name = f"{client.first_name} {client.last_name or ''}".strip()
         await notify_doctor_new_appointment(
@@ -293,6 +294,7 @@ async def confirm_booking(callback: CallbackQuery, state: FSMContext, session: A
             service_name=data["service_name"],
             appointment_date=selected_date.strftime("%d.%m.%Y"),
             appointment_time=data["start_time"],
+            appointment_id=appointment.id,
         )
 
 
