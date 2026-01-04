@@ -45,8 +45,8 @@ interface Appointment {
 interface Client {
   id: number
   first_name: string
-  last_name?: string
-  telegram_username?: string
+  last_name: string | null
+  telegram_username: string | null
   created_at: string
 }
 
