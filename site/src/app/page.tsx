@@ -49,7 +49,7 @@ export default function HomePage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Link
-                  href="#demo"
+                  href="/admin"
                   className="group inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full font-medium hover:shadow-xl hover:shadow-pink-500/30 transition-all hover:-translate-y-1"
                 >
                   Спробувати безкоштовно
@@ -332,17 +332,17 @@ export default function HomePage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              href="https://t.me/your_bot"
+              href="https://t.me/doctor_i_want_procedure_bot"
               className="group inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-pink-600 rounded-full font-medium hover:shadow-2xl hover:shadow-white/30 transition-all hover:-translate-y-1"
             >
               <MessageCircle className="w-5 h-5" />
               Написати в Telegram
             </Link>
             <Link
-              href="/register"
+              href="/admin"
               className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white border border-white/30 rounded-full font-medium hover:bg-white/20 transition-all backdrop-blur-sm"
             >
-              Зареєструватися
+              Увійти в кабінет
               <ArrowRight className="w-5 h-5" />
             </Link>
           </div>

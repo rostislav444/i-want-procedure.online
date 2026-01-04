@@ -19,7 +19,7 @@ export default function Header() {
         <div className="flex items-center gap-3">
           <ThemeToggle />
           <Link
-            href="#demo"
+            href="/admin"
             className="px-5 py-2 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full text-sm font-medium hover:shadow-lg hover:shadow-pink-500/25 transition-all hover:-translate-y-0.5"
           >
             Спробувати
