@@ -41,17 +41,24 @@ async def format_appointment(session: AsyncSession, appt: Appointment) -> str:
         AppointmentStatus.COMPLETED: "✔️ Завершено",
     }
 
-    phone_info = f"\n📞 {client.phone}" if client.phone else ""
-    username_info = f"\n👤 @{client.telegram_username}" if client.telegram_username else ""
+    # Build contact section with good spacing for easy clicking
+    contact_lines = [f"👤  {client.first_name} {client.last_name or ''}"]
+    if client.phone:
+        contact_lines.append(f"📞  {client.phone}")
+    if client.telegram_username:
+        contact_lines.append(f"✈️  @{client.telegram_username}")
+
+    contact_section = "\n\n".join(contact_lines)
 
     return (
-        f"📋 <b>{service.name}</b>\n"
-        f"📅 {appt.date.strftime('%d.%m.%Y')}\n"
-        f"⏰ {appt.start_time.strftime('%H:%M')} - {appt.end_time.strftime('%H:%M')}\n"
-        f"👤 {client.first_name} {client.last_name or ''}"
-        f"{phone_info}{username_info}\n"
-        f"💰 {service.price} грн\n"
-        f"📊 {status_map.get(appt.status, appt.status)}"
+        f"📋 <b>{service.name}</b>\n\n"
+        f"📅  {appt.date.strftime('%d.%m.%Y')}\n"
+        f"⏰  {appt.start_time.strftime('%H:%M')} - {appt.end_time.strftime('%H:%M')}\n"
+        f"💰  {service.price} грн\n\n"
+        f"━━━━━━━━━━━━━━━\n\n"
+        f"{contact_section}\n\n"
+        f"━━━━━━━━━━━━━━━\n\n"
+        f"📊  {status_map.get(appt.status, appt.status)}"
     )
 
 
