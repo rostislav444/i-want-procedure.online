@@ -6,7 +6,7 @@ from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user import User
-from app.models.appointment import Appointment, AppointmentStatus
+from app.models.appointment import Appointment, AppointmentStatus, CancelledBy
 from app.models.service import Service
 from app.models.client import Client
 from bots.doctor_bot.keyboards import appointment_action_keyboard
@@ -199,6 +199,7 @@ async def cancel_appointment(callback: CallbackQuery, session: AsyncSession):
         return
 
     appt.status = AppointmentStatus.CANCELLED
+    appt.cancelled_by = CancelledBy.DOCTOR
     await session.commit()
 
     text = await format_appointment(session, appt)

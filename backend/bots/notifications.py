@@ -162,3 +162,39 @@ async def notify_client_appointment_cancelled(
         print(f"Failed to send notification to client: {e}")
     finally:
         await bot.session.close()
+
+
+async def notify_doctor_client_cancelled(
+    doctor_telegram_id: int,
+    client_name: str,
+    service_name: str,
+    appointment_date: str,
+    appointment_time: str,
+    cancellation_reason: str = None,
+):
+    """Send notification to doctor that client cancelled appointment"""
+    if not settings.DOCTOR_BOT_TOKEN or not doctor_telegram_id:
+        return
+
+    bot = Bot(
+        token=settings.DOCTOR_BOT_TOKEN,
+        default=DefaultBotProperties(parse_mode=ParseMode.HTML),
+    )
+
+    reason_text = f"\n\n💬 <i>Причина: {cancellation_reason}</i>" if cancellation_reason else ""
+
+    message = (
+        f"❌ <b>Клієнт скасував запис</b>\n\n"
+        f"👤 Клієнт: {client_name}\n"
+        f"💆 Послуга: {service_name}\n"
+        f"📅 Дата: {appointment_date}\n"
+        f"🕐 Час: {appointment_time}"
+        f"{reason_text}"
+    )
+
+    try:
+        await bot.send_message(doctor_telegram_id, message)
+    except Exception as e:
+        print(f"Failed to send notification to doctor: {e}")
+    finally:
+        await bot.session.close()

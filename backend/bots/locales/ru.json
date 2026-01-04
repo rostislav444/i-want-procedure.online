@@ -34,7 +34,11 @@
     "status_pending": "Ожидает подтверждения",
     "status_confirmed": "Подтверждено",
     "status_cancelled": "Отменено",
-    "status_completed": "Завершено"
+    "status_completed": "Завершено",
+    "cancel_button": "Отменить запись",
+    "ask_cancel_reason": "Пожалуйста, напишите причину отмены (или нажмите 'Пропустить'):",
+    "cancelled_success": "Ваша запись успешно отменена.",
+    "cannot_cancel": "Эту запись нельзя отменить."
   },
 
   "notifications": {

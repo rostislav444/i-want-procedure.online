@@ -34,7 +34,11 @@
     "status_pending": "Pending confirmation",
     "status_confirmed": "Confirmed",
     "status_cancelled": "Cancelled",
-    "status_completed": "Completed"
+    "status_completed": "Completed",
+    "cancel_button": "Cancel appointment",
+    "ask_cancel_reason": "Please write the reason for cancellation (or press 'Skip'):",
+    "cancelled_success": "Your appointment has been cancelled.",
+    "cannot_cancel": "This appointment cannot be cancelled."
   },
 
   "notifications": {

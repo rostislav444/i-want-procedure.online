@@ -34,7 +34,11 @@
     "status_pending": "Очікує підтвердження",
     "status_confirmed": "Підтверджено",
     "status_cancelled": "Скасовано",
-    "status_completed": "Завершено"
+    "status_completed": "Завершено",
+    "cancel_button": "Скасувати запис",
+    "ask_cancel_reason": "Будь ласка, напишіть причину скасування (або натисніть 'Пропустити'):",
+    "cancelled_success": "Ваш запис успішно скасовано.",
+    "cannot_cancel": "Цей запис не можна скасувати."
   },
 
   "notifications": {
