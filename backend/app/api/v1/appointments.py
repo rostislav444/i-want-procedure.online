@@ -10,12 +10,14 @@ from app.models.appointment import Appointment, AppointmentStatus
 from app.models.schedule import Schedule, ScheduleException, ScheduleExceptionType
 from app.models.service import Service
 from app.models.client import Client
+from app.models.user import User
 from app.schemas.appointment import (
     AppointmentCreate,
     AppointmentUpdate,
     AppointmentResponse,
     AvailableSlot,
 )
+from bots.notifications import notify_client_appointment_confirmed, notify_client_appointment_cancelled
 
 router = APIRouter(prefix="/appointments")
 
@@ -236,7 +238,36 @@ async def update_appointment_status(
             detail="Appointment not found",
         )
 
-    appointment.status = appointment_data.status
+    old_status = appointment.status
+    new_status = appointment_data.status
+    appointment.status = new_status
     await db.commit()
     await db.refresh(appointment)
+
+    # Send notification to client if status changed
+    if old_status != new_status and appointment.client and appointment.client.telegram_id:
+        doctor_name = f"{current_user.first_name} {current_user.last_name}"
+        service_name = appointment.service.name if appointment.service else "Послуга"
+        appointment_date = appointment.date.strftime("%d.%m.%Y")
+        appointment_time = appointment.start_time.strftime("%H:%M")
+        client_lang = appointment.client.language if hasattr(appointment.client, 'language') else "uk"
+
+        if new_status == AppointmentStatus.CONFIRMED:
+            await notify_client_appointment_confirmed(
+                client_telegram_id=appointment.client.telegram_id,
+                doctor_name=doctor_name,
+                service_name=service_name,
+                appointment_date=appointment_date,
+                appointment_time=appointment_time,
+                lang=client_lang,
+            )
+        elif new_status == AppointmentStatus.CANCELLED:
+            await notify_client_appointment_cancelled(
+                client_telegram_id=appointment.client.telegram_id,
+                service_name=service_name,
+                appointment_date=appointment_date,
+                appointment_time=appointment_time,
+                lang=client_lang,
+            )
+
     return appointment

@@ -13,6 +13,7 @@ from app.models.schedule import Schedule
 from app.models.appointment import Appointment, AppointmentStatus
 from app.models.user import User
 from bots.i18n import t
+from bots.notifications import notify_doctor_new_appointment
 from bots.client_bot.keyboards import (
     services_keyboard,
     dates_keyboard,
@@ -248,6 +249,12 @@ async def confirm_booking(callback: CallbackQuery, state: FSMContext, session: A
     )
     service = result.scalar_one()
 
+    # Get doctor for notification
+    result = await session.execute(
+        select(User).where(User.id == data["doctor_id"])
+    )
+    doctor = result.scalar_one_or_none()
+
     # Create appointment
     selected_date = date.fromisoformat(data["selected_date"])
     start_time = datetime.strptime(data["start_time"], "%H:%M").time()
@@ -275,7 +282,16 @@ async def confirm_booking(callback: CallbackQuery, state: FSMContext, session: A
     )
     await callback.answer()
 
-    # TODO: Send notification to doctor
+    # Send notification to doctor
+    if doctor and doctor.telegram_id:
+        client_name = f"{client.first_name} {client.last_name or ''}".strip()
+        await notify_doctor_new_appointment(
+            doctor_telegram_id=doctor.telegram_id,
+            client_name=client_name,
+            service_name=data["service_name"],
+            appointment_date=selected_date.strftime("%d.%m.%Y"),
+            appointment_time=data["start_time"],
+        )
 
 
 @router.callback_query(F.data == "cancel")

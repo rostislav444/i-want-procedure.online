@@ -1,3 +1,5 @@
+from datetime import time
+
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -5,6 +7,7 @@ from sqlalchemy.orm import selectinload
 from app.api.deps import DbSession, CurrentUser
 from app.models.company import Company, generate_slug
 from app.models.user import User
+from app.models.schedule import Schedule
 from app.schemas.company import CompanyResponse, CompanyUpdate, CompanyCreate
 from app.schemas.user import UserResponse
 
@@ -47,6 +50,21 @@ async def create_my_company(company_data: CompanyCreate, current_user: CurrentUs
 
     # Assign company to user
     current_user.company_id = company.id
+
+    # Create default schedule for the user (Mon-Fri 9:00-18:00)
+    default_schedules = []
+    for day in range(7):
+        is_working = day < 5  # Mon-Fri working, Sat-Sun off
+        schedule = Schedule(
+            doctor_id=current_user.id,
+            day_of_week=day,
+            start_time=time(9, 0) if is_working else time(0, 0),
+            end_time=time(18, 0) if is_working else time(0, 0),
+            is_working_day=is_working,
+        )
+        default_schedules.append(schedule)
+    db.add_all(default_schedules)
+
     await db.commit()
     await db.refresh(company)
 
