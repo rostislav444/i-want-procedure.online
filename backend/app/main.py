@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
-from app.api.v1 import auth, services, schedule, appointments, clients, companies
+from app.api.v1 import auth, services, schedule, appointments, clients, companies, public
 
 app = FastAPI(
     title="Procedure Booking API",
@@ -26,6 +26,7 @@ app.include_router(services.router, prefix=settings.API_V1_PREFIX, tags=["servic
 app.include_router(schedule.router, prefix=settings.API_V1_PREFIX, tags=["schedule"])
 app.include_router(appointments.router, prefix=settings.API_V1_PREFIX, tags=["appointments"])
 app.include_router(clients.router, prefix=settings.API_V1_PREFIX, tags=["clients"])
+app.include_router(public.router, prefix=settings.API_V1_PREFIX, tags=["public"])
 
 
 @app.get("/")

@@ -24,3 +24,4 @@ aiogram==3.4.1
 # Utils
 python-dotenv==1.0.0
 httpx==0.26.0
+transliterate==1.10.2

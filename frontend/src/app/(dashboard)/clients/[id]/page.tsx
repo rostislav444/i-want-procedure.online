@@ -19,10 +19,10 @@ import { Card, CardContent } from '@/components/ui/card'
 import { serverClientsApi } from '@/lib/server-api'
 
 const statusConfig = {
-  pending: { label: 'Очікує', color: 'bg-amber-50 text-amber-700 border-amber-200', Icon: AlertCircle },
-  confirmed: { label: 'Підтверджено', color: 'bg-blue-50 text-blue-700 border-blue-200', Icon: CheckCircle },
-  completed: { label: 'Завершено', color: 'bg-emerald-50 text-emerald-700 border-emerald-200', Icon: CheckCircle },
-  cancelled: { label: 'Скасовано', color: 'bg-red-50 text-red-700 border-red-200', Icon: XCircle },
+  pending: { label: 'Очікує', color: 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800', Icon: AlertCircle },
+  confirmed: { label: 'Підтверджено', color: 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800', Icon: CheckCircle },
+  completed: { label: 'Завершено', color: 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800', Icon: CheckCircle },
+  cancelled: { label: 'Скасовано', color: 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800', Icon: XCircle },
 }
 
 const languageLabels: Record<string, string> = {
@@ -107,7 +107,7 @@ export default async function ClientDetailPage({ params }: Props) {
                 {client.phone && (
                   <a
                     href={`tel:${client.phone}`}
-                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-xl transition-colors font-medium text-sm"
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 rounded-xl transition-colors font-medium text-sm"
                   >
                     <Phone className="h-4 w-4" />
                     Зателефонувати
@@ -118,7 +118,7 @@ export default async function ClientDetailPage({ params }: Props) {
                     href={`https://t.me/${client.telegram_username}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-sky-50 hover:bg-sky-100 text-sky-700 rounded-xl transition-colors font-medium text-sm"
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-sky-50 dark:bg-sky-900/30 hover:bg-sky-100 dark:hover:bg-sky-900/50 text-sky-700 dark:text-sky-400 rounded-xl transition-colors font-medium text-sm"
                   >
                     <MessageCircle className="h-4 w-4" />
                     Telegram
@@ -176,13 +176,13 @@ export default async function ClientDetailPage({ params }: Props) {
                     <p className="text-2xl font-bold">{totalAppointments}</p>
                     <p className="text-xs text-muted-foreground">Записів</p>
                   </div>
-                  <div className="bg-emerald-50 rounded-lg p-3 text-center">
-                    <p className="text-2xl font-bold text-emerald-600">{completedAppointments}</p>
-                    <p className="text-xs text-emerald-600/70">Завершено</p>
+                  <div className="bg-emerald-50 dark:bg-emerald-900/30 rounded-lg p-3 text-center">
+                    <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{completedAppointments}</p>
+                    <p className="text-xs text-emerald-600/70 dark:text-emerald-400/70">Завершено</p>
                   </div>
-                  <div className="bg-red-50 rounded-lg p-3 text-center">
-                    <p className="text-2xl font-bold text-red-600">{cancelledAppointments}</p>
-                    <p className="text-xs text-red-600/70">Скасовано</p>
+                  <div className="bg-red-50 dark:bg-red-900/30 rounded-lg p-3 text-center">
+                    <p className="text-2xl font-bold text-red-600 dark:text-red-400">{cancelledAppointments}</p>
+                    <p className="text-xs text-red-600/70 dark:text-red-400/70">Скасовано</p>
                   </div>
                   <div className="bg-primary/5 rounded-lg p-3 text-center">
                     <p className="text-lg font-bold text-primary">{totalSpent.toLocaleString('uk-UA')}</p>
@@ -212,7 +212,7 @@ export default async function ClientDetailPage({ params }: Props) {
                     return (
                       <div
                         key={appointment.id}
-                        className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors border border-slate-100"
+                        className="flex items-center gap-4 p-4 bg-muted/50 rounded-xl hover:bg-muted transition-colors border border-border/50"
                       >
                         <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-primary/10 flex flex-col items-center justify-center">
                           <span className="text-lg font-bold text-primary">
@@ -272,16 +272,16 @@ export default async function ClientDetailPage({ params }: Props) {
                       <div
                         key={appointment.id}
                         className={`flex items-center gap-4 p-4 rounded-xl border ${
-                          isCompleted ? 'bg-slate-50' : 'bg-slate-100/50'
+                          isCompleted ? 'bg-muted/50' : 'bg-muted/30'
                         }`}
                       >
                         <div className={`flex-shrink-0 w-14 h-14 rounded-xl flex flex-col items-center justify-center ${
-                          isCompleted ? 'bg-emerald-50' : 'bg-muted/50'
+                          isCompleted ? 'bg-emerald-50 dark:bg-emerald-900/30' : 'bg-muted/50'
                         }`}>
-                          <span className={`text-lg font-bold ${isCompleted ? 'text-emerald-600' : 'text-muted-foreground'}`}>
+                          <span className={`text-lg font-bold ${isCompleted ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground'}`}>
                             {format(new Date(appointment.date), 'd')}
                           </span>
-                          <span className={`text-[10px] uppercase ${isCompleted ? 'text-emerald-600/70' : 'text-muted-foreground/70'}`}>
+                          <span className={`text-[10px] uppercase ${isCompleted ? 'text-emerald-600/70 dark:text-emerald-400/70' : 'text-muted-foreground/70'}`}>
                             {format(new Date(appointment.date), 'MMM', { locale: uk })}
                           </span>
                         </div>

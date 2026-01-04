@@ -203,7 +203,7 @@ export default function CalendarView({
           {hours.map((hour) => (
             <div
               key={hour}
-              className="h-16 border-b border-dashed border-gray-200 cursor-pointer hover:bg-muted/30"
+              className="h-16 border-b border-dashed border-border cursor-pointer hover:bg-muted/30"
               onClick={() => onEmptySlotClick?.(selectedDate, `${hour}:00`)}
             />
           ))}
@@ -250,7 +250,7 @@ export default function CalendarView({
                 {hours.map((hour) => (
                   <div
                     key={hour}
-                    className="h-16 border-b border-dashed border-gray-100 cursor-pointer hover:bg-muted/30"
+                    className="h-16 border-b border-dashed border-border/50 cursor-pointer hover:bg-muted/30"
                     onClick={() => onEmptySlotClick?.(day, `${hour}:00`)}
                   />
                 ))}

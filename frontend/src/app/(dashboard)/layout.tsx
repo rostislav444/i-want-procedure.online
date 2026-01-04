@@ -3,8 +3,10 @@
 import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { Calendar, Clock, Users, Settings, LogOut, Menu, X, LinkIcon, Copy, Check, Home, Scissors, ChevronLeft, ChevronRight } from 'lucide-react'
+import Image from 'next/image'
+import { Calendar, Clock, Users, LogOut, Menu, X, LinkIcon, Copy, Check, Home, Scissors, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { ThemeSettings } from '@/components/theme-settings'
 import { authApi, companyApi } from '@/lib/api'
 
 const navigation = [
@@ -83,13 +85,28 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Mobile sidebar */}
       <div className={`fixed inset-0 z-50 lg:hidden ${sidebarOpen ? '' : 'hidden'}`}>
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
-        <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-white">
-          <div className="flex h-16 items-center justify-between px-4 border-b">
-            <span className="text-xl font-semibold">Procedure</span>
+        <div className="fixed inset-0 bg-foreground/50" onClick={() => setSidebarOpen(false)} />
+        <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-card">
+          <div className="flex h-20 items-center justify-between px-4 border-b">
+            <div className="relative h-14 w-[180px]">
+              <Image
+                src="/images/logo-light.png"
+                alt="Procedure"
+                fill
+                className="object-contain object-left dark:hidden"
+                priority
+              />
+              <Image
+                src="/images/logo-dark.png"
+                alt="Procedure"
+                fill
+                className="object-contain object-left hidden dark:block"
+                priority
+              />
+            </div>
             <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)}>
               <X className="h-5 w-5" />
             </Button>
@@ -101,8 +118,8 @@ export default function DashboardLayout({
                 href={item.href}
                 className={`flex items-center px-4 py-2 text-sm font-medium rounded-md ${
                   pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))
-                    ? 'bg-primary text-white'
-                    : 'text-gray-600 hover:bg-gray-100'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-muted'
                 }`}
                 onClick={() => setSidebarOpen(false)}
               >
@@ -114,7 +131,7 @@ export default function DashboardLayout({
           {/* Mobile Invite Link */}
           {company && (
             <div className="border-t p-4">
-              <div className="mb-2 flex items-center text-sm font-medium text-gray-700">
+              <div className="mb-2 flex items-center text-sm font-medium text-foreground">
                 <LinkIcon className="mr-2 h-4 w-4" />
                 Посилання для клієнтів
               </div>
@@ -123,7 +140,7 @@ export default function DashboardLayout({
                   type="text"
                   readOnly
                   value={inviteLink}
-                  className="flex-1 text-xs bg-gray-50 border rounded px-2 py-1.5 truncate"
+                  className="flex-1 text-xs bg-muted border rounded px-2 py-1.5 truncate"
                 />
                 <Button variant="outline" size="icon" onClick={copyLink} className="shrink-0">
                   {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
@@ -131,30 +148,49 @@ export default function DashboardLayout({
               </div>
             </div>
           )}
+          {/* Mobile Theme Settings */}
+          <div className="border-t p-4">
+            <ThemeSettings />
+          </div>
         </div>
       </div>
 
       {/* Desktop sidebar */}
       <div className={`hidden lg:fixed lg:inset-y-0 lg:flex lg:flex-col transition-all duration-300 ${sidebarCollapsed ? 'lg:w-16' : 'lg:w-64'}`}>
-        <div className="flex flex-col flex-1 bg-white border-r">
-          <div className={`flex h-16 items-center border-b ${sidebarCollapsed ? 'justify-center px-2' : 'px-4 justify-between'}`}>
+        <div className="flex flex-col flex-1 bg-card border-r">
+          <div className={`flex h-20 items-center border-b ${sidebarCollapsed ? 'justify-center px-2' : 'px-4 justify-between'}`}>
             {sidebarCollapsed ? (
               <button
                 onClick={toggleSidebarCollapsed}
-                className="p-2 rounded-md hover:bg-gray-100 transition-colors"
+                className="p-2 rounded-md hover:bg-muted transition-colors"
                 title="Розгорнути"
               >
-                <ChevronRight className="h-5 w-5 text-gray-500" />
+                <ChevronRight className="h-5 w-5 text-muted-foreground" />
               </button>
             ) : (
               <>
-                <span className="text-xl font-semibold">Procedure</span>
+                <div className="relative h-14 w-[200px]">
+                  <Image
+                    src="/images/logo-light.png"
+                    alt="Procedure"
+                    fill
+                    className="object-contain object-left dark:hidden"
+                    priority
+                  />
+                  <Image
+                    src="/images/logo-dark.png"
+                    alt="Procedure"
+                    fill
+                    className="object-contain object-left hidden dark:block"
+                    priority
+                  />
+                </div>
                 <button
                   onClick={toggleSidebarCollapsed}
-                  className="p-2 rounded-md hover:bg-gray-100 transition-colors"
+                  className="p-1 rounded-md hover:bg-muted transition-colors"
                   title="Згорнути"
                 >
-                  <ChevronLeft className="h-5 w-5 text-gray-500" />
+                  <ChevronLeft className="h-5 w-5 text-muted-foreground" />
                 </button>
               </>
             )}
@@ -168,8 +204,8 @@ export default function DashboardLayout({
                   sidebarCollapsed ? 'justify-center px-2' : 'px-4'
                 } ${
                   pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))
-                    ? 'bg-primary text-white'
-                    : 'text-gray-600 hover:bg-gray-100'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-muted'
                 }`}
                 title={sidebarCollapsed ? item.name : undefined}
               >
@@ -182,7 +218,7 @@ export default function DashboardLayout({
           {/* Invite Link Section */}
           {company && !sidebarCollapsed && (
             <div className="border-t p-4">
-              <div className="mb-2 flex items-center text-sm font-medium text-gray-700">
+              <div className="mb-2 flex items-center text-sm font-medium text-foreground">
                 <LinkIcon className="mr-2 h-4 w-4" />
                 Посилання для клієнтів
               </div>
@@ -191,13 +227,13 @@ export default function DashboardLayout({
                   type="text"
                   readOnly
                   value={inviteLink}
-                  className="flex-1 text-xs bg-gray-50 border rounded px-2 py-1.5 truncate"
+                  className="flex-1 text-xs bg-muted border rounded px-2 py-1.5 truncate"
                 />
                 <Button variant="outline" size="icon" onClick={copyLink} className="shrink-0">
                   {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
                 </Button>
               </div>
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-muted-foreground">
                 Поділіться цим посиланням з клієнтами
               </p>
             </div>
@@ -212,11 +248,16 @@ export default function DashboardLayout({
             </div>
           )}
 
+          {/* Theme Settings */}
+          <div className={`border-t ${sidebarCollapsed ? 'p-2' : 'p-4'}`}>
+            <ThemeSettings collapsed={sidebarCollapsed} />
+          </div>
+
           <div className={`border-t ${sidebarCollapsed ? 'p-2' : 'p-4'}`}>
             {sidebarCollapsed ? (
               <div className="flex flex-col items-center gap-2">
                 <Link href="/profile" title={`${user.first_name} ${user.last_name}`}>
-                  <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium">
+                  <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
                     {user.first_name?.[0]}{user.last_name?.[0]}
                   </div>
                 </Link>
@@ -226,9 +267,9 @@ export default function DashboardLayout({
               </div>
             ) : (
               <div className="flex items-center">
-                <Link href="/profile" className="flex-1 hover:bg-gray-50 -m-2 p-2 rounded-md">
+                <Link href="/profile" className="flex-1 hover:bg-muted -m-2 p-2 rounded-md">
                   <p className="text-sm font-medium">{user.first_name} {user.last_name}</p>
-                  <p className="text-xs text-gray-500">{user.email}</p>
+                  <p className="text-xs text-muted-foreground">{user.email}</p>
                 </Link>
                 <Button variant="ghost" size="icon" onClick={handleLogout}>
                   <LogOut className="h-5 w-5" />
@@ -242,11 +283,26 @@ export default function DashboardLayout({
 
       {/* Main content */}
       <div className={`transition-all duration-300 ${sidebarCollapsed ? 'lg:pl-16' : 'lg:pl-64'}`}>
-        <div className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-white px-4 lg:hidden">
+        <div className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-card px-4 lg:hidden">
           <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)}>
             <Menu className="h-5 w-5" />
           </Button>
-          <span className="text-lg font-semibold">Procedure</span>
+          <div className="relative h-10 w-[150px]">
+            <Image
+              src="/images/logo-light.png"
+              alt="Procedure"
+              fill
+              className="object-contain object-left dark:hidden"
+              priority
+            />
+            <Image
+              src="/images/logo-dark.png"
+              alt="Procedure"
+              fill
+              className="object-contain object-left hidden dark:block"
+              priority
+            />
+          </div>
         </div>
         <main className="p-4 lg:p-8">
           {children}

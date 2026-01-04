@@ -1,3 +1,4 @@
+import re
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
@@ -12,6 +13,31 @@ from app.schemas.user import UserResponse, UserUpdate
 router = APIRouter(prefix="/auth")
 
 
+def generate_slug(name: str) -> str:
+    """Generate URL-friendly slug from company name"""
+    try:
+        import transliterate
+        slug = transliterate.translit(name, 'uk', reversed=True)
+    except:
+        slug = name
+    slug = slug.lower()
+    slug = re.sub(r'[^a-z0-9]+', '-', slug)
+    slug = slug.strip('-')
+    return slug or 'company'
+
+
+async def get_unique_slug(db: DbSession, base_slug: str) -> str:
+    """Generate unique slug by appending number if needed"""
+    slug = base_slug
+    counter = 1
+    while True:
+        result = await db.execute(select(Company).where(Company.slug == slug))
+        if not result.scalar_one_or_none():
+            return slug
+        slug = f"{base_slug}-{counter}"
+        counter += 1
+
+
 @router.post("/register", response_model=UserResponse)
 async def register(user_data: UserCreate, db: DbSession):
     # Check if email already exists
@@ -22,9 +48,13 @@ async def register(user_data: UserCreate, db: DbSession):
             detail="Email already registered",
         )
 
-    # Create company
+    # Create company with unique slug
+    base_slug = generate_slug(user_data.company_name)
+    slug = await get_unique_slug(db, base_slug)
+
     company = Company(
         name=user_data.company_name,
+        slug=slug,
         type=user_data.company_type,
     )
     db.add(company)

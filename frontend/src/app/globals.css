@@ -47,6 +47,238 @@
     --input: 217.2 32.6% 17.5%;
     --ring: 224.3 76.3% 48%;
   }
+
+  /* ========================================
+     ACCENT COLORS (slightly more saturated)
+     ======================================== */
+
+  /* Blue (default) */
+  :root[data-accent="blue"],
+  :root:not([data-accent]) {
+    --primary: 215 70% 50%;
+    --primary-foreground: 210 40% 98%;
+    --ring: 215 70% 50%;
+  }
+  .dark[data-accent="blue"],
+  .dark:not([data-accent]) {
+    --primary: 215 65% 60%;
+    --primary-foreground: 220 30% 10%;
+    --ring: 215 65% 60%;
+  }
+
+  /* Violet */
+  :root[data-accent="violet"] {
+    --primary: 260 60% 55%;
+    --primary-foreground: 210 40% 98%;
+    --ring: 260 60% 55%;
+  }
+  .dark[data-accent="violet"] {
+    --primary: 260 55% 65%;
+    --primary-foreground: 260 30% 10%;
+    --ring: 260 55% 65%;
+  }
+
+  /* Pink */
+  :root[data-accent="pink"] {
+    --primary: 340 60% 60%;
+    --primary-foreground: 210 40% 98%;
+    --ring: 340 60% 60%;
+  }
+  .dark[data-accent="pink"] {
+    --primary: 340 55% 68%;
+    --primary-foreground: 340 30% 10%;
+    --ring: 340 55% 68%;
+  }
+
+  /* Red/Coral */
+  :root[data-accent="red"] {
+    --primary: 10 65% 55%;
+    --primary-foreground: 210 40% 98%;
+    --ring: 10 65% 55%;
+  }
+  .dark[data-accent="red"] {
+    --primary: 10 60% 60%;
+    --primary-foreground: 10 30% 10%;
+    --ring: 10 60% 60%;
+  }
+
+  /* Orange/Amber */
+  :root[data-accent="orange"] {
+    --primary: 30 70% 50%;
+    --primary-foreground: 210 40% 98%;
+    --ring: 30 70% 50%;
+  }
+  .dark[data-accent="orange"] {
+    --primary: 35 65% 58%;
+    --primary-foreground: 30 30% 10%;
+    --ring: 35 65% 58%;
+  }
+
+  /* Green/Sage */
+  :root[data-accent="green"] {
+    --primary: 150 50% 42%;
+    --primary-foreground: 210 40% 98%;
+    --ring: 150 50% 42%;
+  }
+  .dark[data-accent="green"] {
+    --primary: 150 50% 52%;
+    --primary-foreground: 150 30% 10%;
+    --ring: 150 50% 52%;
+  }
+
+  /* Teal */
+  :root[data-accent="teal"] {
+    --primary: 175 55% 40%;
+    --primary-foreground: 210 40% 98%;
+    --ring: 175 55% 40%;
+  }
+  .dark[data-accent="teal"] {
+    --primary: 175 55% 50%;
+    --primary-foreground: 175 30% 10%;
+    --ring: 175 55% 50%;
+  }
+
+  /* ========================================
+     BACKGROUND COLORS - LIGHT THEME
+     ======================================== */
+
+  /* White (default) */
+  :root[data-bg="white"],
+  :root:not([data-bg]) {
+    --background: 0 0% 100%;
+    --card: 0 0% 100%;
+    --popover: 0 0% 100%;
+    --secondary: 210 40% 96.1%;
+    --muted: 210 40% 96.1%;
+    --accent: 210 40% 96.1%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+  }
+
+  /* Warm Cream */
+  :root[data-bg="cream"] {
+    --background: 40 30% 97%;
+    --card: 40 25% 99%;
+    --popover: 40 25% 99%;
+    --secondary: 35 25% 93%;
+    --muted: 35 25% 93%;
+    --accent: 35 25% 93%;
+    --border: 35 20% 88%;
+    --input: 35 20% 88%;
+  }
+
+  /* Cool Gray */
+  :root[data-bg="gray"] {
+    --background: 220 14% 96%;
+    --card: 220 14% 99%;
+    --popover: 220 14% 99%;
+    --secondary: 220 13% 91%;
+    --muted: 220 13% 91%;
+    --accent: 220 13% 91%;
+    --border: 220 13% 86%;
+    --input: 220 13% 86%;
+  }
+
+  /* Soft Mint */
+  :root[data-bg="mint"] {
+    --background: 150 20% 96%;
+    --card: 150 15% 99%;
+    --popover: 150 15% 99%;
+    --secondary: 150 18% 92%;
+    --muted: 150 18% 92%;
+    --accent: 150 18% 92%;
+    --border: 150 15% 87%;
+    --input: 150 15% 87%;
+  }
+
+  /* ========================================
+     BACKGROUND COLORS - DARK THEME
+     ======================================== */
+
+  /* Dark Blue (default) */
+  .dark[data-bg="blue"],
+  .dark:not([data-bg]) {
+    --background: 222.2 84% 4.9%;
+    --card: 222.2 47% 8%;
+    --popover: 222.2 47% 8%;
+    --secondary: 217.2 32.6% 14%;
+    --muted: 217.2 32.6% 14%;
+    --accent: 217.2 32.6% 14%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+  }
+
+  /* Graphite */
+  .dark[data-bg="graphite"] {
+    --background: 0 0% 7%;
+    --card: 0 0% 10%;
+    --popover: 0 0% 10%;
+    --secondary: 0 0% 14%;
+    --muted: 0 0% 14%;
+    --accent: 0 0% 14%;
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --foreground: 0 0% 95%;
+    --card-foreground: 0 0% 95%;
+    --popover-foreground: 0 0% 95%;
+    --secondary-foreground: 0 0% 95%;
+    --muted-foreground: 0 0% 65%;
+    --accent-foreground: 0 0% 95%;
+  }
+
+  /* Wood Brown */
+  .dark[data-bg="wood"] {
+    --background: 25 20% 8%;
+    --card: 25 18% 11%;
+    --popover: 25 18% 11%;
+    --secondary: 25 15% 15%;
+    --muted: 25 15% 15%;
+    --accent: 25 15% 15%;
+    --border: 25 12% 20%;
+    --input: 25 12% 20%;
+    --foreground: 35 20% 92%;
+    --card-foreground: 35 20% 92%;
+    --popover-foreground: 35 20% 92%;
+    --secondary-foreground: 35 20% 92%;
+    --muted-foreground: 30 15% 60%;
+    --accent-foreground: 35 20% 92%;
+  }
+
+  /* Jade/Nephrite */
+  .dark[data-bg="jade"] {
+    --background: 160 25% 7%;
+    --card: 160 22% 10%;
+    --popover: 160 22% 10%;
+    --secondary: 160 18% 14%;
+    --muted: 160 18% 14%;
+    --accent: 160 18% 14%;
+    --border: 160 15% 18%;
+    --input: 160 15% 18%;
+    --foreground: 150 15% 92%;
+    --card-foreground: 150 15% 92%;
+    --popover-foreground: 150 15% 92%;
+    --secondary-foreground: 150 15% 92%;
+    --muted-foreground: 155 12% 58%;
+    --accent-foreground: 150 15% 92%;
+  }
+
+  /* Pure Black */
+  .dark[data-bg="black"] {
+    --background: 0 0% 3%;
+    --card: 0 0% 6%;
+    --popover: 0 0% 6%;
+    --secondary: 0 0% 10%;
+    --muted: 0 0% 10%;
+    --accent: 0 0% 10%;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --foreground: 0 0% 98%;
+    --card-foreground: 0 0% 98%;
+    --popover-foreground: 0 0% 98%;
+    --secondary-foreground: 0 0% 98%;
+    --muted-foreground: 0 0% 65%;
+    --accent-foreground: 0 0% 98%;
+  }
 }
 
 @layer base {

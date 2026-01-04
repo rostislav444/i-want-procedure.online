@@ -35,17 +35,17 @@ interface Appointment {
 }
 
 const STATUS_COLORS = {
-  pending: 'bg-yellow-100',
-  confirmed: 'bg-green-100',
-  cancelled: 'bg-red-100',
-  completed: 'bg-gray-100',
+  pending: 'bg-amber-100 dark:bg-amber-900/30',
+  confirmed: 'bg-emerald-100 dark:bg-emerald-900/30',
+  cancelled: 'bg-red-100 dark:bg-red-900/30',
+  completed: 'bg-muted',
 }
 
 const STATUS_BG = {
-  pending: 'bg-yellow-500',
-  confirmed: 'bg-green-500',
+  pending: 'bg-amber-500',
+  confirmed: 'bg-emerald-500',
   cancelled: 'bg-red-500',
-  completed: 'bg-gray-500',
+  completed: 'bg-muted-foreground',
 }
 
 const STATUS_LABELS = {

@@ -174,7 +174,7 @@ export default function ServiceDetailPage() {
           </Link>
           <div>
             <h1 className="text-2xl font-bold">{service.name}</h1>
-            <p className="text-gray-500">
+            <p className="text-muted-foreground">
               {service.duration_minutes} хв • {service.price} грн
             </p>
           </div>
@@ -240,7 +240,7 @@ export default function ServiceDetailPage() {
                 <Label htmlFor="description">Опис</Label>
                 <textarea
                   id="description"
-                  className="w-full min-h-[100px] px-3 py-2 border rounded-md text-sm"
+                  className="w-full min-h-[100px] px-3 py-2 border rounded-md text-sm bg-background"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Детальний опис процедури..."
@@ -273,27 +273,27 @@ export default function ServiceDetailPage() {
           ) : (
             <div className="space-y-4">
               {service.description ? (
-                <p className="text-gray-700 whitespace-pre-wrap">{service.description}</p>
+                <p className="text-foreground whitespace-pre-wrap">{service.description}</p>
               ) : (
-                <p className="text-gray-400 italic">Опис не вказано</p>
+                <p className="text-muted-foreground italic">Опис не вказано</p>
               )}
               <div className="flex flex-wrap gap-6 pt-4 border-t">
                 <div>
-                  <p className="text-sm text-gray-500">Категорія</p>
+                  <p className="text-sm text-muted-foreground">Категорія</p>
                   <p className="font-medium flex items-center gap-1">
                     <Folder className="h-4 w-4" />
-                    {service.category?.name || <span className="text-gray-400 italic">Без категорії</span>}
+                    {service.category?.name || <span className="text-muted-foreground italic">Без категорії</span>}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Тривалість</p>
+                  <p className="text-sm text-muted-foreground">Тривалість</p>
                   <p className="font-medium flex items-center gap-1">
                     <Clock className="h-4 w-4" />
                     {service.duration_minutes} хв
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Ціна</p>
+                  <p className="text-sm text-muted-foreground">Ціна</p>
                   <p className="font-semibold text-lg text-primary">{service.price} грн</p>
                 </div>
               </div>
@@ -316,7 +316,7 @@ export default function ServiceDetailPage() {
         </CardHeader>
         <CardContent>
           {showNewStep && (
-            <div className="mb-4 p-4 border rounded-lg bg-gray-50">
+            <div className="mb-4 p-4 border rounded-lg bg-muted/50">
               <div className="grid gap-3">
                 <Input
                   placeholder="Назва етапу"
@@ -324,7 +324,7 @@ export default function ServiceDetailPage() {
                   onChange={(e) => setNewStep({ ...newStep, title: e.target.value })}
                 />
                 <textarea
-                  className="w-full px-3 py-2 border rounded-md text-sm"
+                  className="w-full px-3 py-2 border rounded-md text-sm bg-background"
                   placeholder="Опис етапу (необов'язково)"
                   value={newStep.description}
                   onChange={(e) => setNewStep({ ...newStep, description: e.target.value })}
@@ -337,7 +337,7 @@ export default function ServiceDetailPage() {
                     value={newStep.duration_minutes || ''}
                     onChange={(e) => setNewStep({ ...newStep, duration_minutes: parseInt(e.target.value) || 0 })}
                   />
-                  <span className="text-sm text-gray-500">хв</span>
+                  <span className="text-sm text-muted-foreground">хв</span>
                 </div>
                 <div className="flex gap-2">
                   <Button size="sm" onClick={handleAddStep}>Додати</Button>
@@ -357,16 +357,16 @@ export default function ServiceDetailPage() {
                   <div className="flex-1">
                     <h4 className="font-medium">{step.title}</h4>
                     {step.description && (
-                      <p className="text-sm text-gray-500 mt-1">{step.description}</p>
+                      <p className="text-sm text-muted-foreground mt-1">{step.description}</p>
                     )}
                     {step.duration_minutes && (
-                      <p className="text-xs text-gray-400 mt-1">{step.duration_minutes} хв</p>
+                      <p className="text-xs text-muted-foreground/70 mt-1">{step.duration_minutes} хв</p>
                     )}
                   </div>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="text-gray-400 hover:text-red-500"
+                    className="text-muted-foreground hover:text-red-500"
                     onClick={() => step.id && handleDeleteStep(step.id)}
                   >
                     <X className="h-4 w-4" />
@@ -375,7 +375,7 @@ export default function ServiceDetailPage() {
               ))}
             </div>
           ) : (
-            <p className="text-gray-400 text-center py-4">Етапи не додано</p>
+            <p className="text-muted-foreground text-center py-4">Етапи не додано</p>
           )}
         </CardContent>
       </Card>
@@ -394,7 +394,7 @@ export default function ServiceDetailPage() {
         </CardHeader>
         <CardContent>
           {showNewProduct && (
-            <div className="mb-4 p-4 border rounded-lg bg-gray-50">
+            <div className="mb-4 p-4 border rounded-lg bg-muted/50">
               <div className="grid gap-3">
                 <Input
                   placeholder="Назва препарату"
@@ -407,7 +407,7 @@ export default function ServiceDetailPage() {
                   onChange={(e) => setNewProduct({ ...newProduct, manufacturer: e.target.value })}
                 />
                 <textarea
-                  className="w-full px-3 py-2 border rounded-md text-sm"
+                  className="w-full px-3 py-2 border rounded-md text-sm bg-background"
                   placeholder="Опис (необов'язково)"
                   value={newProduct.description}
                   onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
@@ -424,22 +424,22 @@ export default function ServiceDetailPage() {
             <div className="grid gap-3">
               {service.products.map((product) => (
                 <div key={product.id} className="flex items-start gap-3 p-3 border rounded-lg">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 text-purple-600">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-violet-500/10 text-violet-500 dark:bg-violet-400/20 dark:text-violet-400">
                     <Package className="h-4 w-4" />
                   </div>
                   <div className="flex-1">
                     <h4 className="font-medium">{product.name}</h4>
                     {product.manufacturer && (
-                      <p className="text-sm text-gray-500">{product.manufacturer}</p>
+                      <p className="text-sm text-muted-foreground">{product.manufacturer}</p>
                     )}
                     {product.description && (
-                      <p className="text-sm text-gray-400 mt-1">{product.description}</p>
+                      <p className="text-sm text-muted-foreground/70 mt-1">{product.description}</p>
                     )}
                   </div>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="text-gray-400 hover:text-red-500"
+                    className="text-muted-foreground hover:text-red-500"
                     onClick={() => product.id && handleDeleteProduct(product.id)}
                   >
                     <X className="h-4 w-4" />
@@ -448,7 +448,7 @@ export default function ServiceDetailPage() {
               ))}
             </div>
           ) : (
-            <p className="text-gray-400 text-center py-4">Препарати не додано</p>
+            <p className="text-muted-foreground text-center py-4">Препарати не додано</p>
           )}
         </CardContent>
       </Card>

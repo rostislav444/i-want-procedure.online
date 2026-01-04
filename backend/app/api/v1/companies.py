@@ -1,11 +1,11 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from app.api.deps import DbSession, CurrentUser
 from app.models.company import Company
 from app.models.user import User
-from app.schemas.company import CompanyResponse
+from app.schemas.company import CompanyResponse, CompanyUpdate
 from app.schemas.user import UserResponse
 
 router = APIRouter(prefix="/companies")
@@ -17,6 +17,26 @@ async def get_my_company(current_user: CurrentUser, db: DbSession):
         select(Company).where(Company.id == current_user.company_id)
     )
     return result.scalar_one()
+
+
+@router.patch("/me", response_model=CompanyResponse)
+async def update_my_company(
+    company_data: CompanyUpdate,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    result = await db.execute(
+        select(Company).where(Company.id == current_user.company_id)
+    )
+    company = result.scalar_one()
+
+    update_data = company_data.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(company, field, value)
+
+    await db.commit()
+    await db.refresh(company)
+    return company
 
 
 @router.get("/me/doctors", response_model=list[UserResponse])

@@ -235,7 +235,7 @@ export default function ServicesPage() {
               {service.name}
             </h3>
             {!service.is_active && (
-              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded flex-shrink-0">
+              <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded flex-shrink-0">
                 Неактивна
               </span>
             )}
@@ -282,7 +282,7 @@ export default function ServicesPage() {
         <div
           className={`
             flex items-center gap-2 py-3 px-4 rounded-lg cursor-pointer group
-            ${level === 0 ? 'bg-white border shadow-sm' : 'hover:bg-muted/50'}
+            ${level === 0 ? 'bg-card border shadow-sm' : 'hover:bg-muted/50'}
           `}
           onClick={() => toggleCategory(category.id)}
         >
@@ -392,7 +392,7 @@ export default function ServicesPage() {
       {/* Category Panel - fixed full height */}
       {categoryPanelOpen && (
         <div
-          className={`fixed top-0 h-screen w-64 bg-white border-r flex flex-col z-40 transition-all duration-300 ${sidebarCollapsed ? 'lg:left-16' : 'lg:left-64'} left-0`}
+          className={`fixed top-0 h-screen w-64 bg-card border-r flex flex-col z-40 transition-all duration-300 ${sidebarCollapsed ? 'lg:left-16' : 'lg:left-64'} left-0`}
         >
           <div className="flex items-center justify-between p-4 border-b flex-shrink-0">
             <h2 className="font-semibold">Категорії</h2>
@@ -491,7 +491,7 @@ export default function ServicesPage() {
                 }}
               >
                 <div
-                  className="flex items-center gap-2 py-3 px-4 rounded-lg cursor-pointer group bg-white border shadow-sm"
+                  className="flex items-center gap-2 py-3 px-4 rounded-lg cursor-pointer group bg-card border shadow-sm"
                   onClick={() => toggleCategory(-1)}
                 >
                   <button className="p-0.5">
