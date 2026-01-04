@@ -45,10 +45,10 @@ interface Appointment {
 }
 
 const EXCEPTION_TYPES: { value: ScheduleExceptionType; label: string; shortLabel: string; icon: React.ReactNode; bgClass: string; borderClass: string; textClass: string }[] = [
-  { value: 'day_off', label: 'Вихідний', shortLabel: 'Вих', icon: <Coffee className="h-4 w-4" />, bgClass: 'bg-red-100', borderClass: 'bg-red-500', textClass: 'text-red-900' },
-  { value: 'modified', label: 'Змінений графік', shortLabel: 'Зм', icon: <Clock className="h-4 w-4" />, bgClass: 'bg-amber-100', borderClass: 'bg-amber-500', textClass: 'text-amber-900' },
-  { value: 'working', label: 'Робочий день', shortLabel: 'Роб', icon: <Briefcase className="h-4 w-4" />, bgClass: 'bg-emerald-100', borderClass: 'bg-emerald-500', textClass: 'text-emerald-900' },
-  { value: 'break', label: 'Перерва', shortLabel: 'Пер', icon: <PauseCircle className="h-4 w-4" />, bgClass: 'bg-orange-100', borderClass: 'bg-orange-500', textClass: 'text-orange-900' },
+  { value: 'day_off', label: 'Вихідний', shortLabel: 'Вих', icon: <Coffee className="h-4 w-4" />, bgClass: 'bg-red-100 dark:bg-red-950', borderClass: 'bg-red-500', textClass: 'text-red-900 dark:text-red-200' },
+  { value: 'modified', label: 'Змінений графік', shortLabel: 'Зм', icon: <Clock className="h-4 w-4" />, bgClass: 'bg-amber-100 dark:bg-amber-950', borderClass: 'bg-amber-500', textClass: 'text-amber-900 dark:text-amber-200' },
+  { value: 'working', label: 'Робочий день', shortLabel: 'Роб', icon: <Briefcase className="h-4 w-4" />, bgClass: 'bg-emerald-100 dark:bg-emerald-950', borderClass: 'bg-emerald-500', textClass: 'text-emerald-900 dark:text-emerald-200' },
+  { value: 'break', label: 'Перерва', shortLabel: 'Пер', icon: <PauseCircle className="h-4 w-4" />, bgClass: 'bg-orange-100 dark:bg-orange-950', borderClass: 'bg-orange-500', textClass: 'text-orange-900 dark:text-orange-200' },
 ]
 
 export default function SchedulePage() {
@@ -202,9 +202,9 @@ export default function SchedulePage() {
           end_time: appt.end_time,
           title: appt.service?.name || 'Запис',
           subtitle: appt.client ? `${appt.client.first_name} ${appt.client.last_name || ''}`.trim() : undefined,
-          color: 'bg-blue-50',
-          borderColor: 'bg-blue-300',
-          textColor: 'text-blue-600',
+          color: 'bg-blue-50 dark:bg-blue-950',
+          borderColor: 'bg-blue-400 dark:bg-blue-500',
+          textColor: 'text-blue-700 dark:text-blue-300',
           opacity: 50, // Shadow opacity
         })
       })
@@ -355,7 +355,7 @@ export default function SchedulePage() {
     <div className="flex h-[calc(100vh-120px)] gap-6">
       {/* Left: Weekly Schedule & Legend */}
       <div className="w-64 flex-shrink-0 space-y-4">
-        <div className="bg-white rounded-xl border p-4">
+        <div className="bg-card rounded-xl border p-4">
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm font-medium">Стандартний розклад</span>
             <Button onClick={handleSaveSchedule} disabled={saving} size="sm" variant={saved ? "outline" : "default"} className="h-7 px-2 text-xs">
@@ -369,16 +369,16 @@ export default function SchedulePage() {
                 <div
                   key={day.id}
                   className={`flex items-center gap-2 py-1.5 px-2 rounded transition-colors ${
-                    schedule.is_working_day ? 'hover:bg-gray-50' : 'opacity-50'
+                    schedule.is_working_day ? 'hover:bg-muted/50' : 'opacity-50'
                   }`}
                 >
                   <input
                     type="checkbox"
                     checked={schedule.is_working_day}
                     onChange={(e) => updateSchedule(day.id, 'is_working_day', e.target.checked)}
-                    className="w-3.5 h-3.5 rounded border-gray-300"
+                    className="w-3.5 h-3.5 rounded border-muted-foreground/30"
                   />
-                  <span className={`w-6 text-xs ${schedule.is_working_day ? 'font-medium' : 'text-gray-400'}`}>
+                  <span className={`w-6 text-xs ${schedule.is_working_day ? 'font-medium' : 'text-muted-foreground'}`}>
                     {day.name}
                   </span>
                   <input
@@ -386,15 +386,15 @@ export default function SchedulePage() {
                     value={schedule.start_time}
                     onChange={(e) => updateSchedule(day.id, 'start_time', e.target.value)}
                     disabled={!schedule.is_working_day}
-                    className="h-6 w-[72px] text-xs px-1.5 border rounded disabled:opacity-40"
+                    className="h-6 w-[72px] text-xs px-1.5 border rounded bg-background disabled:opacity-40"
                   />
-                  <span className="text-gray-300 text-xs">—</span>
+                  <span className="text-muted-foreground/50 text-xs">—</span>
                   <input
                     type="time"
                     value={schedule.end_time}
                     onChange={(e) => updateSchedule(day.id, 'end_time', e.target.value)}
                     disabled={!schedule.is_working_day}
-                    className="h-6 w-[72px] text-xs px-1.5 border rounded disabled:opacity-40"
+                    className="h-6 w-[72px] text-xs px-1.5 border rounded bg-background disabled:opacity-40"
                   />
                 </div>
               )
@@ -403,18 +403,18 @@ export default function SchedulePage() {
         </div>
 
         {/* Legend */}
-        <div className="bg-white rounded-xl border p-4">
+        <div className="bg-card rounded-xl border p-4">
           <span className="text-sm font-medium">Легенда</span>
           <div className="mt-3 space-y-2">
             {EXCEPTION_TYPES.map((type) => (
               <div key={type.value} className="flex items-center gap-2">
                 <div className={`w-3 h-3 rounded ${type.borderClass}`} />
-                <span className="text-xs text-gray-600">{type.label}</span>
+                <span className="text-xs text-muted-foreground">{type.label}</span>
               </div>
             ))}
             <div className="flex items-center gap-2 pt-2 border-t">
-              <div className="w-3 h-3 rounded bg-blue-300 opacity-50" />
-              <span className="text-xs text-gray-600">Записи клієнтів</span>
+              <div className="w-3 h-3 rounded bg-blue-400 dark:bg-blue-500 opacity-50" />
+              <span className="text-xs text-muted-foreground">Записи клієнтів</span>
             </div>
           </div>
         </div>
@@ -516,7 +516,7 @@ export default function SchedulePage() {
                         p-3 rounded-xl flex items-center gap-2 transition-all text-left border
                         ${exceptionType === type.value
                           ? `${type.bgClass} ${type.textClass} border-current shadow-sm`
-                          : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border-transparent'
+                          : 'bg-muted text-muted-foreground hover:bg-muted/80 border-transparent'
                         }
                       `}
                     >
@@ -560,7 +560,7 @@ export default function SchedulePage() {
 
             {/* Show warning if there are appointments */}
             {dialogDate && appointments.filter(a => a.date === format(dialogDate, 'yyyy-MM-dd') && a.status !== 'cancelled').length > 0 && (
-              <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
+              <div className="p-3 bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded-lg text-sm text-yellow-800 dark:text-yellow-200">
                 На цей день є записи клієнтів. Додавання виключення не скасує їх автоматично.
               </div>
             )}

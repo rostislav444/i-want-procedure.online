@@ -131,14 +131,6 @@ export function ThemeSettings({ collapsed }: ThemeSettingsProps) {
   if (collapsed) {
     return (
       <div className="flex flex-col items-center gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleTheme}
-          title={isDark ? 'Світла тема' : 'Темна тема'}
-        >
-          {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-        </Button>
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="ghost" size="icon" title="Кольори">
@@ -149,12 +141,30 @@ export function ThemeSettings({ collapsed }: ThemeSettingsProps) {
             {colorPickerContent}
           </PopoverContent>
         </Popover>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleTheme}
+          title={isDark ? 'Світла тема' : 'Темна тема'}
+        >
+          {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+        </Button>
       </div>
     )
   }
 
   return (
     <div className="flex items-center gap-2">
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button variant="ghost" size="icon" title="Кольори">
+            <Palette className="h-4 w-4" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent side="top" align="start" className="w-56">
+          {colorPickerContent}
+        </PopoverContent>
+      </Popover>
       <Button
         variant="ghost"
         size="sm"
@@ -165,16 +175,6 @@ export function ThemeSettings({ collapsed }: ThemeSettingsProps) {
         {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
         <span>{isDark ? 'Світла' : 'Темна'}</span>
       </Button>
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="ghost" size="icon" title="Кольори">
-            <Palette className="h-4 w-4" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent side="top" align="end" className="w-56">
-          {colorPickerContent}
-        </PopoverContent>
-      </Popover>
     </div>
   )
 }
