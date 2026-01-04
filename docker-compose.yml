@@ -34,37 +34,37 @@ services:
     env_file:
       - ./backend/.env
 
-  client-bot:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: procedure_client_bot
-    command: python -m bots.client_bot.main
-    volumes:
-      - ./backend:/app
-    environment:
-      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/procedure
-    depends_on:
-      db:
-        condition: service_healthy
-    env_file:
-      - ./backend/.env
+  # client-bot:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   container_name: procedure_client_bot
+  #   command: python -m bots.client_bot.main
+  #   volumes:
+  #     - ./backend:/app
+  #   environment:
+  #     - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/procedure
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #   env_file:
+  #     - ./backend/.env
 
-  doctor-bot:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: procedure_doctor_bot
-    command: python -m bots.doctor_bot.main
-    volumes:
-      - ./backend:/app
-    environment:
-      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/procedure
-    depends_on:
-      db:
-        condition: service_healthy
-    env_file:
-      - ./backend/.env
+  # doctor-bot:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   container_name: procedure_doctor_bot
+  #   command: python -m bots.doctor_bot.main
+  #   volumes:
+  #     - ./backend:/app
+  #   environment:
+  #     - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/procedure
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #   env_file:
+  #     - ./backend/.env
 
 volumes:
   postgres_data:

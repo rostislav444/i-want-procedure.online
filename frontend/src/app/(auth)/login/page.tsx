@@ -21,7 +21,14 @@ export default function LoginPage() {
       const data = await authApi.telegramLogin(user)
       localStorage.setItem('token', data.access_token)
       document.cookie = `token=${data.access_token}; path=/; max-age=${60 * 60 * 24 * 7}`
-      router.push('/services')
+
+      // Check if user has a company
+      const me = await authApi.getMe()
+      if (!me.company_id) {
+        router.push('/create-company')
+      } else {
+        router.push('/')
+      }
     } catch (err: any) {
       const detail = err.response?.data?.detail
       if (detail?.includes('not found')) {

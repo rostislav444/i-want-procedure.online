@@ -7,12 +7,13 @@ from app.models.user import UserRole
 
 class UserResponse(BaseModel):
     id: int
-    company_id: int
+    company_id: Optional[int] = None
     email: Optional[EmailStr] = None
     first_name: str
     last_name: str
     patronymic: Optional[str] = None
     phone: Optional[str] = None
+    city: Optional[str] = None
     telegram_id: Optional[int] = None
     telegram_username: Optional[str] = None
     role: UserRole
@@ -28,4 +29,5 @@ class UserUpdate(BaseModel):
     last_name: Optional[str] = None
     patronymic: Optional[str] = None
     phone: Optional[str] = None
+    city: Optional[str] = None
     telegram_id: Optional[int] = None

@@ -365,4 +365,8 @@ export const companyApi = {
     const response = await api.get('/companies/me')
     return response.data
   },
+  createCompany: async (data: { name: string; type: 'solo' | 'clinic' }) => {
+    const response = await api.post('/companies/me', data)
+    return response.data
+  },
 }

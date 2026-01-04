@@ -6,7 +6,6 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user import User, UserRole
-from app.models.company import Company, CompanyType, generate_slug
 from app.core.config import settings
 from bots.doctor_bot.keyboards import (
     main_menu_keyboard,
@@ -23,21 +22,10 @@ class RegistrationStates(StatesGroup):
     waiting_for_first_name = State()
     waiting_for_last_name = State()
     waiting_for_patronymic = State()
+    waiting_for_city = State()
     waiting_for_phone = State()
     waiting_for_email = State()
     confirm_registration = State()
-
-
-async def get_unique_slug(session: AsyncSession, base_slug: str) -> str:
-    """Generate unique slug by appending number if needed"""
-    slug = base_slug
-    counter = 1
-    while True:
-        result = await session.execute(select(Company).where(Company.slug == slug))
-        if not result.scalar_one_or_none():
-            return slug
-        slug = f"{base_slug}-{counter}"
-        counter += 1
 
 
 @router.callback_query(F.data == "register_new")
@@ -129,9 +117,26 @@ async def process_patronymic(message: Message, state: FSMContext):
         patronymic = message.text.strip() if message.text else None
 
     await state.update_data(patronymic=patronymic)
+    await state.set_state(RegistrationStates.waiting_for_city)
+    await message.answer(
+        "Введіть ваше місто:",
+        reply_markup=remove_keyboard(),
+    )
+
+
+@router.message(RegistrationStates.waiting_for_city)
+async def process_city(message: Message, state: FSMContext):
+    """Process city input"""
+    city = message.text.strip() if message.text else ""
+
+    if not city or len(city) < 2:
+        await message.answer("Назва міста повинна містити мінімум 2 символи. Спробуйте ще раз:")
+        return
+
+    await state.update_data(city=city)
     await state.set_state(RegistrationStates.waiting_for_phone)
     await message.answer(
-        "Поділіться вашим номером телефону (або натисніть 'Пропустити'):",
+        "Поділіться вашим номером телефону:",
         reply_markup=contact_keyboard(),
     )
 
@@ -144,32 +149,29 @@ async def process_phone_contact(message: Message, state: FSMContext):
     await state.set_state(RegistrationStates.waiting_for_email)
     await message.answer(
         "Введіть ваш email (або натисніть 'Пропустити'):\n\n"
-        "Email потрібен для входу через веб-сайт з паролем.",
+        "Email потрібен для відновлення доступу.",
         reply_markup=skip_keyboard(),
     )
 
 
 @router.message(RegistrationStates.waiting_for_phone, F.text)
 async def process_phone_text(message: Message, state: FSMContext):
-    """Process phone as text or skip"""
-    if message.text == "Пропустити":
-        phone = None
-    else:
-        # Basic phone validation
-        phone = message.text.strip()
-        cleaned = phone.replace('+', '').replace(' ', '').replace('-', '').replace('(', '').replace(')', '')
-        if phone and not cleaned.isdigit():
-            await message.answer(
-                "Невірний формат номеру телефону. Спробуйте ще раз або натисніть 'Пропустити':",
-                reply_markup=contact_keyboard(),
-            )
-            return
+    """Process phone as text"""
+    # Basic phone validation
+    phone = message.text.strip()
+    cleaned = phone.replace('+', '').replace(' ', '').replace('-', '').replace('(', '').replace(')', '')
+    if not cleaned.isdigit() or len(cleaned) < 10:
+        await message.answer(
+            "Невірний формат номеру телефону. Натисніть кнопку 'Поділитися номером':",
+            reply_markup=contact_keyboard(),
+        )
+        return
 
     await state.update_data(phone=phone)
     await state.set_state(RegistrationStates.waiting_for_email)
     await message.answer(
         "Введіть ваш email (або натисніть 'Пропустити'):\n\n"
-        "Email потрібен для входу через веб-сайт з паролем.",
+        "Email потрібен для відновлення доступу.",
         reply_markup=skip_keyboard(),
     )
 
@@ -212,12 +214,13 @@ async def process_email(message: Message, state: FSMContext, session: AsyncSessi
     )
     if data.get('patronymic'):
         summary += f"👤 По-батькові: {data['patronymic']}\n"
-    if data.get('phone'):
-        summary += f"📱 Телефон: {data['phone']}\n"
+    summary += f"🏙 Місто: {data['city']}\n"
+    summary += f"📱 Телефон: {data['phone']}\n"
+    if data.get('telegram_username'):
+        summary += f"📲 Telegram: @{data['telegram_username']}\n"
     if email:
         summary += f"📧 Email: {email}\n"
 
-    summary += f"\n🏢 Назва компанії: {data['first_name']} {data['last_name']}\n"
     summary += "\nВсе вірно?"
 
     await message.answer(summary, reply_markup=confirm_registration_keyboard())
@@ -225,29 +228,16 @@ async def process_email(message: Message, state: FSMContext, session: AsyncSessi
 
 @router.callback_query(F.data == "confirm_registration", RegistrationStates.confirm_registration)
 async def confirm_registration(callback: CallbackQuery, state: FSMContext, session: AsyncSession):
-    """Complete registration"""
+    """Complete registration - create user without company"""
     data = await state.get_data()
 
-    # Generate company name and slug
-    company_name = f"{data['first_name']} {data['last_name']}"
-    base_slug = generate_slug(company_name)
-    slug = await get_unique_slug(session, base_slug)
-
-    # Create company
-    company = Company(
-        name=company_name,
-        slug=slug,
-        type=CompanyType.SOLO,
-    )
-    session.add(company)
-    await session.flush()
-
-    # Create user
+    # Create user WITHOUT company
     user = User(
-        company_id=company.id,
+        company_id=None,  # No company yet - will be created in admin panel
         first_name=data['first_name'],
         last_name=data['last_name'],
         patronymic=data.get('patronymic'),
+        city=data.get('city'),
         phone=data.get('phone'),
         email=data.get('email'),
         telegram_id=data['telegram_id'],
@@ -260,16 +250,19 @@ async def confirm_registration(callback: CallbackQuery, state: FSMContext, sessi
 
     await state.clear()
 
-    # Send success message with dashboard link
-    dashboard_url = f"{settings.FRONTEND_URL}/login"
+    # Send success message with link to create company in admin
+    admin_url = f"{settings.FRONTEND_URL}"
     await callback.message.answer(
         f"✅ Реєстрація успішна!\n\n"
         f"Вітаємо, {user.first_name}! Ваш акаунт створено.\n\n"
-        f"Тепер ви можете:\n"
-        f"• Керувати записами через цей бот\n"
-        f"• Увійти в веб-панель через Telegram: {dashboard_url}\n\n"
-        f"Оберіть дію:",
-        reply_markup=main_menu_keyboard(),
+        f"Тепер перейдіть в адмін-панель для створення вашої компанії:\n"
+        f"👉 {admin_url}\n\n"
+        f"Там ви зможете:\n"
+        f"• Створити свою компанію\n"
+        f"• Додати послуги та ціни\n"
+        f"• Налаштувати розклад роботи\n"
+        f"• Отримувати записи від клієнтів",
+        reply_markup=remove_keyboard(),
     )
     await callback.answer()
 

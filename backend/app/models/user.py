@@ -23,13 +23,14 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    company_id: Mapped[int] = mapped_column(ForeignKey("companies.id"))
+    company_id: Mapped[Optional[int]] = mapped_column(ForeignKey("companies.id"), nullable=True)
     email: Mapped[Optional[str]] = mapped_column(String(255), unique=True, index=True, nullable=True)
     hashed_password: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     first_name: Mapped[str] = mapped_column(String(100))
     last_name: Mapped[str] = mapped_column(String(100))
     patronymic: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     phone: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    city: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     telegram_id: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True, unique=True, index=True)
     telegram_username: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     role: Mapped[UserRole] = mapped_column(String(20), default=UserRole.DOCTOR)
@@ -39,7 +40,7 @@ class User(Base):
     )
 
     # Relationships
-    company: Mapped["Company"] = relationship(back_populates="users")
+    company: Mapped[Optional["Company"]] = relationship(back_populates="users")
     services: Mapped[list["Service"]] = relationship(back_populates="doctor")
     schedules: Mapped[list["Schedule"]] = relationship(back_populates="doctor")
     schedule_exceptions: Mapped[list["ScheduleException"]] = relationship(back_populates="doctor")
