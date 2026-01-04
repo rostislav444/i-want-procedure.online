@@ -11,9 +11,9 @@ echo "=== Procedure Deployment Script ==="
 echo "Creating docker network..."
 docker network create procedure_network 2>/dev/null || echo "Network already exists"
 
-# Create certbot directory
+# Create certbot directory in project root
 echo "Creating certbot directory..."
-sudo mkdir -p /var/www/certbot
+mkdir -p certbot/letsencrypt
 
 # Step 1: Start with HTTP-only config for certbot
 echo "Step 1: Starting services with HTTP config for SSL generation..."
@@ -31,8 +31,8 @@ sleep 5
 # Step 2: Generate SSL certificate
 echo "Step 2: Generating SSL certificate..."
 docker run --rm \
-  -v /etc/letsencrypt:/etc/letsencrypt \
-  -v /var/www/certbot:/var/www/certbot \
+  -v $(pwd)/certbot/letsencrypt:/etc/letsencrypt \
+  -v $(pwd)/certbot:/var/www/certbot \
   certbot/certbot certonly \
   --webroot \
   --webroot-path=/var/www/certbot \
@@ -53,7 +53,7 @@ server {
 
     # Certbot challenge
     location /.well-known/acme-challenge/ {
-        root /var/www/certbot;
+        root /app/certbot;
     }
 
     # Redirect all HTTP to HTTPS
