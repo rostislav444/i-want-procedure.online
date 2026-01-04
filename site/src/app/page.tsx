@@ -140,11 +140,8 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Telegram Demo */}
-          <TelegramDemo />
-
           {/* Feature Cards */}
-          <div className="grid md:grid-cols-2 gap-8 mt-16">
+          <div className="grid md:grid-cols-2 gap-8">
             {/* Client Bot */}
             <div className="group relative p-8 rounded-3xl bg-card border border-pink-100 dark:border-pink-900/30 shadow-soft hover:shadow-xl hover:shadow-pink-500/10 transition-all hover:-translate-y-2">
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-pink-100 dark:from-pink-900/30 to-transparent rounded-bl-full opacity-50" />
@@ -204,6 +201,11 @@ export default function HomePage() {
                 </ul>
               </div>
             </div>
+          </div>
+
+          {/* Telegram Demo */}
+          <div className="mt-16">
+            <TelegramDemo />
           </div>
         </div>
       </section>
