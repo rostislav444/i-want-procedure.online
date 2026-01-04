@@ -1,6 +1,7 @@
 from datetime import date, datetime, timedelta
 
 from aiogram import Router, F
+from aiogram.filters import Command
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
@@ -40,6 +41,7 @@ async def get_client_lang(session: AsyncSession, telegram_id: int) -> str:
     return client.language if client else "uk"
 
 
+@router.message(Command("book"))
 @router.message(F.text.in_([
     t("book_appointment", "uk"),
     t("book_appointment", "ru"),

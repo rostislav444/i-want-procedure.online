@@ -1,4 +1,5 @@
 from aiogram import Router, F
+from aiogram.filters import Command
 from aiogram.types import Message
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -20,6 +21,7 @@ async def get_client_lang(session: AsyncSession, telegram_id: int) -> str:
     return client.language if client else "uk"
 
 
+@router.message(Command("appointments"))
 @router.message(F.text.in_([
     t("my_appointments", "uk"),
     t("my_appointments", "ru"),
