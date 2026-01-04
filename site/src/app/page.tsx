@@ -17,6 +17,7 @@ import {
 import Link from 'next/link'
 import Image from 'next/image'
 import ScreenshotGallery from '@/components/ScreenshotGallery'
+import TelegramDemo from '@/components/TelegramDemo'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import WaveDivider from '@/components/WaveDivider'
@@ -139,7 +140,11 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8">
+          {/* Telegram Demo */}
+          <TelegramDemo />
+
+          {/* Feature Cards */}
+          <div className="grid md:grid-cols-2 gap-8 mt-16">
             {/* Client Bot */}
             <div className="group relative p-8 rounded-3xl bg-card border border-pink-100 dark:border-pink-900/30 shadow-soft hover:shadow-xl hover:shadow-pink-500/10 transition-all hover:-translate-y-2">
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-pink-100 dark:from-pink-900/30 to-transparent rounded-bl-full opacity-50" />
