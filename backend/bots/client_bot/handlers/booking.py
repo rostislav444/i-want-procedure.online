@@ -26,6 +26,31 @@ from bots.client_bot.keyboards import (
 router = Router()
 
 
+def format_booking_summary(
+    service_name: str,
+    service_price: float,
+    appointment_date: str,
+    start_time: str,
+    end_time: str,
+    lang: str = "uk",
+) -> str:
+    """Format booking summary for client"""
+    status_text = {
+        "uk": "⏳ Очікує підтвердження",
+        "ru": "⏳ Ожидает подтверждения",
+        "en": "⏳ Pending confirmation",
+    }.get(lang, "⏳ Очікує підтвердження")
+
+    return (
+        f"📋 <b>{service_name}</b>\n\n"
+        f"📅  {appointment_date}\n"
+        f"⏰  {start_time} - {end_time}\n"
+        f"💰  {int(service_price)} грн\n\n"
+        f"━━━━━━━━━━━━━━━\n\n"
+        f"📊  {status_text}"
+    )
+
+
 class BookingStates(StatesGroup):
     selecting_service = State()
     selecting_date = State()
@@ -278,9 +303,19 @@ async def confirm_booking(callback: CallbackQuery, state: FSMContext, session: A
 
     await state.clear()
 
-    await callback.message.edit_text(t("booking.booking_confirmed", lang))
+    # Show beautiful booking summary
+    summary = format_booking_summary(
+        service_name=data["service_name"],
+        service_price=data["service_price"],
+        appointment_date=selected_date.strftime("%d.%m.%Y"),
+        start_time=data["start_time"],
+        end_time=data["end_time"],
+        lang=lang,
+    )
+
+    await callback.message.edit_text(summary)
     await callback.message.answer(
-        t("main_menu", lang),
+        t("booking.booking_confirmed", lang),
         reply_markup=main_menu_keyboard(lang),
     )
     await callback.answer()

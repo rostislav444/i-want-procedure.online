@@ -1,3 +1,4 @@
+import logging
 from datetime import date, timedelta
 
 from aiogram import Router, F
@@ -11,6 +12,8 @@ from app.models.appointment import Appointment, AppointmentStatus, CancelledBy
 from app.models.service import Service
 from app.models.client import Client
 from bots.doctor_bot.keyboards import appointment_action_keyboard
+
+logger = logging.getLogger(__name__)
 
 router = Router()
 
@@ -176,14 +179,20 @@ async def confirm_appointment(callback: CallbackQuery, session: AsyncSession):
     doctor_name = f"{doctor.first_name} {doctor.last_name or ''}".strip() if doctor else "Спеціаліст"
 
     if client and client.telegram_id:
+        # Get language as string (handle both enum and string)
+        lang = str(client.language.value) if hasattr(client.language, 'value') else str(client.language) if client.language else "uk"
+        logger.info(f"Sending confirmation to client {client.telegram_id}, lang={lang}")
+
         await notify_client_appointment_confirmed(
             client_telegram_id=client.telegram_id,
             doctor_name=doctor_name,
             service_name=service.name,
             appointment_date=appt.date.strftime("%d.%m.%Y"),
             appointment_time=appt.start_time.strftime("%H:%M"),
-            lang=client.language.value if client.language else "uk",
+            lang=lang,
         )
+    else:
+        logger.warning(f"Cannot send notification: client={client}, telegram_id={client.telegram_id if client else None}")
 
 
 @router.callback_query(F.data.startswith("cancel_"))
@@ -221,13 +230,19 @@ async def cancel_appointment(callback: CallbackQuery, session: AsyncSession):
     service = result.scalar_one()
 
     if client and client.telegram_id:
+        # Get language as string (handle both enum and string)
+        lang = str(client.language.value) if hasattr(client.language, 'value') else str(client.language) if client.language else "uk"
+        logger.info(f"Sending cancellation to client {client.telegram_id}, lang={lang}")
+
         await notify_client_appointment_cancelled(
             client_telegram_id=client.telegram_id,
             service_name=service.name,
             appointment_date=appt.date.strftime("%d.%m.%Y"),
             appointment_time=appt.start_time.strftime("%H:%M"),
-            lang=client.language.value if client.language else "uk",
+            lang=lang,
         )
+    else:
+        logger.warning(f"Cannot send cancellation: client={client}, telegram_id={client.telegram_id if client else None}")
 
 
 @router.callback_query(F.data.startswith("complete_"))

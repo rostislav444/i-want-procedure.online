@@ -1,12 +1,16 @@
 """
 Notification utilities for sending messages via Telegram bots
 """
+import logging
+
 from aiogram import Bot
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from app.core.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 def appointment_action_keyboard(appointment_id: int) -> InlineKeyboardMarkup:
@@ -71,7 +75,14 @@ async def notify_client_appointment_confirmed(
     lang: str = "uk",
 ):
     """Send notification to client that appointment is confirmed"""
-    if not settings.CLIENT_BOT_TOKEN or not client_telegram_id:
+    logger.info(f"notify_client_appointment_confirmed called: client_id={client_telegram_id}, lang={lang}")
+
+    if not settings.CLIENT_BOT_TOKEN:
+        logger.error("CLIENT_BOT_TOKEN is not set!")
+        return
+
+    if not client_telegram_id:
+        logger.error("client_telegram_id is empty!")
         return
 
     bot = Bot(
@@ -108,9 +119,11 @@ async def notify_client_appointment_confirmed(
 
     try:
         message = messages.get(lang, messages["uk"])
+        logger.info(f"Sending message to client {client_telegram_id}")
         await bot.send_message(client_telegram_id, message)
+        logger.info(f"Message sent successfully to client {client_telegram_id}")
     except Exception as e:
-        print(f"Failed to send notification to client: {e}")
+        logger.exception(f"Failed to send notification to client {client_telegram_id}: {e}")
     finally:
         await bot.session.close()
 
