@@ -22,6 +22,8 @@ import {
   Facebook,
   Building2,
   Type,
+  Copy,
+  Check,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -126,6 +128,7 @@ export default function WebsiteBuilderPage() {
   const [addDialogOpen, setAddDialogOpen] = useState(false)
   const [editingSection, setEditingSection] = useState<WebsiteSection | null>(null)
   const [expandedSection, setExpandedSection] = useState<number | null>(null)
+  const [copied, setCopied] = useState(false)
 
   // Branding settings state
   const [brandingData, setBrandingData] = useState({
@@ -324,6 +327,14 @@ export default function WebsiteBuilderPage() {
     ? `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001'}/site/${company.slug}`
     : ''
 
+  const handleCopyUrl = async () => {
+    if (siteUrl) {
+      await navigator.clipboard.writeText(siteUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -355,6 +366,23 @@ export default function WebsiteBuilderPage() {
           </Button>
         </div>
       </div>
+
+      {/* Site URL */}
+      {siteUrl && (
+        <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
+          <span className="text-sm text-muted-foreground">Адреса сайту:</span>
+          <code className="flex-1 text-sm font-mono bg-background px-2 py-1 rounded border truncate">
+            {siteUrl}
+          </code>
+          <Button variant="ghost" size="sm" onClick={handleCopyUrl}>
+            {copied ? (
+              <Check className="h-4 w-4 text-green-600" />
+            ) : (
+              <Copy className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
+      )}
 
       {/* Theme Selection */}
       <Card>
