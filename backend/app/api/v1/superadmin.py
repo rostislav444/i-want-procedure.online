@@ -221,8 +221,8 @@ async def list_companies(
             select(func.count(Appointment.id)).where(Appointment.company_id == company.id)
         )
 
-        sub_status = company.subscription.status.value if company.subscription else None
-        sub_plan = company.subscription.plan.value if company.subscription else None
+        sub_status = company.subscription.status if company.subscription else None
+        sub_plan = company.subscription.plan if company.subscription else None
 
         # Filter by subscription status if specified
         if subscription_status and sub_status != subscription_status:
@@ -279,8 +279,8 @@ async def get_company_detail(
     if company.subscription:
         subscription_detail = SubscriptionDetail(
             id=company.subscription.id,
-            plan=company.subscription.plan.value,
-            status=company.subscription.status.value,
+            plan=company.subscription.plan,
+            status=company.subscription.status,
             price=company.subscription.price,
             trial_ends_at=company.subscription.trial_ends_at,
             current_period_start=company.subscription.current_period_start,
@@ -360,8 +360,8 @@ async def create_or_update_subscription(
 
     return SubscriptionDetail(
         id=subscription.id,
-        plan=subscription.plan.value,
-        status=subscription.status.value,
+        plan=subscription.plan,
+        status=subscription.status,
         price=subscription.price,
         trial_ends_at=subscription.trial_ends_at,
         current_period_start=subscription.current_period_start,
@@ -403,8 +403,8 @@ async def list_payments(
             company_id=payment.company_id,
             company_name=payment.company.name if payment.company else "Unknown",
             amount=payment.amount,
-            status=payment.status.value,
-            payment_method=payment.payment_method.value,
+            status=payment.status,
+            payment_method=payment.payment_method,
             external_id=payment.external_id,
             notes=payment.notes,
             created_at=payment.created_at,
@@ -461,8 +461,8 @@ async def create_payment(
         company_id=payment.company_id,
         company_name=company.name,
         amount=payment.amount,
-        status=payment.status.value,
-        payment_method=payment.payment_method.value,
+        status=payment.status,
+        payment_method=payment.payment_method,
         external_id=payment.external_id,
         notes=payment.notes,
         created_at=payment.created_at,
