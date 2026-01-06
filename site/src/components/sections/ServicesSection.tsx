@@ -1,13 +1,13 @@
 'use client'
 
-import { Clock, Sparkles } from 'lucide-react'
+import { Clock, ArrowRight, Sparkles, MessageCircle } from 'lucide-react'
 import { Company, Service, ServiceCategory } from '@/lib/api'
 import { IndustryTheme } from '@/lib/themes'
 
 interface ServicesContent {
   title?: string
   subtitle?: string
-  display_mode?: 'grid' | 'list' | 'cards'
+  display_mode?: 'grid' | 'list' | 'cards' | 'bento'
 }
 
 interface Props {
@@ -19,9 +19,12 @@ interface Props {
 }
 
 export function ServicesSection({ content, theme, company, services, categories }: Props) {
-  const displayMode = content.display_mode || 'grid'
+  const displayMode = content.display_mode || 'bento'
   const title = content.title || 'Наші послуги'
-  const subtitle = content.subtitle
+  const subtitle = content.subtitle || 'Професійний догляд для вашої краси та здоров\'я'
+
+  // Generate Telegram bot link
+  const telegramBotLink = `https://t.me/i_want_procedure_bot?start=${company.slug || company.id}`
 
   // Group services by category
   const servicesByCategoryMap: Record<string, Service[]> = {}
@@ -33,7 +36,7 @@ export function ServicesSection({ content, theme, company, services, categories 
     servicesByCategoryMap[catId].push(service)
   })
 
-  // Helper to get category name
+  // Get category name
   const getCategoryName = (catId: string): string => {
     if (catId === 'null') return 'Інші послуги'
     const id = parseInt(catId, 10)
@@ -50,12 +53,15 @@ export function ServicesSection({ content, theme, company, services, categories 
   }
 
   return (
-    <section className="py-16" style={{ backgroundColor: 'var(--color-background)' }}>
-      <div className="max-w-5xl mx-auto px-4">
-        {/* Header */}
-        <div className="text-center mb-12">
+    <section
+      className="py-20 lg:py-32"
+      style={{ backgroundColor: 'var(--color-background-alt)' }}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Section header */}
+        <div className="max-w-3xl mx-auto text-center mb-16">
           <div
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-4"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-6"
             style={{
               backgroundColor: 'var(--color-primary-100)',
               color: 'var(--color-primary-700)',
@@ -65,52 +71,82 @@ export function ServicesSection({ content, theme, company, services, categories 
             <span>Прайс-лист</span>
           </div>
           <h2
-            className="text-3xl md:text-4xl font-bold"
-            style={{ fontFamily: 'var(--font-accent)', color: 'var(--color-text)' }}
+            className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4"
+            style={{
+              fontFamily: 'var(--font-accent)',
+              color: 'var(--color-text)',
+            }}
           >
             {title}
           </h2>
-          {subtitle && (
-            <p className="mt-2 max-w-xl mx-auto" style={{ color: 'var(--color-text-muted)' }}>{subtitle}</p>
-          )}
+          <p
+            className="text-lg lg:text-xl"
+            style={{ color: 'var(--color-text-muted)' }}
+          >
+            {subtitle}
+          </p>
         </div>
 
-        {/* Services */}
-        {displayMode === 'grid' && (
-          <ServicesGrid
+        {/* Services display */}
+        {displayMode === 'bento' && (
+          <BentoLayout
+            services={services}
             servicesByCategoryMap={servicesByCategoryMap}
             getCategoryName={getCategoryName}
             theme={theme}
+            telegramBotLink={telegramBotLink}
           />
         )}
 
-        {displayMode === 'list' && (
-          <ServicesList
-            servicesByCategoryMap={servicesByCategoryMap}
-            getCategoryName={getCategoryName}
+        {displayMode === 'grid' && (
+          <GridLayout
+            services={services}
             theme={theme}
+            telegramBotLink={telegramBotLink}
           />
         )}
 
         {displayMode === 'cards' && (
-          <ServicesCards
+          <CardsLayout
             services={services}
             theme={theme}
+            telegramBotLink={telegramBotLink}
+          />
+        )}
+
+        {displayMode === 'list' && (
+          <ListLayout
+            services={services}
+            servicesByCategoryMap={servicesByCategoryMap}
+            getCategoryName={getCategoryName}
+            theme={theme}
+            telegramBotLink={telegramBotLink}
           />
         )}
 
         {services.length === 0 && (
-          <div
-            className="text-center py-16 rounded-2xl border"
-            style={{ borderColor: 'var(--color-primary-100)' }}
-          >
-            <div
-              className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4"
-              style={{ backgroundColor: 'var(--color-primary-100)' }}
+          <EmptyState theme={theme} />
+        )}
+
+        {/* CTA Button */}
+        {services.length > 0 && (
+          <div className="text-center mt-12">
+            <a
+              href={telegramBotLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-3 px-8 py-4 font-semibold transition-all hover:scale-105"
+              style={{
+                backgroundColor: 'var(--color-primary-500)',
+                color: 'var(--color-primary-contrast)',
+                borderRadius: theme.borderRadius.button,
+                boxShadow: '0 10px 40px -10px var(--color-primary-500)',
+              }}
             >
-              <Sparkles className="w-10 h-10" style={{ color: 'var(--color-primary-500)' }} />
-            </div>
-            <p className="text-lg" style={{ color: 'var(--color-text-muted)' }}>Послуги поки не додані</p>
+              <MessageCircle className="w-5 h-5" />
+              Записатися онлайн
+              <ArrowRight className="w-4 h-4" />
+            </a>
           </div>
         )}
       </div>
@@ -118,69 +154,119 @@ export function ServicesSection({ content, theme, company, services, categories 
   )
 }
 
-// Grid layout - 2 columns with category headers
-function ServicesGrid({
-  servicesByCategoryMap,
-  getCategoryName,
-  theme,
-}: {
-  servicesByCategoryMap: Record<string, Service[]>
-  getCategoryName: (catId: string) => string
+interface LayoutProps {
+  services: Service[]
+  servicesByCategoryMap?: Record<string, Service[]>
+  getCategoryName?: (catId: string) => string
   theme: IndustryTheme
-}) {
+  telegramBotLink: string
+}
+
+// Bento Grid Layout - Modern asymmetric grid
+function BentoLayout({ services, servicesByCategoryMap, getCategoryName, theme, telegramBotLink }: LayoutProps) {
+  if (!servicesByCategoryMap || !getCategoryName) return null
+
   return (
     <div className="space-y-12">
-      {Object.entries(servicesByCategoryMap).map(([catId, catServices]) => (
+      {Object.entries(servicesByCategoryMap).map(([catId, catServices], categoryIndex) => (
         <div key={catId}>
           {/* Category header */}
-          <div className="flex items-center gap-3 mb-6">
-            <span
-              className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: 'var(--color-primary-500)' }}
-            />
-            <h3
-              className="text-xl font-semibold"
-              style={{ color: 'var(--color-primary-500)' }}
+          <div className="flex items-center gap-4 mb-6">
+            <div
+              className="w-12 h-12 rounded-2xl flex items-center justify-center"
+              style={{ backgroundColor: 'var(--color-primary-100)' }}
             >
-              {getCategoryName(catId)}
-            </h3>
+              <Sparkles className="w-6 h-6" style={{ color: 'var(--color-primary-500)' }} />
+            </div>
+            <div>
+              <h3
+                className="text-xl font-bold"
+                style={{ color: 'var(--color-text)' }}
+              >
+                {getCategoryName(catId)}
+              </h3>
+              <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                {catServices.length} послуг
+              </p>
+            </div>
           </div>
 
-          {/* Services grid */}
-          <div className="grid md:grid-cols-2 gap-4">
-            {catServices.map((service) => (
-              <div
-                key={service.id}
-                className="p-5 transition-all hover:scale-[1.02]"
-                style={{
-                  backgroundColor: 'var(--color-surface)',
-                  borderRadius: theme.borderRadius.card,
-                  boxShadow: theme.shadow.card,
-                  borderLeft: '4px solid var(--color-primary-500)',
-                }}
-              >
-                <div className="flex justify-between items-start gap-4">
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-semibold text-lg" style={{ color: 'var(--color-text)' }}>{service.name}</h4>
+          {/* Bento grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {catServices.map((service, index) => {
+              // First item in each category is featured (larger)
+              const isFeatured = index === 0 && catServices.length > 2
+
+              return (
+                <a
+                  key={service.id}
+                  href={telegramBotLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`group relative overflow-hidden transition-all hover:scale-[1.02] ${
+                    isFeatured ? 'md:col-span-2 md:row-span-2' : ''
+                  }`}
+                  style={{
+                    backgroundColor: 'var(--color-surface)',
+                    borderRadius: theme.borderRadius.card,
+                    boxShadow: 'var(--shadow-card)',
+                  }}
+                >
+                  <div className={`p-6 ${isFeatured ? 'p-8' : ''} h-full flex flex-col`}>
+                    {/* Service icon */}
+                    <div
+                      className={`${isFeatured ? 'w-16 h-16' : 'w-12 h-12'} rounded-2xl flex items-center justify-center mb-4`}
+                      style={{ backgroundColor: 'var(--color-primary-100)' }}
+                    >
+                      <Sparkles
+                        className={isFeatured ? 'w-8 h-8' : 'w-6 h-6'}
+                        style={{ color: 'var(--color-primary-500)' }}
+                      />
+                    </div>
+
+                    {/* Service name */}
+                    <h4
+                      className={`font-bold mb-2 ${isFeatured ? 'text-2xl' : 'text-lg'}`}
+                      style={{ color: 'var(--color-text)' }}
+                    >
+                      {service.name}
+                    </h4>
+
+                    {/* Description */}
                     {service.description && (
-                      <p className="text-sm mt-1 line-clamp-2" style={{ color: 'var(--color-text-muted)' }}>
+                      <p
+                        className={`mb-4 flex-grow ${isFeatured ? 'text-base' : 'text-sm'} line-clamp-3`}
+                        style={{ color: 'var(--color-text-muted)' }}
+                      >
                         {service.description}
                       </p>
                     )}
-                    <div className="flex items-center gap-1 mt-2 text-sm" style={{ color: 'var(--color-text-muted)' }}>
-                      <Clock className="w-4 h-4" />
-                      <span>{service.duration_minutes} хв</span>
+
+                    {/* Footer with price and duration */}
+                    <div className="flex items-center justify-between mt-auto pt-4 border-t" style={{ borderColor: 'var(--color-surface-border)' }}>
+                      <div className="flex items-center gap-2" style={{ color: 'var(--color-text-muted)' }}>
+                        <Clock className="w-4 h-4" />
+                        <span className="text-sm">{service.duration_minutes} хв</span>
+                      </div>
+                      <div
+                        className={`font-bold ${isFeatured ? 'text-2xl' : 'text-xl'}`}
+                        style={{ color: 'var(--color-primary-500)' }}
+                      >
+                        {Number(service.price).toLocaleString('uk-UA')} ₴
+                      </div>
+                    </div>
+
+                    {/* Hover arrow */}
+                    <div
+                      className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      style={{ backgroundColor: 'var(--color-primary-500)' }}
+                    >
+                      <ArrowRight className="w-4 h-4 text-white" />
                     </div>
                   </div>
-                  <div
-                    className="text-2xl font-bold whitespace-nowrap"
-                    style={{ color: 'var(--color-primary-500)' }}
-                  >
-                    {Number(service.price).toLocaleString('uk-UA')} ₴
-                  </div>
-                </div>
-              </div>
-            ))}
+                </a>
+              )
+            })}
           </div>
         </div>
       ))}
@@ -188,109 +274,33 @@ function ServicesGrid({
   )
 }
 
-// List layout - Simple rows grouped by category
-function ServicesList({
-  servicesByCategoryMap,
-  getCategoryName,
-  theme,
-}: {
-  servicesByCategoryMap: Record<string, Service[]>
-  getCategoryName: (catId: string) => string
-  theme: IndustryTheme
-}) {
+// Grid Layout - Clean equal cards
+function GridLayout({ services, theme, telegramBotLink }: LayoutProps) {
   return (
-    <div className="space-y-8">
-      {Object.entries(servicesByCategoryMap).map(([catId, catServices]) => (
-        <div
-          key={catId}
-          className="rounded-2xl border overflow-hidden"
-          style={{ borderColor: 'var(--color-primary-100)' }}
-        >
-          {/* Category header */}
-          <div
-            className="px-6 py-4 border-b flex items-center gap-3"
-            style={{
-              borderColor: 'var(--color-primary-100)',
-              backgroundColor: 'var(--color-primary-50)',
-            }}
-          >
-            <span
-              className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: 'var(--color-primary-500)' }}
-            />
-            <h3 className="text-lg font-semibold" style={{ color: 'var(--color-primary-500)' }}>
-              {getCategoryName(catId)}
-            </h3>
-            <span className="text-sm ml-auto" style={{ color: 'var(--color-text-muted)' }}>
-              {catServices.length} послуг
-            </span>
-          </div>
-
-          {/* Services list */}
-          <div className="divide-y" style={{ borderColor: 'var(--color-primary-50)' }}>
-            {catServices.map((service) => (
-              <div
-                key={service.id}
-                className="px-6 py-4 flex items-center justify-between gap-4 transition-colors"
-                style={{ backgroundColor: 'var(--color-surface)' }}
-              >
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-medium" style={{ color: 'var(--color-text)' }}>{service.name}</h4>
-                  {service.description && (
-                    <p className="text-sm mt-0.5 line-clamp-1" style={{ color: 'var(--color-text-muted)' }}>
-                      {service.description}
-                    </p>
-                  )}
-                </div>
-                <div className="flex items-center gap-4 flex-shrink-0">
-                  <span className="text-sm flex items-center gap-1" style={{ color: 'var(--color-text-muted)' }}>
-                    <Clock className="w-4 h-4" />
-                    {service.duration_minutes} хв
-                  </span>
-                  <span
-                    className="text-xl font-bold"
-                    style={{ color: 'var(--color-primary-500)' }}
-                  >
-                    {Number(service.price).toLocaleString('uk-UA')} ₴
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-// Cards layout - Individual service cards
-function ServicesCards({
-  services,
-  theme,
-}: {
-  services: Service[]
-  theme: IndustryTheme
-}) {
-  return (
-    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {services.map((service) => (
-        <div
+        <a
           key={service.id}
-          className="p-6 transition-all hover:scale-[1.02]"
+          href={telegramBotLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group p-6 transition-all hover:scale-[1.02]"
           style={{
             backgroundColor: 'var(--color-surface)',
             borderRadius: theme.borderRadius.card,
-            boxShadow: theme.shadow.card,
+            boxShadow: 'var(--shadow-card)',
           }}
         >
           <div
-            className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
+            className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4"
             style={{ backgroundColor: 'var(--color-primary-100)' }}
           >
             <Sparkles className="w-6 h-6" style={{ color: 'var(--color-primary-500)' }} />
           </div>
 
-          <h4 className="font-semibold text-lg mb-2" style={{ color: 'var(--color-text)' }}>{service.name}</h4>
+          <h4 className="font-bold text-lg mb-2" style={{ color: 'var(--color-text)' }}>
+            {service.name}
+          </h4>
 
           {service.description && (
             <p className="text-sm mb-4 line-clamp-2" style={{ color: 'var(--color-text-muted)' }}>
@@ -298,20 +308,167 @@ function ServicesCards({
             </p>
           )}
 
-          <div className="flex items-center justify-between mt-auto pt-4 border-t" style={{ borderColor: 'var(--color-primary-100)' }}>
-            <span className="text-sm flex items-center gap-1" style={{ color: 'var(--color-text-muted)' }}>
+          <div className="flex items-center justify-between pt-4 border-t" style={{ borderColor: 'var(--color-surface-border)' }}>
+            <div className="flex items-center gap-1 text-sm" style={{ color: 'var(--color-text-muted)' }}>
               <Clock className="w-4 h-4" />
               {service.duration_minutes} хв
-            </span>
-            <span
-              className="text-xl font-bold"
-              style={{ color: 'var(--color-primary-500)' }}
-            >
+            </div>
+            <div className="font-bold text-xl" style={{ color: 'var(--color-primary-500)' }}>
               {Number(service.price).toLocaleString('uk-UA')} ₴
+            </div>
+          </div>
+        </a>
+      ))}
+    </div>
+  )
+}
+
+// Cards Layout - Horizontal scrolling on mobile
+function CardsLayout({ services, theme, telegramBotLink }: LayoutProps) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {services.map((service) => (
+        <a
+          key={service.id}
+          href={telegramBotLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group flex items-center gap-4 p-4 transition-all hover:scale-[1.01]"
+          style={{
+            backgroundColor: 'var(--color-surface)',
+            borderRadius: theme.borderRadius.card,
+            boxShadow: 'var(--shadow-card)',
+            borderLeft: '4px solid var(--color-primary-500)',
+          }}
+        >
+          <div
+            className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ backgroundColor: 'var(--color-primary-100)' }}
+          >
+            <Sparkles className="w-7 h-7" style={{ color: 'var(--color-primary-500)' }} />
+          </div>
+
+          <div className="flex-grow min-w-0">
+            <h4 className="font-bold" style={{ color: 'var(--color-text)' }}>
+              {service.name}
+            </h4>
+            <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--color-text-muted)' }}>
+              <Clock className="w-4 h-4" />
+              {service.duration_minutes} хв
+            </div>
+          </div>
+
+          <div className="text-right flex-shrink-0">
+            <div className="font-bold text-xl" style={{ color: 'var(--color-primary-500)' }}>
+              {Number(service.price).toLocaleString('uk-UA')} ₴
+            </div>
+            <ArrowRight
+              className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity"
+              style={{ color: 'var(--color-primary-500)' }}
+            />
+          </div>
+        </a>
+      ))}
+    </div>
+  )
+}
+
+// List Layout - Compact grouped by category
+function ListLayout({ servicesByCategoryMap, getCategoryName, theme, telegramBotLink }: LayoutProps) {
+  if (!servicesByCategoryMap || !getCategoryName) return null
+
+  return (
+    <div className="space-y-8">
+      {Object.entries(servicesByCategoryMap).map(([catId, catServices]) => (
+        <div
+          key={catId}
+          className="overflow-hidden"
+          style={{
+            backgroundColor: 'var(--color-surface)',
+            borderRadius: theme.borderRadius.card,
+            boxShadow: 'var(--shadow-card)',
+          }}
+        >
+          {/* Category header */}
+          <div
+            className="px-6 py-4 flex items-center gap-3"
+            style={{ backgroundColor: 'var(--color-primary-50)' }}
+          >
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center"
+              style={{ backgroundColor: 'var(--color-primary-100)' }}
+            >
+              <Sparkles className="w-5 h-5" style={{ color: 'var(--color-primary-500)' }} />
+            </div>
+            <div className="flex-grow">
+              <h3 className="font-bold" style={{ color: 'var(--color-text)' }}>
+                {getCategoryName(catId)}
+              </h3>
+            </div>
+            <span className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+              {catServices.length} послуг
             </span>
+          </div>
+
+          {/* Services list */}
+          <div className="divide-y" style={{ borderColor: 'var(--color-surface-border)' }}>
+            {catServices.map((service) => (
+              <a
+                key={service.id}
+                href={telegramBotLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group px-6 py-4 flex items-center justify-between gap-4 hover:bg-black/5 transition-colors"
+              >
+                <div className="min-w-0">
+                  <h4 className="font-medium" style={{ color: 'var(--color-text)' }}>
+                    {service.name}
+                  </h4>
+                  <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                    <Clock className="w-4 h-4" />
+                    {service.duration_minutes} хв
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className="font-bold text-xl" style={{ color: 'var(--color-primary-500)' }}>
+                    {Number(service.price).toLocaleString('uk-UA')} ₴
+                  </span>
+                  <ArrowRight
+                    className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity"
+                    style={{ color: 'var(--color-primary-500)' }}
+                  />
+                </div>
+              </a>
+            ))}
           </div>
         </div>
       ))}
+    </div>
+  )
+}
+
+// Empty state
+function EmptyState({ theme }: { theme: IndustryTheme }) {
+  return (
+    <div
+      className="text-center py-16 rounded-2xl"
+      style={{
+        backgroundColor: 'var(--color-surface)',
+        border: '2px dashed var(--color-surface-border)',
+      }}
+    >
+      <div
+        className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4"
+        style={{ backgroundColor: 'var(--color-primary-100)' }}
+      >
+        <Sparkles className="w-10 h-10" style={{ color: 'var(--color-primary-500)' }} />
+      </div>
+      <p className="text-lg font-medium" style={{ color: 'var(--color-text)' }}>
+        Послуги поки не додані
+      </p>
+      <p className="text-sm mt-2" style={{ color: 'var(--color-text-muted)' }}>
+        Скоро тут з'являться наші процедури
+      </p>
     </div>
   )
 }
