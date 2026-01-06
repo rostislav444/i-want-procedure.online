@@ -85,11 +85,20 @@ export default function SoloTemplate({
               <ChevronRight className="w-4 h-4 rotate-180" />
               <span>Головна</span>
             </a>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               {company.phone && (
                 <a
                   href={`tel:${company.phone}`}
-                  className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-300"
+                >
+                  <Phone className="w-4 h-4" />
+                  <span className="text-sm font-medium">{company.phone}</span>
+                </a>
+              )}
+              {company.phone && (
+                <a
+                  href={`tel:${company.phone}`}
+                  className="sm:hidden p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 >
                   <Phone className="w-5 h-5 text-slate-600 dark:text-slate-300" />
                 </a>
@@ -381,8 +390,8 @@ export default function SoloTemplate({
         </div>
       </section>
 
-      {/* CTA Section */}
-      {(company.phone || company.telegram) && (
+      {/* CTA Section - Telegram Bot */}
+      {company.telegram && (
         <section className="py-16">
           <div className="max-w-4xl mx-auto px-4">
             <div
@@ -394,35 +403,25 @@ export default function SoloTemplate({
               <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
 
               <div className="relative">
+                <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center">
+                  <MessageCircle className="w-8 h-8" />
+                </div>
                 <h2 className="text-2xl md:text-3xl font-bold mb-4">
-                  Готові записатися?
+                  Запишіться онлайн
                 </h2>
                 <p className="text-white/80 mb-8 max-w-md mx-auto">
-                  Зв'яжіться зі мною зручним способом для запису на процедуру
+                  Оберіть зручний час та запишіться на процедуру через Telegram-бот
                 </p>
-                <div className="flex flex-wrap items-center gap-4 justify-center">
-                  {company.phone && (
-                    <a
-                      href={`tel:${company.phone}`}
-                      className="inline-flex items-center gap-2 px-8 py-4 bg-white rounded-xl font-semibold transition-all hover:scale-105 hover:shadow-2xl"
-                      style={{ color: primaryColor }}
-                    >
-                      <Phone className="w-5 h-5" />
-                      {company.phone}
-                    </a>
-                  )}
-                  {company.telegram && (
-                    <a
-                      href={`https://t.me/${company.telegram.replace('@', '')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-8 py-4 bg-white/20 backdrop-blur rounded-xl font-semibold transition-all hover:scale-105 hover:bg-white/30 border border-white/30"
-                    >
-                      <MessageCircle className="w-5 h-5" />
-                      Написати в Telegram
-                    </a>
-                  )}
-                </div>
+                <a
+                  href={`https://t.me/${company.telegram.replace('@', '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-3 px-10 py-4 bg-white rounded-2xl font-semibold text-lg transition-all hover:scale-105 hover:shadow-2xl"
+                  style={{ color: primaryColor }}
+                >
+                  <MessageCircle className="w-6 h-6" />
+                  Записатися через бот
+                </a>
               </div>
             </div>
           </div>
