@@ -39,7 +39,10 @@ async def get_company_services(slug: str, db: DbSession):
     result = await db.execute(
         select(Service)
         .where(Service.company_id == company.id, Service.is_active == True)
-        .options(selectinload(Service.category))
+        .options(
+            selectinload(Service.category),
+            selectinload(Service.specialty)
+        )
         .order_by(Service.category_id, Service.name)
     )
     return result.scalars().all()
