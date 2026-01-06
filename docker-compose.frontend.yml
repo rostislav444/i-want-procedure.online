@@ -18,6 +18,8 @@ services:
     build:
       context: ./site
       dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=https://i-want-procedure.online
     container_name: procedure_frontend_site
     expose:
       - '3001'
