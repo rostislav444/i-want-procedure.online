@@ -57,7 +57,7 @@ export default function ServiceDetailPage() {
       })
     } catch (error) {
       console.error('Error loading service:', error)
-      router.push('/services')
+      router.push('/admin/services')
     } finally {
       setLoading(false)
     }
@@ -102,7 +102,7 @@ export default function ServiceDetailPage() {
     if (confirm('Ви впевнені, що хочете видалити цю послугу?')) {
       try {
         await servicesApi.delete(serviceId)
-        router.push('/services')
+        router.push('/admin/services')
       } catch (error) {
         console.error('Error deleting service:', error)
       }
@@ -167,7 +167,7 @@ export default function ServiceDetailPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href="/services">
+          <Link href="/admin/services">
             <Button variant="ghost" size="icon">
               <ArrowLeft className="h-5 w-5" />
             </Button>

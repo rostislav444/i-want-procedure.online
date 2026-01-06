@@ -46,7 +46,7 @@ export default function ClientDetailPage() {
 
   useEffect(() => {
     if (isNaN(clientId)) {
-      router.push('/clients')
+      router.push('/admin/clients')
       return
     }
 
@@ -81,7 +81,7 @@ export default function ClientDetailPage() {
     return (
       <div className="min-h-screen">
         <div className="flex items-center gap-3 mb-6">
-          <Link href="/clients">
+          <Link href="/admin/clients">
             <Button variant="ghost" size="icon" className="rounded-full">
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -92,7 +92,7 @@ export default function ClientDetailPage() {
           <CardContent className="p-12 text-center">
             <User className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <p className="text-muted-foreground">{error || 'Клієнта не знайдено'}</p>
-            <Button className="mt-4" onClick={() => router.push('/clients')}>
+            <Button className="mt-4" onClick={() => router.push('/admin/clients')}>
               Повернутися до списку
             </Button>
           </CardContent>
@@ -121,7 +121,7 @@ export default function ClientDetailPage() {
     <div className="min-h-screen">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <Link href="/clients">
+        <Link href="/admin/clients">
           <Button variant="ghost" size="icon" className="rounded-full">
             <ArrowLeft className="h-5 w-5" />
           </Button>

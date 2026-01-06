@@ -41,7 +41,7 @@ export default function SuperadminLayout({
     authApi.getMe()
       .then((userData) => {
         if (!userData.is_superadmin) {
-          router.push('/')
+          router.push('/admin')
           return
         }
         setUser(userData)

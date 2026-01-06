@@ -33,7 +33,7 @@ export default function RegisterPage() {
       localStorage.setItem('token', loginData.access_token)
       // Also set cookie for SSR
       document.cookie = `token=${loginData.access_token}; path=/; max-age=${60 * 60 * 24 * 7}` // 7 days
-      router.push('/services')
+      router.push('/admin/services')
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Помилка реєстрації')
     } finally {

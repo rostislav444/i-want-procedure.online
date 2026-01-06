@@ -192,7 +192,7 @@ export default function DashboardPage() {
             {format(new Date(), "EEEE, d MMMM yyyy", { locale: uk })}
           </p>
         </div>
-        <Button onClick={() => router.push('/appointments')}>
+        <Button onClick={() => router.push('/admin/appointments')}>
           <Calendar className="mr-2 h-4 w-4" />
           Календар записів
         </Button>
@@ -265,7 +265,7 @@ export default function DashboardPage() {
               <Clock className="h-5 w-5" />
               Розклад на сьогодні
             </CardTitle>
-            <Button variant="ghost" size="sm" onClick={() => router.push('/appointments')}>
+            <Button variant="ghost" size="sm" onClick={() => router.push('/admin/appointments')}>
               Переглянути всі
               <ChevronRight className="ml-1 h-4 w-4" />
             </Button>
@@ -285,7 +285,7 @@ export default function DashboardPage() {
                     <div
                       key={appt.id}
                       className="flex gap-4 p-3 rounded-lg border hover:bg-muted/50 cursor-pointer transition-colors"
-                      onClick={() => router.push('/appointments')}
+                      onClick={() => router.push('/admin/appointments')}
                     >
                       <div className="flex flex-col items-center">
                         <span className="text-sm font-medium">{formatTime(appt.start_time)}</span>
@@ -324,7 +324,7 @@ export default function DashboardPage() {
               <Button
                 variant="outline"
                 className="h-auto py-4 flex flex-col gap-2"
-                onClick={() => router.push('/appointments')}
+                onClick={() => router.push('/admin/appointments')}
               >
                 <Calendar className="h-5 w-5" />
                 <span className="text-xs">Записи</span>
@@ -332,7 +332,7 @@ export default function DashboardPage() {
               <Button
                 variant="outline"
                 className="h-auto py-4 flex flex-col gap-2"
-                onClick={() => router.push('/services')}
+                onClick={() => router.push('/admin/services')}
               >
                 <Scissors className="h-5 w-5" />
                 <span className="text-xs">Послуги</span>
@@ -340,7 +340,7 @@ export default function DashboardPage() {
               <Button
                 variant="outline"
                 className="h-auto py-4 flex flex-col gap-2"
-                onClick={() => router.push('/clients')}
+                onClick={() => router.push('/admin/clients')}
               >
                 <Users className="h-5 w-5" />
                 <span className="text-xs">Клієнти</span>
@@ -348,7 +348,7 @@ export default function DashboardPage() {
               <Button
                 variant="outline"
                 className="h-auto py-4 flex flex-col gap-2"
-                onClick={() => router.push('/schedule')}
+                onClick={() => router.push('/admin/schedule')}
               >
                 <Settings className="h-5 w-5" />
                 <span className="text-xs">Розклад</span>
@@ -403,7 +403,7 @@ export default function DashboardPage() {
                   <div
                     key={appt.id}
                     className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 cursor-pointer transition-colors"
-                    onClick={() => router.push('/appointments')}
+                    onClick={() => router.push('/admin/appointments')}
                   >
                     <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
                       <span className="text-xs font-medium text-primary">
@@ -436,7 +436,7 @@ export default function DashboardPage() {
               <UserPlus className="h-5 w-5" />
               Нові клієнти
             </CardTitle>
-            <Button variant="ghost" size="sm" onClick={() => router.push('/clients')}>
+            <Button variant="ghost" size="sm" onClick={() => router.push('/admin/clients')}>
               Всі клієнти
               <ChevronRight className="ml-1 h-4 w-4" />
             </Button>
@@ -450,7 +450,7 @@ export default function DashboardPage() {
                   <div
                     key={client.id}
                     className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 cursor-pointer transition-colors"
-                    onClick={() => router.push('/clients')}
+                    onClick={() => router.push('/admin/clients')}
                   >
                     <div className="h-10 w-10 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center text-white font-medium">
                       {client.first_name.charAt(0).toUpperCase()}

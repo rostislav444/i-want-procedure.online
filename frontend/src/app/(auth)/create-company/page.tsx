@@ -32,7 +32,7 @@ export default function CreateCompanyPage() {
         const user = await authApi.getMe()
         if (user.company_id) {
           // User already has a company, redirect to dashboard
-          router.push('/')
+          router.push('/admin')
           return
         }
 
@@ -58,7 +58,7 @@ export default function CreateCompanyPage() {
         name: companyName,
         type: companyType,
       })
-      router.push('/')
+      router.push('/admin')
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Помилка створення компанії')
     } finally {

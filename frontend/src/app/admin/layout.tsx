@@ -10,11 +10,11 @@ import { ThemeSettings } from '@/components/theme-settings'
 import { authApi, companyApi } from '@/lib/api'
 
 const navigation = [
-  { name: 'Головна', href: '/', icon: Home },
-  { name: 'Записи', href: '/appointments', icon: Calendar },
-  { name: 'Послуги', href: '/services', icon: Scissors },
-  { name: 'Розклад', href: '/schedule', icon: Clock },
-  { name: 'Клієнти', href: '/clients', icon: Users },
+  { name: 'Головна', href: '/admin', icon: Home },
+  { name: 'Записи', href: '/admin/appointments', icon: Calendar },
+  { name: 'Послуги', href: '/admin/services', icon: Scissors },
+  { name: 'Розклад', href: '/admin/schedule', icon: Clock },
+  { name: 'Клієнти', href: '/admin/clients', icon: Users },
 ]
 
 export default function DashboardLayout({
@@ -117,7 +117,7 @@ export default function DashboardLayout({
                 key={item.name}
                 href={item.href}
                 className={`flex items-center px-4 py-2 text-sm font-medium rounded-md ${
-                  pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))
+                  pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href))
                     ? 'bg-primary text-primary-foreground'
                     : 'text-muted-foreground hover:bg-muted'
                 }`}
@@ -203,7 +203,7 @@ export default function DashboardLayout({
                 className={`flex items-center py-2 text-sm font-medium rounded-md transition-all ${
                   sidebarCollapsed ? 'justify-center px-2' : 'px-4'
                 } ${
-                  pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))
+                  pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href))
                     ? 'bg-primary text-primary-foreground'
                     : 'text-muted-foreground hover:bg-muted'
                 }`}
@@ -256,7 +256,7 @@ export default function DashboardLayout({
           <div className={`border-t ${sidebarCollapsed ? 'p-2' : 'p-4'}`}>
             {sidebarCollapsed ? (
               <div className="flex flex-col items-center gap-2">
-                <Link href="/profile" title={`${user.first_name} ${user.last_name}`}>
+                <Link href="/admin/profile" title={`${user.first_name} ${user.last_name}`}>
                   <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
                     {user.first_name?.[0]}{user.last_name?.[0]}
                   </div>
@@ -267,7 +267,7 @@ export default function DashboardLayout({
               </div>
             ) : (
               <div className="flex items-center">
-                <Link href="/profile" className="flex-1 hover:bg-muted -m-2 p-2 rounded-md">
+                <Link href="/admin/profile" className="flex-1 hover:bg-muted -m-2 p-2 rounded-md">
                   <p className="text-sm font-medium">{user.first_name} {user.last_name}</p>
                   <p className="text-xs text-muted-foreground">{user.email}</p>
                 </Link>

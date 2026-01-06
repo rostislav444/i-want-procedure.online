@@ -29,7 +29,7 @@ function LoginForm() {
     if (token) {
       localStorage.setItem('token', token)
       document.cookie = `token=${token}; path=/; max-age=${60 * 60 * 24 * 7}`
-      router.push('/')
+      router.push('/admin')
     } else if (errorParam) {
       if (errorParam === 'invalid_state') {
         setError('Невірний стан авторизації. Спробуйте ще раз.')
@@ -54,7 +54,7 @@ function LoginForm() {
       if (!me.company_id) {
         router.push('/create-company')
       } else {
-        router.push('/')
+        router.push('/admin')
       }
     } catch (err: any) {
       const detail = err.response?.data?.detail
@@ -82,7 +82,7 @@ function LoginForm() {
       if (!me.company_id) {
         router.push('/create-company')
       } else {
-        router.push('/')
+        router.push('/admin')
       }
     } catch (err: any) {
       const detail = err.response?.data?.detail
