@@ -302,13 +302,13 @@ export default function SoloTemplate({
           )}
 
           {/* Services grid */}
-          <div className="space-y-4">
+          <div className="space-y-10">
             {Object.entries(displayedServices).map(([catId, catServices]) => (
-              <div key={catId} className="space-y-4">
+              <div key={catId}>
                 {categoryKeys.length > 1 && activeCategory === null && (
-                  <div className="flex items-center gap-3 mb-6 mt-8 first:mt-0">
+                  <div className="flex items-center gap-3 mb-6">
                     <div
-                      className="w-1 h-8 rounded-full"
+                      className="w-1.5 h-8 rounded-full"
                       style={{ background: `linear-gradient(to bottom, ${gradientStart}, ${gradientEnd})` }}
                     />
                     <h3 className="text-xl font-bold text-slate-800 dark:text-white">
@@ -317,56 +317,52 @@ export default function SoloTemplate({
                   </div>
                 )}
 
-                {catServices.map((service, index) => (
-                  <div
-                    key={service.id}
-                    className="group relative bg-white dark:bg-slate-800/80 rounded-2xl p-6 shadow-sm hover:shadow-xl border border-slate-100 dark:border-slate-700/50 transition-all duration-300 hover:-translate-y-1"
-                    style={{
-                      animationDelay: `${index * 50}ms`
-                    }}
-                  >
-                    {/* Hover gradient overlay */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {catServices.map((service) => (
                     <div
-                      className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                      style={{
-                        background: `linear-gradient(135deg, ${primaryColor}05, ${gradientEnd}08)`,
-                      }}
-                    />
+                      key={service.id}
+                      className="group relative bg-white dark:bg-slate-800/90 rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl border border-slate-100 dark:border-slate-700/50 transition-all duration-300 hover:-translate-y-1"
+                    >
+                      {/* Top accent line */}
+                      <div
+                        className="h-1 w-full"
+                        style={{ background: `linear-gradient(90deg, ${gradientStart}, ${gradientEnd})` }}
+                      />
 
-                    <div className="relative flex items-center justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-lg text-slate-900 dark:text-white mb-1 group-hover:text-transparent group-hover:bg-clip-text transition-all duration-300"
-                          style={{
-                            backgroundImage: `linear-gradient(135deg, ${gradientStart}, ${gradientEnd})`,
-                          }}
-                        >
+                      <div className="p-5">
+                        {/* Service name */}
+                        <h4 className="font-semibold text-lg text-slate-900 dark:text-white mb-2 line-clamp-1">
                           {service.name}
                         </h4>
+
+                        {/* Description */}
                         {service.description && (
-                          <p className="text-slate-500 dark:text-slate-400 text-sm line-clamp-2">
+                          <p className="text-slate-500 dark:text-slate-400 text-sm line-clamp-2 mb-4 min-h-[40px]">
                             {service.description}
                           </p>
                         )}
-                        <div className="flex items-center gap-3 mt-3">
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-sm bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
-                            <Clock className="w-3.5 h-3.5" />
-                            {service.duration_minutes} хв
-                          </span>
-                        </div>
-                      </div>
 
-                      <div className="flex-shrink-0 text-right">
-                        <div
-                          className="text-2xl md:text-3xl font-bold"
-                          style={{ color: primaryColor }}
-                        >
-                          {Number(service.price).toLocaleString('uk-UA')}
+                        {/* Bottom row: duration and price */}
+                        <div className="flex items-end justify-between pt-3 border-t border-slate-100 dark:border-slate-700/50">
+                          <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+                            <Clock className="w-4 h-4" />
+                            <span className="text-sm">{service.duration_minutes} хв</span>
+                          </div>
+
+                          <div className="text-right">
+                            <span
+                              className="text-2xl font-bold"
+                              style={{ color: primaryColor }}
+                            >
+                              {Number(service.price).toLocaleString('uk-UA')}
+                            </span>
+                            <span className="text-sm text-slate-400 ml-1">грн</span>
+                          </div>
                         </div>
-                        <div className="text-sm text-slate-400">грн</div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             ))}
           </div>
