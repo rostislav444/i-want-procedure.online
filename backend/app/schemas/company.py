@@ -18,9 +18,10 @@ class CompanyUpdate(BaseModel):
     # Template settings
     template_type: str | None = None  # solo, clinic
     industry_theme: str | None = None  # cosmetology, medical, massage, sport, beauty, wellness
-    primary_color: str | None = None  # Legacy HEX color
-    accent_color: str | None = None  # HEX accent color
-    background_color: str | None = None  # HEX background color
+    primary_color: str | None = None  # Main brand color
+    accent_color: str | None = None  # Alias for primary_color
+    secondary_color: str | None = None  # Secondary accent color
+    background_color: str | None = None  # Page background color
     accent_font: str | None = None  # Accent/heading font
     body_font: str | None = None  # Body text font
     logo_url: str | None = None
@@ -52,8 +53,9 @@ class CompanyResponse(BaseModel):
     # Template settings
     template_type: str = "solo"
     industry_theme: str = "cosmetology"
-    primary_color: str | None = None  # Legacy
+    primary_color: str | None = None
     accent_color: str | None = None
+    secondary_color: str | None = None
     background_color: str | None = None
     accent_font: str | None = None
     body_font: str | None = None
@@ -87,8 +89,9 @@ class CompanyPublicResponse(BaseModel):
     # Template settings for public display
     template_type: str = "solo"
     industry_theme: str = "cosmetology"
-    primary_color: str | None = None  # Legacy
+    primary_color: str | None = None
     accent_color: str | None = None
+    secondary_color: str | None = None
     background_color: str | None = None
     accent_font: str | None = None
     body_font: str | None = None

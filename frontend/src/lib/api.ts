@@ -374,11 +374,15 @@ export interface Company {
   // Template settings
   template_type: string
   industry_theme: string | null
-  primary_color: string | null  // Legacy
+  // Colors (3-color system)
+  primary_color: string | null
   accent_color: string | null
+  secondary_color: string | null
   background_color: string | null
+  // Fonts
   accent_font: string | null
   body_font: string | null
+  // Images
   logo_url: string | null
   cover_image_url: string | null
   // Additional info

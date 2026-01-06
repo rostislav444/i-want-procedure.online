@@ -72,10 +72,11 @@ class Company(Base):
     # Template settings
     template_type: Mapped[str] = mapped_column(String(20), default="solo")  # solo, clinic
     industry_theme: Mapped[str] = mapped_column(String(30), default="cosmetology")  # IndustryTheme enum
-    # Colors
-    primary_color: Mapped[str | None] = mapped_column(String(7), nullable=True)  # Legacy, use accent_color
-    accent_color: Mapped[str | None] = mapped_column(String(7), nullable=True)  # HEX, e.g. #e91e63
-    background_color: Mapped[str | None] = mapped_column(String(7), nullable=True)  # HEX for background
+    # Colors (3-color system: primary, secondary, background)
+    primary_color: Mapped[str | None] = mapped_column(String(7), nullable=True)  # Main brand color (buttons, links)
+    accent_color: Mapped[str | None] = mapped_column(String(7), nullable=True)  # Alias for primary_color
+    secondary_color: Mapped[str | None] = mapped_column(String(7), nullable=True)  # Secondary accent (hover, borders)
+    background_color: Mapped[str | None] = mapped_column(String(7), nullable=True)  # Page background
     # Fonts
     accent_font: Mapped[str | None] = mapped_column(String(100), nullable=True)  # e.g. "Playfair Display"
     body_font: Mapped[str | None] = mapped_column(String(100), nullable=True)  # e.g. "Inter"

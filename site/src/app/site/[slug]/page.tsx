@@ -5,6 +5,8 @@ import { SoloTemplate, ClinicTemplate } from '@/components/templates'
 import { SectionRenderer } from '@/components/SectionRenderer'
 import CompanyHeader from '@/components/CompanyHeader'
 import CompanyFooter from '@/components/CompanyFooter'
+import { generateCssVariables, defaultColors } from '@/lib/colors'
+import { getTheme, getThemeShapeVars } from '@/lib/themes'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -56,22 +58,47 @@ export default async function CompanyPage({ params }: Props) {
     notFound()
   }
 
+  // Generate CSS variables from company colors
+  const colorVars = generateCssVariables({
+    primary: company.primary_color || company.accent_color || defaultColors.primary,
+    secondary: company.secondary_color || defaultColors.secondary,
+    background: company.background_color || defaultColors.background,
+    accentFont: company.accent_font || defaultColors.accentFont,
+    bodyFont: company.body_font || defaultColors.bodyFont,
+  })
+
+  // Get theme shape variables
+  const theme = getTheme(company.industry_theme)
+  const shapeVars = getThemeShapeVars(theme)
+
+  // Combined CSS variables
+  const cssVariables = `${colorVars}\n${shapeVars}`
+
   // Check if we should use the new section-based rendering
   const useSectionRenderer = sections.length > 0
 
   if (useSectionRenderer) {
     // New section-based rendering
     return (
-      <main className="min-h-screen bg-background">
-        <CompanyHeader />
-        <SectionRenderer
-          sections={sections}
-          company={company}
-          services={services}
-          categories={categories}
-        />
-        <CompanyFooter companyName={company.name} />
-      </main>
+      <>
+        <style dangerouslySetInnerHTML={{ __html: cssVariables }} />
+        <main
+          className="min-h-screen"
+          style={{
+            backgroundColor: 'var(--color-background)',
+            fontFamily: 'var(--font-body)',
+          }}
+        >
+          <CompanyHeader />
+          <SectionRenderer
+            sections={sections}
+            company={company}
+            services={services}
+            categories={categories}
+          />
+          <CompanyFooter companyName={company.name} />
+        </main>
+      </>
     )
   }
 
@@ -97,14 +124,33 @@ export default async function CompanyPage({ params }: Props) {
   // Select template based on company settings
   const templateType = company.template_type || 'solo'
 
+  // Wrapper with CSS variables for legacy templates
+  const TemplateWrapper = ({ children }: { children: React.ReactNode }) => (
+    <>
+      <style dangerouslySetInnerHTML={{ __html: cssVariables }} />
+      <div style={{ fontFamily: 'var(--font-body)' }}>{children}</div>
+    </>
+  )
+
   switch (templateType) {
     case 'clinic':
-      return <ClinicTemplate {...templateProps} />
+      return (
+        <TemplateWrapper>
+          <ClinicTemplate {...templateProps} />
+        </TemplateWrapper>
+      )
     case 'premium':
-      // Premium template will use ClinicTemplate for now (can be extended later)
-      return <ClinicTemplate {...templateProps} />
+      return (
+        <TemplateWrapper>
+          <ClinicTemplate {...templateProps} />
+        </TemplateWrapper>
+      )
     case 'solo':
     default:
-      return <SoloTemplate {...templateProps} />
+      return (
+        <TemplateWrapper>
+          <SoloTemplate {...templateProps} />
+        </TemplateWrapper>
+      )
   }
 }

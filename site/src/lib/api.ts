@@ -31,7 +31,15 @@ export interface Company {
   // Template settings
   template_type?: string
   industry_theme?: string  // cosmetology, medical, massage, sport, beauty, wellness
-  primary_color?: string
+  // Colors (3-color system)
+  primary_color?: string    // Main brand color
+  accent_color?: string     // Alias for primary
+  secondary_color?: string  // Secondary accent
+  background_color?: string // Page background
+  // Fonts
+  accent_font?: string      // Heading font
+  body_font?: string        // Body text font
+  // Images
   logo_url?: string
   cover_image_url?: string
   // Additional info
