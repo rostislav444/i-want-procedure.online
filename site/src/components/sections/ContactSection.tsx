@@ -1,6 +1,6 @@
 'use client'
 
-import { Phone, MessageCircle, Mail, MapPin, Instagram, Facebook } from 'lucide-react'
+import { Phone, MessageCircle, MapPin, Instagram, Facebook, Clock, ArrowRight, Send } from 'lucide-react'
 import { Company } from '@/lib/api'
 import { IndustryTheme } from '@/lib/themes'
 
@@ -22,8 +22,10 @@ export function ContactSection({ content, theme, company }: Props) {
   const title = content.title || 'Контакти'
   const showPhone = content.show_phone !== false
   const showTelegram = content.show_telegram !== false
-  const showEmail = content.show_email !== false
   const showAddress = content.show_address !== false
+
+  // Generate Telegram bot link
+  const telegramBotLink = `https://t.me/i_want_procedure_bot?start=${company.slug || company.id}`
 
   // Parse social links
   let socialLinks: { instagram?: string; facebook?: string } = {}
@@ -34,40 +36,57 @@ export function ContactSection({ content, theme, company }: Props) {
   }
 
   return (
-    <section className="py-16" style={{ backgroundColor: 'var(--color-background-alt)' }}>
-      <div className="max-w-5xl mx-auto px-4">
-        <h2
-          className="text-3xl font-bold text-center mb-12"
-          style={{ fontFamily: 'var(--font-accent)', color: 'var(--color-text)' }}
-        >
-          {title}
-        </h2>
+    <section className="py-20 lg:py-32 relative overflow-hidden" style={{ backgroundColor: 'var(--color-background-alt)' }}>
+      {/* Decorative background */}
+      <div
+        className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full blur-[150px] opacity-20 pointer-events-none"
+        style={{ background: 'var(--color-primary-500)' }}
+      />
+      <div
+        className="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full blur-[120px] opacity-15 pointer-events-none"
+        style={{ background: 'var(--color-secondary-500)' }}
+      />
 
-        <div
-          className="p-8 md:p-12"
-          style={{
-            backgroundColor: 'var(--color-surface)',
-            borderRadius: theme.borderRadius.card,
-            boxShadow: theme.shadow.card,
-          }}
-        >
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Contact info */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* Header */}
+        <div className="text-center mb-16">
+          <h2
+            className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6"
+            style={{ fontFamily: 'var(--font-accent)', color: 'var(--color-text)' }}
+          >
+            {title}
+          </h2>
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
+          {/* Contact Info Card */}
+          <div
+            className="p-8 md:p-10"
+            style={{
+              backgroundColor: 'var(--color-surface)',
+              borderRadius: theme.borderRadius.card,
+              boxShadow: theme.shadow.card,
+            }}
+          >
+            <h3 className="text-2xl font-bold mb-8" style={{ color: 'var(--color-text)' }}>
+              Зв'яжіться з нами
+            </h3>
+
             <div className="space-y-6">
               {showPhone && company.phone && (
                 <a
                   href={`tel:${company.phone}`}
-                  className="flex items-center gap-4 group"
+                  className="group flex items-center gap-4"
                 >
                   <div
-                    className="w-14 h-14 rounded-xl flex items-center justify-center transition-colors group-hover:scale-105"
+                    className="w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110"
                     style={{ backgroundColor: 'var(--color-primary-100)' }}
                   >
                     <Phone className="w-6 h-6" style={{ color: 'var(--color-primary-500)' }} />
                   </div>
                   <div>
-                    <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>Телефон</p>
-                    <p className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>{company.phone}</p>
+                    <p className="text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>Телефон</p>
+                    <p className="text-lg font-bold" style={{ color: 'var(--color-text)' }}>{company.phone}</p>
                   </div>
                 </a>
               )}
@@ -77,14 +96,17 @@ export function ContactSection({ content, theme, company }: Props) {
                   href={`https://t.me/${company.telegram.replace('@', '')}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-4 group"
+                  className="group flex items-center gap-4"
                 >
-                  <div className="w-14 h-14 rounded-xl flex items-center justify-center bg-sky-500/20 transition-colors group-hover:scale-105">
-                    <MessageCircle className="w-6 h-6 text-sky-500" />
+                  <div
+                    className="w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110"
+                    style={{ backgroundColor: 'var(--color-primary-100)' }}
+                  >
+                    <Send className="w-6 h-6" style={{ color: 'var(--color-primary-500)' }} />
                   </div>
                   <div>
-                    <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>Telegram</p>
-                    <p className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>{company.telegram}</p>
+                    <p className="text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>Telegram</p>
+                    <p className="text-lg font-bold" style={{ color: 'var(--color-text)' }}>{company.telegram}</p>
                   </div>
                 </a>
               )}
@@ -92,74 +114,123 @@ export function ContactSection({ content, theme, company }: Props) {
               {showAddress && company.address && (
                 <div className="flex items-center gap-4">
                   <div
-                    className="w-14 h-14 rounded-xl flex items-center justify-center"
+                    className="w-14 h-14 rounded-2xl flex items-center justify-center"
                     style={{ backgroundColor: 'var(--color-primary-100)' }}
                   >
                     <MapPin className="w-6 h-6" style={{ color: 'var(--color-primary-500)' }} />
                   </div>
                   <div>
-                    <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>Адреса</p>
-                    <p className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>{company.address}</p>
+                    <p className="text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>Адреса</p>
+                    <p className="text-lg font-bold" style={{ color: 'var(--color-text)' }}>{company.address}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Working hours */}
+              {company.working_hours && (
+                <div className="flex items-center gap-4">
+                  <div
+                    className="w-14 h-14 rounded-2xl flex items-center justify-center"
+                    style={{ backgroundColor: 'var(--color-primary-100)' }}
+                  >
+                    <Clock className="w-6 h-6" style={{ color: 'var(--color-primary-500)' }} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>Графік роботи</p>
+                    <p className="text-lg font-bold" style={{ color: 'var(--color-text)' }}>{company.working_hours}</p>
                   </div>
                 </div>
               )}
 
               {/* Social links */}
               {(socialLinks.instagram || socialLinks.facebook) && (
-                <div className="flex items-center gap-3 pt-4">
-                  {socialLinks.instagram && (
-                    <a
-                      href={`https://instagram.com/${socialLinks.instagram.replace('@', '')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 text-white flex items-center justify-center hover:opacity-90 transition-opacity"
-                    >
-                      <Instagram className="w-5 h-5" />
-                    </a>
-                  )}
-                  {socialLinks.facebook && (
-                    <a
-                      href={socialLinks.facebook.startsWith('http') ? socialLinks.facebook : `https://facebook.com/${socialLinks.facebook}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition-colors"
-                    >
-                      <Facebook className="w-5 h-5" />
-                    </a>
-                  )}
+                <div className="pt-6 border-t" style={{ borderColor: 'var(--color-surface-border)' }}>
+                  <p className="text-sm font-medium mb-4" style={{ color: 'var(--color-text-muted)' }}>
+                    Ми в соцмережах
+                  </p>
+                  <div className="flex items-center gap-3">
+                    {socialLinks.instagram && (
+                      <a
+                        href={`https://instagram.com/${socialLinks.instagram.replace('@', '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 text-white flex items-center justify-center hover:opacity-90 hover:scale-110 transition-all"
+                      >
+                        <Instagram className="w-5 h-5" />
+                      </a>
+                    )}
+                    {socialLinks.facebook && (
+                      <a
+                        href={socialLinks.facebook.startsWith('http') ? socialLinks.facebook : `https://facebook.com/${socialLinks.facebook}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 hover:scale-110 transition-all"
+                      >
+                        <Facebook className="w-5 h-5" />
+                      </a>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
+          </div>
 
-            {/* CTA */}
-            <div className="flex flex-col justify-center items-center md:items-end text-center md:text-right">
-              <p className="mb-4" style={{ color: 'var(--color-text-muted)' }}>
-                Записуйтесь на процедури онлайн через Telegram бот
+          {/* CTA Card */}
+          <div
+            className="p-8 md:p-10 flex flex-col justify-center"
+            style={{
+              background: `linear-gradient(135deg, var(--color-primary-500), var(--color-secondary-500))`,
+              borderRadius: theme.borderRadius.card,
+            }}
+          >
+            <div className="text-white">
+              <h3 className="text-2xl md:text-3xl font-bold mb-4">
+                Записатися на процедуру
+              </h3>
+              <p className="text-white/80 text-lg mb-8">
+                Швидко та зручно через Telegram бот. Оберіть послугу, час та отримайте підтвердження миттєво.
               </p>
-              {company.telegram && (
-                <a
-                  href={`https://t.me/${company.telegram.replace('@', '')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-8 py-4 font-semibold hover:opacity-90 transition-opacity"
-                  style={{
-                    backgroundColor: 'var(--color-primary-500)',
-                    color: 'var(--color-primary-contrast)',
-                    borderRadius: theme.borderRadius.button,
-                  }}
-                >
-                  <MessageCircle className="w-5 h-5" />
-                  Записатися в Telegram
-                </a>
-              )}
 
-              {/* Working hours */}
-              {company.working_hours && (
-                <div className="mt-6 text-sm" style={{ color: 'var(--color-text-muted)' }}>
-                  <p className="font-medium">Графік роботи:</p>
-                  <p>{company.working_hours}</p>
+              {/* Features */}
+              <div className="space-y-3 mb-8">
+                <div className="flex items-center gap-3">
+                  <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <span className="text-white/90">Вибір зручного часу</span>
                 </div>
-              )}
+                <div className="flex items-center gap-3">
+                  <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <span className="text-white/90">Миттєве підтвердження</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <span className="text-white/90">Нагадування про візит</span>
+                </div>
+              </div>
+
+              {/* CTA Button */}
+              <a
+                href={telegramBotLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-3 px-8 py-4 font-bold text-lg rounded-2xl bg-white hover:bg-white/90 transition-all hover:scale-105 shadow-xl"
+                style={{ color: 'var(--color-primary-700)' }}
+              >
+                <MessageCircle className="w-6 h-6" />
+                Записатися в Telegram
+                <ArrowRight className="w-5 h-5" />
+              </a>
             </div>
           </div>
         </div>

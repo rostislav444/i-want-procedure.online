@@ -1,6 +1,6 @@
 'use client'
 
-import { Shield, Clock, Award, Heart, Star, Check, Zap, Users } from 'lucide-react'
+import { Shield, Clock, Award, Heart, Star, Check, Zap, Users, Sparkles } from 'lucide-react'
 import { Company } from '@/lib/api'
 import { IndustryTheme } from '@/lib/themes'
 
@@ -31,6 +31,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string; style?: 
   check: Check,
   zap: Zap,
   users: Users,
+  sparkles: Sparkles,
 }
 
 const defaultBenefits = [
@@ -41,25 +42,34 @@ const defaultBenefits = [
 ]
 
 export function BenefitsSection({ content, theme, company }: Props) {
-  const title = content.title || 'Чому обирають нас'
+  const title = content.title || 'Чому обирають мене'
   const subtitle = content.subtitle
   const benefits = content.benefits?.length ? content.benefits : defaultBenefits
   const layout = content.layout || 'grid'
   const columns = content.columns || 4
 
   return (
-    <section className="py-16 md:py-24" style={{ backgroundColor: 'var(--color-background-alt)' }}>
-      <div className="max-w-6xl mx-auto px-4">
+    <section className="py-20 lg:py-32 relative overflow-hidden" style={{ backgroundColor: 'var(--color-background)' }}>
+      {/* Background decorations */}
+      <div
+        className="absolute inset-0 opacity-5"
+        style={{
+          backgroundImage: `radial-gradient(circle at 20% 50%, var(--color-primary-500) 0%, transparent 50%),
+                           radial-gradient(circle at 80% 80%, var(--color-secondary-500) 0%, transparent 50%)`,
+        }}
+      />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-16">
           <h2
-            className="text-3xl md:text-4xl font-bold mb-4"
+            className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6"
             style={{ fontFamily: 'var(--font-accent)', color: 'var(--color-text)' }}
           >
             {title}
           </h2>
           {subtitle && (
-            <p className="text-lg max-w-2xl mx-auto" style={{ color: 'var(--color-text-muted)' }}>
+            <p className="text-lg md:text-xl max-w-2xl mx-auto" style={{ color: 'var(--color-text-muted)' }}>
               {subtitle}
             </p>
           )}
@@ -102,27 +112,37 @@ function GridLayout({ benefits, theme, columns = 4 }: LayoutProps) {
         return (
           <div
             key={index}
-            className="p-6 text-center transition-transform hover:scale-[1.02]"
+            className="group p-8 text-center transition-all duration-300 hover:scale-[1.02] relative overflow-hidden"
             style={{
               backgroundColor: 'var(--color-surface)',
               borderRadius: theme.borderRadius.card,
               boxShadow: theme.shadow.card,
             }}
           >
+            {/* Hover gradient */}
             <div
-              className="w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-4"
-              style={{ backgroundColor: 'var(--color-primary-100)' }}
-            >
-              <IconComponent className="w-7 h-7" style={{ color: 'var(--color-primary-500)' }} />
+              className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-300"
+              style={{
+                background: `linear-gradient(135deg, var(--color-primary-500), var(--color-secondary-500))`,
+              }}
+            />
+
+            <div className="relative z-10">
+              <div
+                className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5 transition-transform duration-300 group-hover:scale-110"
+                style={{ backgroundColor: 'var(--color-primary-100)' }}
+              >
+                <IconComponent className="w-8 h-8" style={{ color: 'var(--color-primary-500)' }} />
+              </div>
+              <h3 className="font-bold text-lg mb-3" style={{ color: 'var(--color-text)' }}>
+                {benefit.title}
+              </h3>
+              {benefit.description && (
+                <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>
+                  {benefit.description}
+                </p>
+              )}
             </div>
-            <h3 className="font-semibold text-lg mb-2" style={{ color: 'var(--color-text)' }}>
-              {benefit.title}
-            </h3>
-            {benefit.description && (
-              <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-                {benefit.description}
-              </p>
-            )}
           </div>
         )
       })}
@@ -132,13 +152,13 @@ function GridLayout({ benefits, theme, columns = 4 }: LayoutProps) {
 
 function ListLayout({ benefits, theme }: LayoutProps) {
   return (
-    <div className="max-w-2xl mx-auto space-y-4">
+    <div className="max-w-3xl mx-auto space-y-4">
       {benefits.map((benefit, index) => {
         const IconComponent = iconMap[benefit.icon || 'star'] || Star
         return (
           <div
             key={index}
-            className="flex items-start gap-4 p-5"
+            className="group flex items-start gap-5 p-6 transition-all duration-300 hover:scale-[1.01]"
             style={{
               backgroundColor: 'var(--color-surface)',
               borderRadius: theme.borderRadius.card,
@@ -146,17 +166,17 @@ function ListLayout({ benefits, theme }: LayoutProps) {
             }}
           >
             <div
-              className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+              className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-110"
               style={{ backgroundColor: 'var(--color-primary-100)' }}
             >
-              <IconComponent className="w-6 h-6" style={{ color: 'var(--color-primary-500)' }} />
+              <IconComponent className="w-7 h-7" style={{ color: 'var(--color-primary-500)' }} />
             </div>
             <div>
-              <h3 className="font-semibold text-lg mb-1" style={{ color: 'var(--color-text)' }}>
+              <h3 className="font-bold text-lg mb-2" style={{ color: 'var(--color-text)' }}>
                 {benefit.title}
               </h3>
               {benefit.description && (
-                <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>
                   {benefit.description}
                 </p>
               )}
@@ -170,7 +190,7 @@ function ListLayout({ benefits, theme }: LayoutProps) {
 
 function AlternatingLayout({ benefits, theme }: LayoutProps) {
   return (
-    <div className="space-y-8">
+    <div className="space-y-12 max-w-4xl mx-auto">
       {benefits.map((benefit, index) => {
         const IconComponent = iconMap[benefit.icon || 'star'] || Star
         const isEven = index % 2 === 0
@@ -180,19 +200,19 @@ function AlternatingLayout({ benefits, theme }: LayoutProps) {
             className={`flex flex-col md:flex-row items-center gap-8 ${isEven ? '' : 'md:flex-row-reverse'}`}
           >
             <div
-              className="w-24 h-24 rounded-2xl flex items-center justify-center flex-shrink-0"
+              className="w-28 h-28 rounded-3xl flex items-center justify-center flex-shrink-0 shadow-xl"
               style={{
                 background: 'linear-gradient(135deg, var(--color-primary-500), var(--color-secondary-500))',
               }}
             >
-              <IconComponent className="w-12 h-12 text-white" />
+              <IconComponent className="w-14 h-14 text-white" />
             </div>
-            <div className={`text-center md:text-left ${isEven ? '' : 'md:text-right'}`}>
-              <h3 className="font-semibold text-xl mb-2" style={{ color: 'var(--color-text)' }}>
+            <div className={`text-center md:text-left flex-1 ${isEven ? '' : 'md:text-right'}`}>
+              <h3 className="font-bold text-2xl mb-3" style={{ color: 'var(--color-text)' }}>
                 {benefit.title}
               </h3>
               {benefit.description && (
-                <p className="text-base" style={{ color: 'var(--color-text-muted)' }}>
+                <p className="text-lg leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>
                   {benefit.description}
                 </p>
               )}

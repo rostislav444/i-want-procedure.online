@@ -107,8 +107,9 @@ export default async function CompanyPage({ params }: Props) {
   }
 
   // Generate CSS variables from company colors
+  // accent_color is the new field used by admin, primary_color is legacy
   const colorVars = generateCssVariables({
-    primary: company.primary_color || company.accent_color || defaultColors.primary,
+    primary: company.accent_color || company.primary_color || defaultColors.primary,
     secondary: company.secondary_color || defaultColors.secondary,
     background: company.background_color || defaultColors.background,
     accentFont: company.accent_font || defaultColors.accentFont,
