@@ -159,9 +159,19 @@ export function generateCssVariables(config: ColorConfig): string {
   const surfaceHover = isDarkBackground ? bg[800] : bg[50]
   const surfaceBorder = isDarkBackground ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
 
-  // Background variations - for dark mode use darker variants, for light mode use lighter
-  const backgroundAlt = isDarkBackground ? bg[800] : bg[100]
+  // Background variations - alternating backgrounds for visual separation
+  // Alt background is ALWAYS contrasting (light for dark theme, slightly different for light theme)
+  const backgroundAlt = isDarkBackground ? bg[100] : bg[100]
   const backgroundMuted = isDarkBackground ? bg[700] : bg[200]
+
+  // Text colors for alternate (light) backgrounds - always dark text
+  const textOnAlt = '#1f2937'
+  const textMutedOnAlt = '#6b7280'
+  const textLightOnAlt = '#9ca3af'
+
+  // Surface colors for alternate backgrounds
+  const surfaceOnAlt = '#ffffff'
+  const surfaceBorderOnAlt = 'rgba(0, 0, 0, 0.1)'
 
   return `
     :root {
@@ -199,6 +209,15 @@ export function generateCssVariables(config: ColorConfig): string {
       --color-text: ${textColor};
       --color-text-muted: ${textMuted};
       --color-text-light: ${textLight};
+
+      /* Text colors for alternate (light) backgrounds */
+      --color-text-on-alt: ${textOnAlt};
+      --color-text-muted-on-alt: ${textMutedOnAlt};
+      --color-text-light-on-alt: ${textLightOnAlt};
+
+      /* Surface colors for alternate backgrounds */
+      --color-surface-on-alt: ${surfaceOnAlt};
+      --color-surface-border-on-alt: ${surfaceBorderOnAlt};
 
       /* Theme mode flag (0 = light, 1 = dark) */
       --is-dark-mode: ${isDarkBackground ? '1' : '0'};

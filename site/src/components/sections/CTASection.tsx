@@ -65,7 +65,7 @@ export function CTASection({ content, theme, company }: Props) {
           className="text-3xl md:text-5xl font-bold mb-4"
           style={{
             fontFamily: 'var(--font-accent)',
-            color: background === 'solid' ? 'var(--color-text)' : '#ffffff',
+            color: background === 'solid' ? 'var(--color-text-on-alt)' : '#ffffff',
           }}
         >
           {title}
@@ -74,7 +74,7 @@ export function CTASection({ content, theme, company }: Props) {
         <p
           className="text-lg md:text-xl mb-8 max-w-2xl mx-auto"
           style={{
-            color: background === 'solid' ? 'var(--color-text-muted)' : 'rgba(255, 255, 255, 0.9)',
+            color: background === 'solid' ? 'var(--color-text-muted-on-alt)' : 'rgba(255, 255, 255, 0.9)',
           }}
         >
           {subtitle}

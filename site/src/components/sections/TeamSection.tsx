@@ -52,12 +52,12 @@ export function TeamSection({ content, theme, company }: Props) {
         <div className="text-center mb-12">
           <h2
             className="text-3xl md:text-4xl font-bold mb-4"
-            style={{ fontFamily: 'var(--font-accent)', color: 'var(--color-text)' }}
+            style={{ fontFamily: 'var(--font-accent)', color: 'var(--color-text-on-alt)' }}
           >
             {title}
           </h2>
           {subtitle && (
-            <p className="text-lg max-w-2xl mx-auto" style={{ color: 'var(--color-text-muted)' }}>
+            <p className="text-lg max-w-2xl mx-auto" style={{ color: 'var(--color-text-muted-on-alt)' }}>
               {subtitle}
             </p>
           )}
@@ -213,7 +213,7 @@ function FeaturedLayout({ member, theme, apiUrl }: FeaturedLayoutProps) {
       <div>
         <h3
           className="font-bold text-3xl md:text-4xl mb-2"
-          style={{ fontFamily: 'var(--font-accent)', color: 'var(--color-text)' }}
+          style={{ fontFamily: 'var(--font-accent)', color: 'var(--color-text-on-alt)' }}
         >
           {member.name}
         </h3>
@@ -223,7 +223,7 @@ function FeaturedLayout({ member, theme, apiUrl }: FeaturedLayoutProps) {
           </p>
         )}
         {member.description && (
-          <p className="text-lg leading-relaxed mb-6" style={{ color: 'var(--color-text-muted)' }}>
+          <p className="text-lg leading-relaxed mb-6" style={{ color: 'var(--color-text-muted-on-alt)' }}>
             {member.description}
           </p>
         )}
