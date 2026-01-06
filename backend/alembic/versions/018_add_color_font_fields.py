@@ -1,7 +1,7 @@
 """Add accent_color, background_color, accent_font, body_font fields to companies
 
-Revision ID: 018_add_color_font_fields
-Revises: 017_add_website_sections
+Revision ID: 018
+Revises: 017
 Create Date: 2026-01-06
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '018_add_color_font_fields'
-down_revision = '017_add_website_sections'
+revision = '018'
+down_revision = '017'
 branch_labels = None
 depends_on = None
 
