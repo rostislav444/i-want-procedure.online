@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from app.models.subscription import Subscription, Payment
     from app.models.specialty import Specialty
     from app.models.profiles import SpecialistProfile, ManagerProfile, ClientProfile
+    from app.models.website_section import WebsiteSection
 
 
 def generate_invite_code() -> str:
@@ -25,6 +26,15 @@ def generate_invite_code() -> str:
 class CompanyType(str, Enum):
     SOLO = "solo"
     CLINIC = "clinic"
+
+
+class IndustryTheme(str, Enum):
+    COSMETOLOGY = "cosmetology"
+    MEDICAL = "medical"
+    MASSAGE = "massage"
+    SPORT = "sport"
+    BEAUTY = "beauty"
+    WELLNESS = "wellness"
 
 
 def generate_slug(name: str) -> str:
@@ -61,9 +71,11 @@ class Company(Base):
 
     # Template settings
     template_type: Mapped[str] = mapped_column(String(20), default="solo")  # solo, clinic, premium
+    industry_theme: Mapped[str] = mapped_column(String(30), default="cosmetology")  # IndustryTheme enum
     primary_color: Mapped[str | None] = mapped_column(String(7), nullable=True)  # HEX color, e.g. #e91e63
     logo_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     cover_image_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    website_enabled: Mapped[bool] = mapped_column(default=True)
 
     # Additional info for public page
     specialization: Mapped[str | None] = mapped_column(String(200), nullable=True)  # "Косметолог", "Стоматологія"
@@ -113,4 +125,11 @@ class Company(Base):
     client_profiles: Mapped[list["ClientProfile"]] = relationship(
         back_populates="company",
         cascade="all, delete-orphan"
+    )
+
+    # Website sections
+    website_sections: Mapped[list["WebsiteSection"]] = relationship(
+        back_populates="company",
+        cascade="all, delete-orphan",
+        order_by="WebsiteSection.order"
     )

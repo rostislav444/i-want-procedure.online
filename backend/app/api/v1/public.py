@@ -6,8 +6,10 @@ from sqlalchemy.orm import selectinload
 from app.api.deps import DbSession
 from app.models.company import Company
 from app.models.service import Service, ServiceCategory
+from app.models.website_section import WebsiteSection
 from app.schemas.company import CompanyPublicResponse
 from app.schemas.service import ServiceResponse, ServiceCategoryTreeResponse
+from app.schemas.website_section import WebsiteSectionResponse
 
 router = APIRouter(prefix="/public")
 
@@ -86,3 +88,30 @@ async def get_company_categories(slug: str, db: DbSession):
         return children
 
     return build_tree(None)
+
+
+@router.get("/companies/{slug}/website-sections", response_model=list[WebsiteSectionResponse])
+async def get_company_website_sections(slug: str, db: DbSession):
+    """Get visible website sections for a company"""
+    # First get the company
+    result = await db.execute(
+        select(Company).where(Company.slug == slug)
+    )
+    company = result.scalar_one_or_none()
+    if not company:
+        raise HTTPException(status_code=404, detail="Company not found")
+
+    # Check if website is enabled
+    if not company.website_enabled:
+        raise HTTPException(status_code=404, detail="Website not enabled")
+
+    # Get visible sections ordered
+    result = await db.execute(
+        select(WebsiteSection)
+        .where(
+            WebsiteSection.company_id == company.id,
+            WebsiteSection.is_visible == True
+        )
+        .order_by(WebsiteSection.order)
+    )
+    return result.scalars().all()

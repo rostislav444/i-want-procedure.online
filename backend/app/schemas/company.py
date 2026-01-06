@@ -17,9 +17,11 @@ class CompanyUpdate(BaseModel):
     telegram: str | None = None
     # Template settings
     template_type: str | None = None  # solo, clinic, premium
+    industry_theme: str | None = None  # cosmetology, medical, massage, sport, beauty, wellness
     primary_color: str | None = None  # HEX color
     logo_url: str | None = None
     cover_image_url: str | None = None
+    website_enabled: bool | None = None
     # Additional info
     specialization: str | None = None
     working_hours: str | None = None
@@ -45,9 +47,11 @@ class CompanyResponse(BaseModel):
     created_at: datetime
     # Template settings
     template_type: str = "solo"
+    industry_theme: str = "cosmetology"
     primary_color: str | None = None
     logo_url: str | None = None
     cover_image_url: str | None = None
+    website_enabled: bool = True
     # Additional info
     specialization: str | None = None
     working_hours: str | None = None
@@ -74,6 +78,7 @@ class CompanyPublicResponse(BaseModel):
     telegram: str | None = None
     # Template settings for public display
     template_type: str = "solo"
+    industry_theme: str = "cosmetology"
     primary_color: str | None = None
     logo_url: str | None = None
     cover_image_url: str | None = None

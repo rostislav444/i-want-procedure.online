@@ -30,6 +30,7 @@ export interface Company {
   telegram?: string
   // Template settings
   template_type?: string
+  industry_theme?: string  // cosmetology, medical, massage, sport, beauty, wellness
   primary_color?: string
   logo_url?: string
   cover_image_url?: string
@@ -37,6 +38,18 @@ export interface Company {
   specialization?: string
   working_hours?: string
   social_links?: string
+}
+
+export interface WebsiteSection {
+  id: number
+  company_id: number
+  section_type: string
+  order: number
+  is_visible: boolean
+  content: Record<string, unknown>
+  style?: Record<string, unknown>
+  created_at: string
+  updated_at: string
 }
 
 export interface ServiceCategory {
@@ -87,4 +100,8 @@ export const publicApi = {
   // Get service categories for a company
   getCategories: (companySlug: string) =>
     fetchApi<ServiceCategory[]>(`/public/companies/${companySlug}/categories`),
+
+  // Get website sections for a company
+  getWebsiteSections: (companySlug: string) =>
+    fetchApi<WebsiteSection[]>(`/public/companies/${companySlug}/website-sections`),
 }

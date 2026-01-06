@@ -1,7 +1,10 @@
 import { notFound } from 'next/navigation'
-import { publicApi, Service, ServiceCategory } from '@/lib/api'
+import { publicApi, Service, ServiceCategory, WebsiteSection } from '@/lib/api'
 import type { Metadata } from 'next'
 import { SoloTemplate, ClinicTemplate } from '@/components/templates'
+import { SectionRenderer } from '@/components/SectionRenderer'
+import CompanyHeader from '@/components/CompanyHeader'
+import CompanyFooter from '@/components/CompanyFooter'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -29,17 +32,50 @@ export default async function CompanyPage({ params }: Props) {
   let company
   let categories: ServiceCategory[] = []
   let services: Service[] = []
+  let sections: WebsiteSection[] = []
 
   try {
-    ;[company, categories, services] = await Promise.all([
+    // Fetch all data in parallel
+    const [companyData, categoriesData, servicesData] = await Promise.all([
       publicApi.getCompany(slug),
       publicApi.getCategories(slug),
       publicApi.getServices(slug),
     ])
+    company = companyData
+    categories = categoriesData
+    services = servicesData
+
+    // Try to fetch sections (may not exist for older companies)
+    try {
+      sections = await publicApi.getWebsiteSections(slug)
+    } catch {
+      // Sections not available, will use legacy templates
+      sections = []
+    }
   } catch (error) {
     notFound()
   }
 
+  // Check if we should use the new section-based rendering
+  const useSectionRenderer = sections.length > 0
+
+  if (useSectionRenderer) {
+    // New section-based rendering
+    return (
+      <main className="min-h-screen bg-background">
+        <CompanyHeader />
+        <SectionRenderer
+          sections={sections}
+          company={company}
+          services={services}
+          categories={categories}
+        />
+        <CompanyFooter companyName={company.name} />
+      </main>
+    )
+  }
+
+  // Legacy template-based rendering
   // Group services by category - convert to serializable format
   const servicesByCategoryMap: Record<string, Service[]> = {}
   services.forEach((service) => {

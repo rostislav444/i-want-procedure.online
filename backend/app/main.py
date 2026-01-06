@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
-from app.api.v1 import auth, services, schedule, appointments, clients, companies, public, uploads, client_portal, superadmin, specialties
+from app.api.v1 import auth, services, schedule, appointments, clients, companies, public, uploads, client_portal, superadmin, specialties, website_sections
 
 app = FastAPI(
     title="Procedure Booking API",
@@ -32,6 +32,7 @@ app.include_router(uploads.router, prefix=settings.API_V1_PREFIX, tags=["uploads
 app.include_router(client_portal.router, prefix=settings.API_V1_PREFIX, tags=["client-portal"])
 app.include_router(superadmin.router, prefix=settings.API_V1_PREFIX, tags=["superadmin"])
 app.include_router(specialties.router, prefix=settings.API_V1_PREFIX, tags=["specialties"])
+app.include_router(website_sections.router, prefix=settings.API_V1_PREFIX, tags=["website"])
 
 # Static files for uploads
 static_dir = settings.BASE_DIR / "static"

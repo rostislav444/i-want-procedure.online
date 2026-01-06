@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Calendar, Clock, Users, LogOut, Menu, X, LinkIcon, Copy, Check, Home, Scissors, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Calendar, Clock, Users, LogOut, Menu, X, LinkIcon, Copy, Check, Home, Scissors, ChevronLeft, ChevronRight, Globe } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ThemeSettings } from '@/components/theme-settings'
 import { authApi, companyApi } from '@/lib/api'
@@ -15,6 +15,7 @@ const navigation = [
   { name: 'Послуги', href: '/admin/services', icon: Scissors },
   { name: 'Розклад', href: '/admin/schedule', icon: Clock },
   { name: 'Клієнти', href: '/admin/clients', icon: Users },
+  { name: 'Мій сайт', href: '/admin/website', icon: Globe },
 ]
 
 export default function DashboardLayout({

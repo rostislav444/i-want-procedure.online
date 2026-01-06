@@ -376,6 +376,7 @@ export interface Company {
   primary_color: string | null
   logo_url: string | null
   cover_image_url: string | null
+  industry_theme: string | null
   // Additional info
   specialization: string | null
   working_hours: string | null
@@ -408,6 +409,7 @@ export const companyApi = {
     primary_color: string
     logo_url: string
     cover_image_url: string
+    industry_theme: string
     specialization: string
     working_hours: string
     social_links: string
@@ -438,6 +440,78 @@ export const uploadApi = {
     const response = await api.post('/uploads/cover', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
+    return response.data
+  },
+}
+
+// Website Section Types
+export interface WebsiteSection {
+  id: number
+  company_id: number
+  section_type: string
+  order: number
+  is_visible: boolean
+  content: Record<string, unknown>
+  style: Record<string, unknown> | null
+  created_at: string
+  updated_at: string
+}
+
+export interface SectionTypeInfo {
+  type: string
+  name: string
+  description: string
+  icon: string
+  is_premium: boolean
+  default_content: Record<string, unknown>
+}
+
+export interface IndustryThemeInfo {
+  id: string
+  name: string
+  description: string
+  primary_color: string
+  gradient_from: string
+  gradient_to: string
+}
+
+// Website API
+export const websiteApi = {
+  getSections: async (): Promise<WebsiteSection[]> => {
+    const response = await api.get('/website/sections')
+    return response.data
+  },
+  createSection: async (data: {
+    section_type: string
+    content?: Record<string, unknown>
+    style?: Record<string, unknown>
+  }): Promise<WebsiteSection> => {
+    const response = await api.post('/website/sections', data)
+    return response.data
+  },
+  updateSection: async (id: number, data: {
+    content?: Record<string, unknown>
+    style?: Record<string, unknown>
+    is_visible?: boolean
+  }): Promise<WebsiteSection> => {
+    const response = await api.patch(`/website/sections/${id}`, data)
+    return response.data
+  },
+  deleteSection: async (id: number): Promise<void> => {
+    await api.delete(`/website/sections/${id}`)
+  },
+  reorderSections: async (items: { id: number; order: number }[]): Promise<void> => {
+    await api.post('/website/sections/reorder', items)
+  },
+  resetToDefaults: async (): Promise<void> => {
+    await api.post('/website/sections/reset')
+  },
+  getSectionTypes: async (): Promise<SectionTypeInfo[]> => {
+    const response = await api.get('/website/section-types')
+    return response.data
+  },
+  getThemes: async (): Promise<IndustryThemeInfo[]> => {
+    const response = await api.get('/website/themes')
     return response.data
   },
 }
