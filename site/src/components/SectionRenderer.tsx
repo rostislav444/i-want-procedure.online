@@ -7,6 +7,14 @@ import {
   ServicesSection,
   ContactSection,
   MapSection,
+  AboutSection,
+  BenefitsSection,
+  TeamSection,
+  TestimonialsSection,
+  FAQSection,
+  CTASection,
+  GallerySection,
+  PricingSection,
 } from './sections'
 
 interface Props {
@@ -97,18 +105,81 @@ function SectionComponent({ section, theme, company, services, categories }: Sec
         />
       )
 
-    // Add more section types as they are implemented
     case 'about':
-    case 'team':
+      return (
+        <AboutSection
+          content={content as any}
+          theme={theme}
+          company={company}
+        />
+      )
+
     case 'benefits':
-    case 'gallery':
+      return (
+        <BenefitsSection
+          content={content as any}
+          theme={theme}
+          company={company}
+        />
+      )
+
+    case 'team':
+      return (
+        <TeamSection
+          content={content as any}
+          theme={theme}
+          company={company}
+        />
+      )
+
     case 'testimonials':
+      return (
+        <TestimonialsSection
+          content={content as any}
+          theme={theme}
+          company={company}
+        />
+      )
+
     case 'faq':
+      return (
+        <FAQSection
+          content={content as any}
+          theme={theme}
+          company={company}
+        />
+      )
+
     case 'cta':
+      return (
+        <CTASection
+          content={content as any}
+          theme={theme}
+          company={company}
+        />
+      )
+
+    case 'gallery':
+      return (
+        <GallerySection
+          content={content as any}
+          theme={theme}
+          company={company}
+        />
+      )
+
     case 'pricing':
+      return (
+        <PricingSection
+          content={content as any}
+          theme={theme}
+          company={company}
+        />
+      )
+
+    // Sections still in progress
     case 'schedule':
     case 'custom_text':
-      // Placeholder for sections not yet implemented
       return (
         <PlaceholderSection
           sectionType={section.section_type}
@@ -127,14 +198,6 @@ function SectionComponent({ section, theme, company, services, categories }: Sec
  */
 function PlaceholderSection({ sectionType, theme }: { sectionType: string; theme: IndustryTheme }) {
   const sectionNames: Record<string, string> = {
-    about: 'Про нас',
-    team: 'Команда',
-    benefits: 'Переваги',
-    gallery: 'Галерея',
-    testimonials: 'Відгуки',
-    faq: 'FAQ',
-    cta: 'Заклик до дії',
-    pricing: 'Ціни',
     schedule: 'Графік роботи',
     custom_text: 'Текст',
   }

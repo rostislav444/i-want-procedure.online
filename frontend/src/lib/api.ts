@@ -417,6 +417,7 @@ export const companyApi = {
     industry_theme: string
     primary_color: string  // Legacy
     accent_color: string
+    secondary_color: string
     background_color: string
     accent_font: string
     body_font: string

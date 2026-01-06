@@ -135,6 +135,7 @@ export function getContrastColor(hex: string): string {
 
 /**
  * Generate CSS variables string from color config
+ * Now with dynamic text colors based on background brightness
  */
 export function generateCssVariables(config: ColorConfig): string {
   const primary = generateShades(config.primary)
@@ -143,6 +144,20 @@ export function generateCssVariables(config: ColorConfig): string {
 
   const primaryContrast = getContrastColor(config.primary)
   const secondaryContrast = getContrastColor(config.secondary)
+
+  // Determine background brightness for dynamic text colors
+  const bgHsl = hexToHsl(config.background)
+  const isDarkBackground = bgHsl.l < 50
+
+  // Dynamic text colors based on background
+  const textColor = isDarkBackground ? '#f9fafb' : '#1f2937'
+  const textMuted = isDarkBackground ? '#9ca3af' : '#6b7280'
+  const textLight = isDarkBackground ? '#6b7280' : '#9ca3af'
+
+  // Dynamic surface colors
+  const surfaceColor = isDarkBackground ? '#1f2937' : '#ffffff'
+  const surfaceHover = isDarkBackground ? bg[800] : bg[50]
+  const surfaceBorder = isDarkBackground ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
 
   return `
     :root {
@@ -172,13 +187,17 @@ export function generateCssVariables(config: ColorConfig): string {
       --color-background: ${config.background};
       --color-background-alt: ${bg[100]};
       --color-background-muted: ${bg[200]};
-      --color-surface: #ffffff;
-      --color-surface-hover: ${bg[50]};
+      --color-surface: ${surfaceColor};
+      --color-surface-hover: ${surfaceHover};
+      --color-surface-border: ${surfaceBorder};
 
-      /* Text colors */
-      --color-text: #1f2937;
-      --color-text-muted: #6b7280;
-      --color-text-light: #9ca3af;
+      /* Dynamic text colors (adapt to background brightness) */
+      --color-text: ${textColor};
+      --color-text-muted: ${textMuted};
+      --color-text-light: ${textLight};
+
+      /* Theme mode flag (0 = light, 1 = dark) */
+      --is-dark-mode: ${isDarkBackground ? '1' : '0'};
 
       /* Fonts */
       --font-accent: '${config.accentFont}', serif;

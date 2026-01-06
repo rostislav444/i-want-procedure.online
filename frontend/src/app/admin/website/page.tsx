@@ -91,12 +91,25 @@ const ACCENT_COLORS = [
   { value: '#009688', label: 'Бірюзовий' },
 ]
 
+// Secondary colors (for gradients, hover effects)
+const SECONDARY_COLORS = [
+  { value: '#9c27b0', label: 'Фіолетовий' },
+  { value: '#673ab7', label: 'Індіго' },
+  { value: '#3f51b5', label: 'Синій' },
+  { value: '#e91e63', label: 'Рожевий' },
+  { value: '#ff5722', label: 'Глибокий помаранчевий' },
+  { value: '#00bcd4', label: 'Бірюзовий' },
+  { value: '#8bc34a', label: 'Світло-зелений' },
+]
+
 // Background colors
 const BACKGROUND_COLORS = [
   { value: '#ffffff', label: 'Білий' },
   { value: '#fffbeb', label: 'Кремовий' },
   { value: '#f0f4ff', label: 'Світло-синій' },
   { value: '#f0fdf4', label: 'Світло-зелений' },
+  { value: '#1a1a2e', label: 'Темно-синій' },
+  { value: '#0f0f0f', label: 'Чорний' },
 ]
 
 // Font options
@@ -134,6 +147,7 @@ export default function WebsiteBuilderPage() {
   const [brandingData, setBrandingData] = useState({
     template_type: 'solo',
     accent_color: '#e91e63',
+    secondary_color: '#9c27b0',
     background_color: '#ffffff',
     accent_font: 'Playfair Display',
     body_font: 'Inter',
@@ -172,6 +186,7 @@ export default function WebsiteBuilderPage() {
       setBrandingData({
         template_type: companyData.template_type || 'solo',
         accent_color: companyData.accent_color || companyData.primary_color || '#e91e63',
+        secondary_color: companyData.secondary_color || '#9c27b0',
         background_color: companyData.background_color || '#ffffff',
         accent_font: companyData.accent_font || 'Playfair Display',
         body_font: companyData.body_font || 'Inter',
@@ -307,6 +322,7 @@ export default function WebsiteBuilderPage() {
       await companyApi.updateCompany({
         template_type: brandingData.template_type,
         accent_color: brandingData.accent_color,
+        secondary_color: brandingData.secondary_color,
         background_color: brandingData.background_color,
         accent_font: brandingData.accent_font,
         body_font: brandingData.body_font,
@@ -475,51 +491,105 @@ export default function WebsiteBuilderPage() {
             </div>
           </div>
 
-          {/* Accent Color Selection */}
-          <div className="space-y-3">
-            <Label className="flex items-center gap-1">
-              <Palette className="h-4 w-4" /> Акцентний колір
-            </Label>
-            <p className="text-xs text-muted-foreground">Колір кнопок, посилань та акцентів</p>
-            <div className="flex gap-2 flex-wrap">
-              {ACCENT_COLORS.map((color) => (
-                <button
-                  key={color.value}
-                  type="button"
-                  onClick={() => setBrandingData({ ...brandingData, accent_color: color.value })}
-                  className={`w-10 h-10 rounded-full border-2 transition-transform ${
-                    brandingData.accent_color === color.value
-                      ? 'border-foreground scale-110'
-                      : 'border-transparent hover:scale-105'
-                  }`}
-                  style={{ backgroundColor: color.value }}
-                  title={color.label}
-                />
-              ))}
+          {/* Colors Selection - 3 color system */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-2 mb-2">
+              <Palette className="h-4 w-4" />
+              <Label>Кольорова палітра</Label>
             </div>
-          </div>
 
-          {/* Background Color Selection */}
-          <div className="space-y-3">
-            <Label className="flex items-center gap-1">
-              <Palette className="h-4 w-4" /> Колір фону
-            </Label>
-            <p className="text-xs text-muted-foreground">Основний фон сторінки</p>
-            <div className="flex gap-2 flex-wrap">
-              {BACKGROUND_COLORS.map((color) => (
-                <button
-                  key={color.value}
-                  type="button"
-                  onClick={() => setBrandingData({ ...brandingData, background_color: color.value })}
-                  className={`w-12 h-10 rounded-lg border-2 transition-transform ${
-                    brandingData.background_color === color.value
-                      ? 'border-foreground scale-110'
-                      : 'border-muted hover:scale-105'
-                  }`}
-                  style={{ backgroundColor: color.value }}
-                  title={color.label}
+            {/* Preview */}
+            <div
+              className="p-4 rounded-xl border"
+              style={{ backgroundColor: brandingData.background_color }}
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div
+                  className="w-8 h-8 rounded-lg"
+                  style={{ backgroundColor: brandingData.accent_color }}
+                  title="Основний"
                 />
-              ))}
+                <div
+                  className="w-8 h-8 rounded-lg"
+                  style={{ backgroundColor: brandingData.secondary_color }}
+                  title="Вторинний"
+                />
+                <div
+                  className="flex-1 h-2 rounded-full"
+                  style={{
+                    background: `linear-gradient(to right, ${brandingData.accent_color}, ${brandingData.secondary_color})`
+                  }}
+                />
+              </div>
+              <p className="text-xs" style={{ color: brandingData.background_color === '#ffffff' || brandingData.background_color === '#fffbeb' || brandingData.background_color === '#f0f4ff' || brandingData.background_color === '#f0fdf4' ? '#6b7280' : '#9ca3af' }}>
+                Превью вашої кольорової палітри
+              </p>
+            </div>
+
+            {/* Accent/Primary Color */}
+            <div className="space-y-2">
+              <Label className="text-sm">Основний колір</Label>
+              <p className="text-xs text-muted-foreground">Кнопки, посилання та основні акценти</p>
+              <div className="flex gap-2 flex-wrap">
+                {ACCENT_COLORS.map((color) => (
+                  <button
+                    key={color.value}
+                    type="button"
+                    onClick={() => setBrandingData({ ...brandingData, accent_color: color.value })}
+                    className={`w-10 h-10 rounded-full border-2 transition-transform ${
+                      brandingData.accent_color === color.value
+                        ? 'border-foreground scale-110'
+                        : 'border-transparent hover:scale-105'
+                    }`}
+                    style={{ backgroundColor: color.value }}
+                    title={color.label}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Secondary Color */}
+            <div className="space-y-2">
+              <Label className="text-sm">Вторинний колір</Label>
+              <p className="text-xs text-muted-foreground">Градієнти, hover-ефекти та декоративні елементи</p>
+              <div className="flex gap-2 flex-wrap">
+                {SECONDARY_COLORS.map((color) => (
+                  <button
+                    key={color.value}
+                    type="button"
+                    onClick={() => setBrandingData({ ...brandingData, secondary_color: color.value })}
+                    className={`w-10 h-10 rounded-full border-2 transition-transform ${
+                      brandingData.secondary_color === color.value
+                        ? 'border-foreground scale-110'
+                        : 'border-transparent hover:scale-105'
+                    }`}
+                    style={{ backgroundColor: color.value }}
+                    title={color.label}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Background Color */}
+            <div className="space-y-2">
+              <Label className="text-sm">Фон сторінки</Label>
+              <p className="text-xs text-muted-foreground">Основний фон та поверхні (підтримується темний режим)</p>
+              <div className="flex gap-2 flex-wrap">
+                {BACKGROUND_COLORS.map((color) => (
+                  <button
+                    key={color.value}
+                    type="button"
+                    onClick={() => setBrandingData({ ...brandingData, background_color: color.value })}
+                    className={`w-12 h-10 rounded-lg border-2 transition-transform ${
+                      brandingData.background_color === color.value
+                        ? 'border-foreground scale-110'
+                        : 'border-muted hover:scale-105'
+                    }`}
+                    style={{ backgroundColor: color.value }}
+                    title={color.label}
+                  />
+                ))}
+              </div>
             </div>
           </div>
 

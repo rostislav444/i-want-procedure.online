@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation'
 import { publicApi, Service, ServiceCategory, WebsiteSection } from '@/lib/api'
 import type { Metadata } from 'next'
-import { SoloTemplate, ClinicTemplate } from '@/components/templates'
 import { SectionRenderer } from '@/components/SectionRenderer'
 import CompanyHeader from '@/components/CompanyHeader'
 import CompanyFooter from '@/components/CompanyFooter'
@@ -28,6 +27,55 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
+/**
+ * Create default sections if company has none
+ */
+function createDefaultSections(): WebsiteSection[] {
+  const now = new Date().toISOString()
+  return [
+    {
+      id: 1,
+      company_id: 0,
+      section_type: 'hero',
+      order: 0,
+      is_visible: true,
+      content: { style: 'gradient' },
+      created_at: now,
+      updated_at: now,
+    },
+    {
+      id: 2,
+      company_id: 0,
+      section_type: 'services',
+      order: 1,
+      is_visible: true,
+      content: { display_mode: 'grid' },
+      created_at: now,
+      updated_at: now,
+    },
+    {
+      id: 3,
+      company_id: 0,
+      section_type: 'contact',
+      order: 2,
+      is_visible: true,
+      content: {},
+      created_at: now,
+      updated_at: now,
+    },
+    {
+      id: 4,
+      company_id: 0,
+      section_type: 'map',
+      order: 3,
+      is_visible: true,
+      content: {},
+      created_at: now,
+      updated_at: now,
+    },
+  ]
+}
+
 export default async function CompanyPage({ params }: Props) {
   const { slug } = await params
 
@@ -47,12 +95,13 @@ export default async function CompanyPage({ params }: Props) {
     categories = categoriesData
     services = servicesData
 
-    // Try to fetch sections (may not exist for older companies)
+    // Try to fetch sections
     try {
-      sections = await publicApi.getWebsiteSections(slug)
+      const fetchedSections = await publicApi.getWebsiteSections(slug)
+      sections = fetchedSections.length > 0 ? fetchedSections : createDefaultSections()
     } catch {
-      // Sections not available, will use legacy templates
-      sections = []
+      // Sections not available, use defaults
+      sections = createDefaultSections()
     }
   } catch (error) {
     notFound()
@@ -74,83 +123,25 @@ export default async function CompanyPage({ params }: Props) {
   // Combined CSS variables
   const cssVariables = `${colorVars}\n${shapeVars}`
 
-  // Check if we should use the new section-based rendering
-  const useSectionRenderer = sections.length > 0
-
-  if (useSectionRenderer) {
-    // New section-based rendering
-    return (
-      <>
-        <style dangerouslySetInnerHTML={{ __html: cssVariables }} />
-        <main
-          className="min-h-screen"
-          style={{
-            backgroundColor: 'var(--color-background)',
-            fontFamily: 'var(--font-body)',
-          }}
-        >
-          <CompanyHeader />
-          <SectionRenderer
-            sections={sections}
-            company={company}
-            services={services}
-            categories={categories}
-          />
-          <CompanyFooter companyName={company.name} />
-        </main>
-      </>
-    )
-  }
-
-  // Legacy template-based rendering
-  // Group services by category - convert to serializable format
-  const servicesByCategoryMap: Record<string, Service[]> = {}
-  services.forEach((service) => {
-    const catId = String(service.category_id ?? 'null')
-    if (!servicesByCategoryMap[catId]) {
-      servicesByCategoryMap[catId] = []
-    }
-    servicesByCategoryMap[catId].push(service)
-  })
-
-  // Common props for all templates
-  const templateProps = {
-    company,
-    services,
-    categories,
-    servicesByCategoryMap,
-  }
-
-  // Select template based on company settings
-  const templateType = company.template_type || 'solo'
-
-  // Wrapper with CSS variables for legacy templates
-  const TemplateWrapper = ({ children }: { children: React.ReactNode }) => (
+  return (
     <>
       <style dangerouslySetInnerHTML={{ __html: cssVariables }} />
-      <div style={{ fontFamily: 'var(--font-body)' }}>{children}</div>
+      <main
+        className="min-h-screen"
+        style={{
+          backgroundColor: 'var(--color-background)',
+          fontFamily: 'var(--font-body)',
+        }}
+      >
+        <CompanyHeader />
+        <SectionRenderer
+          sections={sections}
+          company={company}
+          services={services}
+          categories={categories}
+        />
+        <CompanyFooter companyName={company.name} />
+      </main>
     </>
   )
-
-  switch (templateType) {
-    case 'clinic':
-      return (
-        <TemplateWrapper>
-          <ClinicTemplate {...templateProps} />
-        </TemplateWrapper>
-      )
-    case 'premium':
-      return (
-        <TemplateWrapper>
-          <ClinicTemplate {...templateProps} />
-        </TemplateWrapper>
-      )
-    case 'solo':
-    default:
-      return (
-        <TemplateWrapper>
-          <SoloTemplate {...templateProps} />
-        </TemplateWrapper>
-      )
-  }
 }
