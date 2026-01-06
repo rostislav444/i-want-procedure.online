@@ -159,6 +159,10 @@ export function generateCssVariables(config: ColorConfig): string {
   const surfaceHover = isDarkBackground ? bg[800] : bg[50]
   const surfaceBorder = isDarkBackground ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
 
+  // Background variations - for dark mode use darker variants, for light mode use lighter
+  const backgroundAlt = isDarkBackground ? bg[800] : bg[100]
+  const backgroundMuted = isDarkBackground ? bg[700] : bg[200]
+
   return `
     :root {
       /* Primary color shades */
@@ -185,8 +189,8 @@ export function generateCssVariables(config: ColorConfig): string {
 
       /* Background colors */
       --color-background: ${config.background};
-      --color-background-alt: ${bg[100]};
-      --color-background-muted: ${bg[200]};
+      --color-background-alt: ${backgroundAlt};
+      --color-background-muted: ${backgroundMuted};
       --color-surface: ${surfaceColor};
       --color-surface-hover: ${surfaceHover};
       --color-surface-border: ${surfaceBorder};
