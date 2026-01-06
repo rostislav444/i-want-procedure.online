@@ -16,9 +16,13 @@ class CompanyUpdate(BaseModel):
     address: str | None = None
     telegram: str | None = None
     # Template settings
-    template_type: str | None = None  # solo, clinic, premium
+    template_type: str | None = None  # solo, clinic
     industry_theme: str | None = None  # cosmetology, medical, massage, sport, beauty, wellness
-    primary_color: str | None = None  # HEX color
+    primary_color: str | None = None  # Legacy HEX color
+    accent_color: str | None = None  # HEX accent color
+    background_color: str | None = None  # HEX background color
+    accent_font: str | None = None  # Accent/heading font
+    body_font: str | None = None  # Body text font
     logo_url: str | None = None
     cover_image_url: str | None = None
     website_enabled: bool | None = None
@@ -48,7 +52,11 @@ class CompanyResponse(BaseModel):
     # Template settings
     template_type: str = "solo"
     industry_theme: str = "cosmetology"
-    primary_color: str | None = None
+    primary_color: str | None = None  # Legacy
+    accent_color: str | None = None
+    background_color: str | None = None
+    accent_font: str | None = None
+    body_font: str | None = None
     logo_url: str | None = None
     cover_image_url: str | None = None
     website_enabled: bool = True
@@ -79,7 +87,11 @@ class CompanyPublicResponse(BaseModel):
     # Template settings for public display
     template_type: str = "solo"
     industry_theme: str = "cosmetology"
-    primary_color: str | None = None
+    primary_color: str | None = None  # Legacy
+    accent_color: str | None = None
+    background_color: str | None = None
+    accent_font: str | None = None
+    body_font: str | None = None
     logo_url: str | None = None
     cover_image_url: str | None = None
     # Additional info

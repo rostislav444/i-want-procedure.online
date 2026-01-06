@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Plus,
@@ -16,13 +16,12 @@ import {
   ChevronDown,
   ChevronUp,
   Sparkles,
-  Upload,
-  Image,
   FileText,
   Clock,
   Instagram,
   Facebook,
   Building2,
+  Type,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -32,7 +31,6 @@ import { Textarea } from '@/components/ui/textarea'
 import {
   websiteApi,
   companyApi,
-  uploadApi,
   WebsiteSection,
   SectionTypeInfo,
   IndustryThemeInfo,
@@ -78,17 +76,40 @@ const SECTION_ICONS: Record<string, string> = {
 const TEMPLATE_OPTIONS = [
   { value: 'solo', label: 'Solo', description: 'Для індивідуального спеціаліста' },
   { value: 'clinic', label: 'Clinic', description: 'Для клініки або салону' },
-  { value: 'premium', label: 'Premium', description: 'Розширений шаблон' },
 ]
 
-const COLOR_OPTIONS = [
-  { value: '#e91e63', label: 'Рожевий' },
-  { value: '#9c27b0', label: 'Фіолетовий' },
+// Accent/primary colors
+const ACCENT_COLORS = [
   { value: '#3f51b5', label: 'Синій' },
-  { value: '#009688', label: 'Бірюзовий' },
-  { value: '#4caf50', label: 'Зелений' },
-  { value: '#ff9800', label: 'Помаранчевий' },
+  { value: '#9c27b0', label: 'Фіолетовий' },
+  { value: '#e91e63', label: 'Рожевий' },
   { value: '#f44336', label: 'Червоний' },
+  { value: '#ff9800', label: 'Помаранчевий' },
+  { value: '#4caf50', label: 'Зелений' },
+  { value: '#009688', label: 'Бірюзовий' },
+]
+
+// Background colors
+const BACKGROUND_COLORS = [
+  { value: '#ffffff', label: 'Білий' },
+  { value: '#fffbeb', label: 'Кремовий' },
+  { value: '#f0f4ff', label: 'Світло-синій' },
+  { value: '#f0fdf4', label: 'Світло-зелений' },
+]
+
+// Font options
+const ACCENT_FONTS = [
+  { value: 'Inter', label: 'Inter', description: 'Сучасний та чистий' },
+  { value: 'Playfair Display', label: 'Playfair Display', description: 'Елегантний з засічками' },
+  { value: 'Montserrat', label: 'Montserrat', description: 'Геометричний та сильний' },
+  { value: 'Lora', label: 'Lora', description: 'Класичний з засічками' },
+]
+
+const BODY_FONTS = [
+  { value: 'Inter', label: 'Inter', description: 'Чіткий та читабельний' },
+  { value: 'Open Sans', label: 'Open Sans', description: 'Нейтральний та дружній' },
+  { value: 'Roboto', label: 'Roboto', description: 'Сучасний та універсальний' },
+  { value: 'Lato', label: 'Lato', description: 'Теплий та гармонійний' },
 ]
 
 export default function WebsiteBuilderPage() {
@@ -96,8 +117,6 @@ export default function WebsiteBuilderPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [savingBranding, setSavingBranding] = useState(false)
-  const [uploadingLogo, setUploadingLogo] = useState(false)
-  const [uploadingCover, setUploadingCover] = useState(false)
   const [company, setCompany] = useState<Company | null>(null)
   const [sections, setSections] = useState<WebsiteSection[]>([])
   const [sectionTypes, setSectionTypes] = useState<SectionTypeInfo[]>([])
@@ -111,15 +130,15 @@ export default function WebsiteBuilderPage() {
   // Branding settings state
   const [brandingData, setBrandingData] = useState({
     template_type: 'solo',
-    primary_color: '#e91e63',
+    accent_color: '#e91e63',
+    background_color: '#ffffff',
+    accent_font: 'Playfair Display',
+    body_font: 'Inter',
     specialization: '',
     working_hours: '',
     instagram: '',
     facebook: '',
   })
-
-  const logoInputRef = useRef<HTMLInputElement>(null)
-  const coverInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     loadData()
@@ -149,7 +168,10 @@ export default function WebsiteBuilderPage() {
 
       setBrandingData({
         template_type: companyData.template_type || 'solo',
-        primary_color: companyData.primary_color || '#e91e63',
+        accent_color: companyData.accent_color || companyData.primary_color || '#e91e63',
+        background_color: companyData.background_color || '#ffffff',
+        accent_font: companyData.accent_font || 'Playfair Display',
+        body_font: companyData.body_font || 'Inter',
         specialization: companyData.specialization || '',
         working_hours: companyData.working_hours || '',
         instagram: socialLinks.instagram || '',
@@ -281,7 +303,10 @@ export default function WebsiteBuilderPage() {
 
       await companyApi.updateCompany({
         template_type: brandingData.template_type,
-        primary_color: brandingData.primary_color,
+        accent_color: brandingData.accent_color,
+        background_color: brandingData.background_color,
+        accent_font: brandingData.accent_font,
+        body_font: brandingData.body_font,
         specialization: brandingData.specialization || undefined,
         working_hours: brandingData.working_hours || undefined,
         social_links: socialLinks,
@@ -295,41 +320,6 @@ export default function WebsiteBuilderPage() {
     }
   }
 
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    setUploadingLogo(true)
-    try {
-      const { url } = await uploadApi.uploadLogo(file)
-      await companyApi.updateCompany({ logo_url: url })
-      showSuccess('Логотип завантажено!')
-      await loadData()
-    } catch (error) {
-      console.error('Error uploading logo:', error)
-    } finally {
-      setUploadingLogo(false)
-    }
-  }
-
-  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    setUploadingCover(true)
-    try {
-      const { url } = await uploadApi.uploadCover(file)
-      await companyApi.updateCompany({ cover_image_url: url })
-      showSuccess('Обкладинку завантажено!')
-      await loadData()
-    } catch (error) {
-      console.error('Error uploading cover:', error)
-    } finally {
-      setUploadingCover(false)
-    }
-  }
-
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
   const siteUrl = company
     ? `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001'}/site/${company.slug}`
     : ''
@@ -438,7 +428,7 @@ export default function WebsiteBuilderPage() {
             <Label className="flex items-center gap-1">
               <FileText className="h-4 w-4" /> Шаблон сайту
             </Label>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               {TEMPLATE_OPTIONS.map((option) => (
                 <button
                   key={option.value}
@@ -457,19 +447,20 @@ export default function WebsiteBuilderPage() {
             </div>
           </div>
 
-          {/* Color Selection */}
+          {/* Accent Color Selection */}
           <div className="space-y-3">
             <Label className="flex items-center gap-1">
-              <Palette className="h-4 w-4" /> Основний колір
+              <Palette className="h-4 w-4" /> Акцентний колір
             </Label>
+            <p className="text-xs text-muted-foreground">Колір кнопок, посилань та акцентів</p>
             <div className="flex gap-2 flex-wrap">
-              {COLOR_OPTIONS.map((color) => (
+              {ACCENT_COLORS.map((color) => (
                 <button
                   key={color.value}
                   type="button"
-                  onClick={() => setBrandingData({ ...brandingData, primary_color: color.value })}
+                  onClick={() => setBrandingData({ ...brandingData, accent_color: color.value })}
                   className={`w-10 h-10 rounded-full border-2 transition-transform ${
-                    brandingData.primary_color === color.value
+                    brandingData.accent_color === color.value
                       ? 'border-foreground scale-110'
                       : 'border-transparent hover:scale-105'
                   }`}
@@ -480,76 +471,74 @@ export default function WebsiteBuilderPage() {
             </div>
           </div>
 
-          {/* Logo Upload */}
+          {/* Background Color Selection */}
           <div className="space-y-3">
             <Label className="flex items-center gap-1">
-              <Upload className="h-4 w-4" /> Логотип
+              <Palette className="h-4 w-4" /> Колір фону
             </Label>
-            <div className="flex items-center gap-4">
-              {company?.logo_url ? (
-                <img
-                  src={`${apiUrl}${company.logo_url}`}
-                  alt="Logo"
-                  className="w-20 h-20 object-cover rounded-lg border"
-                />
-              ) : (
-                <div className="w-20 h-20 bg-muted rounded-lg border flex items-center justify-center">
-                  <Image className="h-8 w-8 text-muted-foreground" />
-                </div>
-              )}
-              <div>
-                <input
-                  ref={logoInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleLogoUpload}
-                  className="hidden"
-                />
-                <Button
+            <p className="text-xs text-muted-foreground">Основний фон сторінки</p>
+            <div className="flex gap-2 flex-wrap">
+              {BACKGROUND_COLORS.map((color) => (
+                <button
+                  key={color.value}
                   type="button"
-                  variant="outline"
-                  onClick={() => logoInputRef.current?.click()}
-                  disabled={uploadingLogo}
-                >
-                  {uploadingLogo ? 'Завантаження...' : 'Завантажити логотип'}
-                </Button>
-                <p className="text-xs text-muted-foreground mt-1">JPG, PNG до 5MB</p>
-              </div>
+                  onClick={() => setBrandingData({ ...brandingData, background_color: color.value })}
+                  className={`w-12 h-10 rounded-lg border-2 transition-transform ${
+                    brandingData.background_color === color.value
+                      ? 'border-foreground scale-110'
+                      : 'border-muted hover:scale-105'
+                  }`}
+                  style={{ backgroundColor: color.value }}
+                  title={color.label}
+                />
+              ))}
             </div>
           </div>
 
-          {/* Cover Upload */}
-          <div className="space-y-3">
+          {/* Font Selection */}
+          <div className="space-y-4">
             <Label className="flex items-center gap-1">
-              <Image className="h-4 w-4" /> Обкладинка
+              <Type className="h-4 w-4" /> Шрифти
             </Label>
-            <div className="space-y-2">
-              {company?.cover_image_url ? (
-                <img
-                  src={`${apiUrl}${company.cover_image_url}`}
-                  alt="Cover"
-                  className="w-full h-32 object-cover rounded-lg border"
-                />
-              ) : (
-                <div className="w-full h-32 bg-muted rounded-lg border flex items-center justify-center">
-                  <Image className="h-8 w-8 text-muted-foreground" />
-                </div>
-              )}
-              <input
-                ref={coverInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleCoverUpload}
-                className="hidden"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => coverInputRef.current?.click()}
-                disabled={uploadingCover}
-              >
-                {uploadingCover ? 'Завантаження...' : 'Завантажити обкладинку'}
-              </Button>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Accent Font */}
+              <div className="space-y-2">
+                <Label htmlFor="accent_font" className="text-sm">Акцентний шрифт (заголовки)</Label>
+                <select
+                  id="accent_font"
+                  value={brandingData.accent_font}
+                  onChange={(e) => setBrandingData({ ...brandingData, accent_font: e.target.value })}
+                  className="w-full h-10 px-3 border rounded-md bg-background"
+                >
+                  {ACCENT_FONTS.map((font) => (
+                    <option key={font.value} value={font.value}>
+                      {font.label} - {font.description}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs" style={{ fontFamily: brandingData.accent_font }}>
+                  Приклад: Заголовок сторінки
+                </p>
+              </div>
+              {/* Body Font */}
+              <div className="space-y-2">
+                <Label htmlFor="body_font" className="text-sm">Основний шрифт (текст)</Label>
+                <select
+                  id="body_font"
+                  value={brandingData.body_font}
+                  onChange={(e) => setBrandingData({ ...brandingData, body_font: e.target.value })}
+                  className="w-full h-10 px-3 border rounded-md bg-background"
+                >
+                  {BODY_FONTS.map((font) => (
+                    <option key={font.value} value={font.value}>
+                      {font.label} - {font.description}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs" style={{ fontFamily: brandingData.body_font }}>
+                  Приклад: Звичайний текст сторінки
+                </p>
+              </div>
             </div>
           </div>
 

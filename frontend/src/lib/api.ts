@@ -373,10 +373,14 @@ export interface Company {
   created_at: string
   // Template settings
   template_type: string
-  primary_color: string | null
+  industry_theme: string | null
+  primary_color: string | null  // Legacy
+  accent_color: string | null
+  background_color: string | null
+  accent_font: string | null
+  body_font: string | null
   logo_url: string | null
   cover_image_url: string | null
-  industry_theme: string | null
   // Additional info
   specialization: string | null
   working_hours: string | null
@@ -406,10 +410,14 @@ export const companyApi = {
     address: string
     telegram: string
     template_type: string
-    primary_color: string
+    industry_theme: string
+    primary_color: string  // Legacy
+    accent_color: string
+    background_color: string
+    accent_font: string
+    body_font: string
     logo_url: string
     cover_image_url: string
-    industry_theme: string
     specialization: string
     working_hours: string
     social_links: string
