@@ -1,4 +1,8 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
+// For server-side rendering, use internal Docker network address
+// For client-side, use public URL (inlined at build time)
+const API_URL = typeof window === 'undefined'
+  ? (process.env.API_URL_INTERNAL || 'http://api:8000/api/v1')
+  : (process.env.NEXT_PUBLIC_API_URL || '/api/v1')
 
 async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_URL}${endpoint}`, {
