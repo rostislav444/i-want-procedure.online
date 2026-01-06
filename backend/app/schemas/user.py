@@ -18,6 +18,7 @@ class UserResponse(BaseModel):
     telegram_username: Optional[str] = None
     role: UserRole
     is_active: bool
+    is_superadmin: bool = False
     created_at: datetime
 
     class Config:

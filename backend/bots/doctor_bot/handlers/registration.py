@@ -243,7 +243,7 @@ async def confirm_registration(callback: CallbackQuery, state: FSMContext, sessi
         telegram_id=data['telegram_id'],
         telegram_username=data.get('telegram_username'),
         hashed_password=None,  # No password for Telegram-only users
-        role=UserRole.ADMIN,
+        role=UserRole.SPECIALIST,
     )
     session.add(user)
     await session.commit()

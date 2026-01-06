@@ -16,8 +16,10 @@ if TYPE_CHECKING:
 
 
 class UserRole(str, Enum):
-    ADMIN = "admin"
-    DOCTOR = "doctor"
+    SUPERADMIN = "superadmin"
+    SPECIALIST = "specialist"  # врач/косметолог
+    MANAGER = "manager"  # менеджер клиники
+    CLIENT = "client"  # клиент
 
 
 class User(Base):
@@ -34,7 +36,7 @@ class User(Base):
     city: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     telegram_id: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True, unique=True, index=True)
     telegram_username: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
-    role: Mapped[UserRole] = mapped_column(String(20), default=UserRole.DOCTOR)
+    role: Mapped[UserRole] = mapped_column(String(20), default=UserRole.SPECIALIST)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_superadmin: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(

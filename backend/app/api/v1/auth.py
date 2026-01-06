@@ -81,7 +81,7 @@ async def register(user_data: UserCreate, db: DbSession):
         first_name=user_data.first_name,
         last_name=user_data.last_name,
         telegram_id=user_data.telegram_id,
-        role=UserRole.ADMIN,
+        role=UserRole.SPECIALIST,
     )
     db.add(user)
     await db.commit()
@@ -346,7 +346,7 @@ async def google_oauth_callback(
                     google_email=google_email,
                     first_name=first_name,
                     last_name=last_name,
-                    role=UserRole.ADMIN,
+                    role=UserRole.SPECIALIST,
                 )
                 db.add(user)
 
