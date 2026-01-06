@@ -19,3 +19,6 @@ Thumbs.db
 
 # SSL certificates
 certbot/
+
+# Google OAuth credentials
+client_secret*.json

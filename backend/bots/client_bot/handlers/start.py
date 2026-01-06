@@ -5,7 +5,7 @@ from aiogram.fsm.context import FSMContext
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.client import Client, Language
+from app.models.client import Client, ClientCompany, Language
 from app.models.company import Company
 from bots.i18n import t
 from bots.client_bot.keyboards import language_keyboard, main_menu_keyboard
@@ -51,15 +51,30 @@ async def cmd_start_with_link(
     client = result.scalar_one_or_none()
 
     if client:
-        # Update company if different
-        if client.company_id != company.id:
-            client.company_id = company.id
-            await session.commit()
-
-        await message.answer(
-            f"Вітаємо! Ви записуєтесь до: {company.name}\n\n" + t("main_menu", client.language),
-            reply_markup=main_menu_keyboard(client.language),
+        # Check if client is already associated with this company
+        existing_link = await session.execute(
+            select(ClientCompany).where(
+                ClientCompany.client_id == client.id,
+                ClientCompany.company_id == company.id,
+            )
         )
+        if not existing_link.scalar_one_or_none():
+            # Add new company association (don't replace existing ones)
+            client_company = ClientCompany(client_id=client.id, company_id=company.id)
+            session.add(client_company)
+            # Update primary company_id if not set
+            if client.company_id is None:
+                client.company_id = company.id
+            await session.commit()
+            await message.answer(
+                f"Чудово! Ви додали нового спеціаліста: {company.name}\n\n" + t("main_menu", client.language),
+                reply_markup=main_menu_keyboard(client.language),
+            )
+        else:
+            await message.answer(
+                f"Ви вже записані до: {company.name}\n\n" + t("main_menu", client.language),
+                reply_markup=main_menu_keyboard(client.language),
+            )
     else:
         # Save company_id to state for registration
         await state.update_data(company_id=company.id, company_name=company.name)

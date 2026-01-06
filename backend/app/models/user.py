@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import String, DateTime, ForeignKey, BigInteger, Boolean, func
+from sqlalchemy import String, DateTime, ForeignKey, BigInteger, Boolean, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from app.models.service import Service
     from app.models.schedule import Schedule, ScheduleException
     from app.models.appointment import Appointment
+    from app.models.specialty import Specialty
 
 
 class UserRole(str, Enum):
@@ -35,9 +36,19 @@ class User(Base):
     telegram_username: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     role: Mapped[UserRole] = mapped_column(String(20), default=UserRole.DOCTOR)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_superadmin: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+
+    # Google OAuth fields
+    google_id: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, unique=True, index=True)
+    google_email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    google_access_token: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    google_refresh_token: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    google_token_expires_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    google_calendar_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
+    google_calendar_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)  # primary calendar ID
 
     # Relationships
     company: Mapped[Optional["Company"]] = relationship(back_populates="users")
@@ -45,3 +56,7 @@ class User(Base):
     schedules: Mapped[list["Schedule"]] = relationship(back_populates="doctor")
     schedule_exceptions: Mapped[list["ScheduleException"]] = relationship(back_populates="doctor")
     appointments: Mapped[list["Appointment"]] = relationship(back_populates="doctor")
+    specialties: Mapped[list["Specialty"]] = relationship(
+        secondary="user_specialties",
+        back_populates="users"
+    )

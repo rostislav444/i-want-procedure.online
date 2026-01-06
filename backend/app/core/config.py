@@ -1,8 +1,15 @@
+from pathlib import Path
+
 from pydantic_settings import BaseSettings
 from typing import Optional
 
+# Base directory of the backend app
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
 
 class Settings(BaseSettings):
+    # Base directory
+    BASE_DIR: Path = BASE_DIR
     # Database
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@db:5432/procedure"
 
@@ -16,6 +23,11 @@ class Settings(BaseSettings):
     CLIENT_BOT_NAME: Optional[str] = None
     DOCTOR_BOT_TOKEN: Optional[str] = None
     DOCTOR_BOT_NAME: Optional[str] = None
+
+    # Google OAuth
+    GOOGLE_CLIENT_ID: Optional[str] = None
+    GOOGLE_CLIENT_SECRET: Optional[str] = None
+    GOOGLE_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/google/callback"
 
     # API
     API_URL: str = "http://localhost:8000"

@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from app.models.company import Company
     from app.models.user import User
     from app.models.appointment import Appointment
+    from app.models.specialty import Specialty
 
 
 class ServiceCategory(Base):
@@ -48,6 +49,9 @@ class Service(Base):
     category_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey("service_categories.id", ondelete="SET NULL"), nullable=True
     )
+    specialty_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("specialties.id", ondelete="SET NULL"), nullable=True
+    )
     doctor_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
     name: Mapped[str] = mapped_column(String(255))
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
@@ -61,6 +65,7 @@ class Service(Base):
     # Relationships
     company: Mapped["Company"] = relationship(back_populates="services")
     category: Mapped[Optional["ServiceCategory"]] = relationship(back_populates="services")
+    specialty: Mapped[Optional["Specialty"]] = relationship(back_populates="services")
     doctor: Mapped[Optional["User"]] = relationship(back_populates="services")
     appointments: Mapped[list["Appointment"]] = relationship(back_populates="service")
     steps: Mapped[list["ServiceStep"]] = relationship(

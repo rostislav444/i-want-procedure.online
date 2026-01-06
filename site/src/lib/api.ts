@@ -24,6 +24,15 @@ export interface Company {
   phone?: string
   address?: string
   telegram?: string
+  // Template settings
+  template_type?: string
+  primary_color?: string
+  logo_url?: string
+  cover_image_url?: string
+  // Additional info
+  specialization?: string
+  working_hours?: string
+  social_links?: string
 }
 
 export interface ServiceCategory {

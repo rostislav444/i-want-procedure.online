@@ -20,7 +20,7 @@ router = APIRouter(prefix="/services")
 async def get_services(current_user: CurrentUser, db: DbSession):
     result = await db.execute(
         select(Service)
-        .options(selectinload(Service.category))
+        .options(selectinload(Service.category), selectinload(Service.specialty))
         .where(Service.company_id == current_user.company_id)
         .order_by(Service.created_at.desc())
     )
@@ -36,6 +36,7 @@ async def create_service(
     service = Service(
         company_id=current_user.company_id,
         category_id=service_data.category_id,
+        specialty_id=service_data.specialty_id,
         doctor_id=service_data.doctor_id or current_user.id,
         name=service_data.name,
         description=service_data.description,
@@ -73,7 +74,12 @@ async def create_service(
     # Reload with relationships
     result = await db.execute(
         select(Service)
-        .options(selectinload(Service.steps), selectinload(Service.products), selectinload(Service.category))
+        .options(
+            selectinload(Service.steps),
+            selectinload(Service.products),
+            selectinload(Service.category),
+            selectinload(Service.specialty),
+        )
         .where(Service.id == service.id)
     )
     return result.scalar_one()
@@ -83,7 +89,12 @@ async def create_service(
 async def get_service(service_id: int, current_user: CurrentUser, db: DbSession):
     result = await db.execute(
         select(Service)
-        .options(selectinload(Service.steps), selectinload(Service.products), selectinload(Service.category))
+        .options(
+            selectinload(Service.steps),
+            selectinload(Service.products),
+            selectinload(Service.category),
+            selectinload(Service.specialty),
+        )
         .where(
             Service.id == service_id,
             Service.company_id == current_user.company_id,
@@ -107,7 +118,12 @@ async def update_service(
 ):
     result = await db.execute(
         select(Service)
-        .options(selectinload(Service.steps), selectinload(Service.products), selectinload(Service.category))
+        .options(
+            selectinload(Service.steps),
+            selectinload(Service.products),
+            selectinload(Service.category),
+            selectinload(Service.specialty),
+        )
         .where(
             Service.id == service_id,
             Service.company_id == current_user.company_id,

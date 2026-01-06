@@ -15,6 +15,21 @@ class CompanyUpdate(BaseModel):
     phone: str | None = None
     address: str | None = None
     telegram: str | None = None
+    # Template settings
+    template_type: str | None = None  # solo, clinic, premium
+    primary_color: str | None = None  # HEX color
+    logo_url: str | None = None
+    cover_image_url: str | None = None
+    # Additional info
+    specialization: str | None = None
+    working_hours: str | None = None
+    social_links: str | None = None  # JSON string
+    # Payment requisites
+    payment_iban: str | None = None
+    payment_bank_name: str | None = None
+    payment_recipient_name: str | None = None
+    payment_card_number: str | None = None
+    payment_monobank_jar: str | None = None
 
 
 class CompanyResponse(BaseModel):
@@ -28,6 +43,21 @@ class CompanyResponse(BaseModel):
     telegram: str | None = None
     invite_code: str
     created_at: datetime
+    # Template settings
+    template_type: str = "solo"
+    primary_color: str | None = None
+    logo_url: str | None = None
+    cover_image_url: str | None = None
+    # Additional info
+    specialization: str | None = None
+    working_hours: str | None = None
+    social_links: str | None = None
+    # Payment requisites
+    payment_iban: str | None = None
+    payment_bank_name: str | None = None
+    payment_recipient_name: str | None = None
+    payment_card_number: str | None = None
+    payment_monobank_jar: str | None = None
 
     class Config:
         from_attributes = True
@@ -42,6 +72,15 @@ class CompanyPublicResponse(BaseModel):
     phone: str | None = None
     address: str | None = None
     telegram: str | None = None
+    # Template settings for public display
+    template_type: str = "solo"
+    primary_color: str | None = None
+    logo_url: str | None = None
+    cover_image_url: str | None = None
+    # Additional info
+    specialization: str | None = None
+    working_hours: str | None = None
+    social_links: str | None = None
 
     class Config:
         from_attributes = True

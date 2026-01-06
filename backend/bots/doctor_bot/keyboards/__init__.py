@@ -13,6 +13,7 @@ def main_menu_keyboard() -> ReplyKeyboardMarkup:
         keyboard=[
             [KeyboardButton(text="📅 Записи на сьогодні")],
             [KeyboardButton(text="📋 Всі записи")],
+            [KeyboardButton(text="💳 Надіслати реквізити")],
             [KeyboardButton(text="⚙️ Налаштування")],
         ],
         resize_keyboard=True,
@@ -97,3 +98,16 @@ def confirm_registration_keyboard() -> InlineKeyboardMarkup:
 def remove_keyboard() -> ReplyKeyboardRemove:
     """Remove reply keyboard"""
     return ReplyKeyboardRemove()
+
+
+def clients_list_keyboard(clients: list) -> InlineKeyboardMarkup:
+    """Keyboard with list of recent clients to send payment requisites"""
+    buttons = []
+    for client in clients:
+        name = f"{client.first_name} {client.last_name or ''}".strip()
+        buttons.append([InlineKeyboardButton(
+            text=f"👤 {name}",
+            callback_data=f"send_payment_{client.id}"
+        )])
+    buttons.append([InlineKeyboardButton(text="❌ Скасувати", callback_data="cancel_payment")])
+    return InlineKeyboardMarkup(inline_keyboard=buttons)

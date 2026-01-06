@@ -104,6 +104,7 @@ class ServiceCreate(BaseModel):
     duration_minutes: int = 60
     price: Decimal
     category_id: Optional[int] = None
+    specialty_id: Optional[int] = None
     doctor_id: Optional[int] = None
     steps: Optional[list[ServiceStepCreate]] = None
     products: Optional[list[ServiceProductCreate]] = None
@@ -115,6 +116,7 @@ class ServiceUpdate(BaseModel):
     duration_minutes: Optional[int] = None
     price: Optional[Decimal] = None
     category_id: Optional[int] = None
+    specialty_id: Optional[int] = None
     is_active: Optional[bool] = None
 
 
@@ -126,10 +128,20 @@ class ServiceCategoryBrief(BaseModel):
         from_attributes = True
 
 
+class SpecialtyBrief(BaseModel):
+    id: int
+    name: str
+    color: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
 class ServiceResponse(BaseModel):
     id: int
     company_id: int
     category_id: Optional[int] = None
+    specialty_id: Optional[int] = None
     doctor_id: Optional[int] = None
     name: str
     description: Optional[str] = None
@@ -138,6 +150,7 @@ class ServiceResponse(BaseModel):
     is_active: bool
     created_at: datetime
     category: Optional[ServiceCategoryBrief] = None
+    specialty: Optional[SpecialtyBrief] = None
 
     class Config:
         from_attributes = True
@@ -147,6 +160,7 @@ class ServiceDetailResponse(BaseModel):
     id: int
     company_id: int
     category_id: Optional[int] = None
+    specialty_id: Optional[int] = None
     doctor_id: Optional[int] = None
     name: str
     description: Optional[str] = None
@@ -157,6 +171,7 @@ class ServiceDetailResponse(BaseModel):
     steps: list[ServiceStepResponse] = []
     products: list[ServiceProductResponse] = []
     category: Optional[ServiceCategoryResponse] = None
+    specialty: Optional[SpecialtyBrief] = None
 
     class Config:
         from_attributes = True

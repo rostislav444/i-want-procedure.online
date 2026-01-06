@@ -359,14 +359,122 @@ export const clientsApi = {
   },
 }
 
+// Company Types
+export interface Company {
+  id: number
+  name: string
+  slug: string
+  type: 'solo' | 'clinic'
+  description: string | null
+  phone: string | null
+  address: string | null
+  telegram: string | null
+  invite_code: string
+  created_at: string
+  // Template settings
+  template_type: string
+  primary_color: string | null
+  logo_url: string | null
+  cover_image_url: string | null
+  // Additional info
+  specialization: string | null
+  working_hours: string | null
+  social_links: string | null
+  // Payment requisites
+  payment_iban: string | null
+  payment_bank_name: string | null
+  payment_recipient_name: string | null
+  payment_card_number: string | null
+  payment_monobank_jar: string | null
+}
+
 // Company API
 export const companyApi = {
-  getMyCompany: async () => {
+  getMyCompany: async (): Promise<Company> => {
     const response = await api.get('/companies/me')
     return response.data
   },
   createCompany: async (data: { name: string; type: 'solo' | 'clinic' }) => {
     const response = await api.post('/companies/me', data)
+    return response.data
+  },
+  updateCompany: async (data: Partial<{
+    name: string
+    description: string
+    phone: string
+    address: string
+    telegram: string
+    template_type: string
+    primary_color: string
+    logo_url: string
+    cover_image_url: string
+    specialization: string
+    working_hours: string
+    social_links: string
+    payment_iban: string
+    payment_bank_name: string
+    payment_recipient_name: string
+    payment_card_number: string
+    payment_monobank_jar: string
+  }>): Promise<Company> => {
+    const response = await api.patch('/companies/me', data)
+    return response.data
+  },
+}
+
+// Upload API
+export const uploadApi = {
+  uploadLogo: async (file: File): Promise<{ url: string }> => {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response = await api.post('/uploads/logo', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    return response.data
+  },
+  uploadCover: async (file: File): Promise<{ url: string }> => {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response = await api.post('/uploads/cover', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    return response.data
+  },
+}
+
+// Google OAuth Types
+export interface GoogleCalendarInfo {
+  connected: boolean
+  email: string | null
+  calendar_enabled: boolean
+  calendar_id: string | null
+  calendars: Array<{
+    id: string
+    summary: string
+    primary?: boolean
+  }>
+}
+
+// Google OAuth API
+export const googleApi = {
+  getAuthUrl: async (action: 'login' | 'link' = 'login'): Promise<{ url: string; state: string }> => {
+    const response = await api.get('/auth/google/url', { params: { action } })
+    return response.data
+  },
+  getStatus: async (): Promise<GoogleCalendarInfo> => {
+    const response = await api.get('/auth/google/status')
+    return response.data
+  },
+  enableCalendar: async (calendar_id: string = 'primary'): Promise<{ message: string; calendar_id: string }> => {
+    const response = await api.post('/auth/google/calendar/enable', null, { params: { calendar_id } })
+    return response.data
+  },
+  disableCalendar: async (): Promise<{ message: string }> => {
+    const response = await api.post('/auth/google/calendar/disable')
+    return response.data
+  },
+  disconnect: async (): Promise<{ message: string }> => {
+    const response = await api.delete('/auth/google/disconnect')
     return response.data
   },
 }

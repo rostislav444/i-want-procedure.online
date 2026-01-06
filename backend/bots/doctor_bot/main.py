@@ -8,7 +8,7 @@ from aiogram.enums import ParseMode
 
 from app.core.config import settings
 from app.core.database import async_session_maker
-from bots.doctor_bot.handlers import start, appointments, registration
+from bots.doctor_bot.handlers import start, appointments, registration, payment
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -42,6 +42,7 @@ async def main():
     dp.include_router(start.router)
     dp.include_router(registration.router)
     dp.include_router(appointments.router)
+    dp.include_router(payment.router)
 
     logger.info("Starting doctor bot...")
 

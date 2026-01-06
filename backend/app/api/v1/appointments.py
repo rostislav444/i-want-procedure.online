@@ -18,6 +18,7 @@ from app.schemas.appointment import (
     AvailableSlot,
 )
 from bots.notifications import notify_client_appointment_confirmed, notify_client_appointment_cancelled
+from app.services.google_calendar import update_appointment_in_calendar
 
 router = APIRouter(prefix="/appointments")
 
@@ -269,5 +270,14 @@ async def update_appointment_status(
                 appointment_time=appointment_time,
                 lang=client_lang,
             )
+
+    # Sync with Google Calendar if event exists
+    if old_status != new_status and appointment.google_event_id:
+        await update_appointment_in_calendar(
+            db=db,
+            doctor_id=appointment.doctor_id,
+            google_event_id=appointment.google_event_id,
+            status=new_status.value,
+        )
 
     return appointment

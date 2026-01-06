@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.client import Client, Language
+from app.models.client import Client, ClientCompany, Language
 from bots.i18n import t
 from bots.client_bot.keyboards import contact_keyboard, main_menu_keyboard
 
@@ -81,6 +81,7 @@ async def process_surname(message: Message, state: FSMContext):
 async def process_contact(message: Message, state: FSMContext, session: AsyncSession):
     data = await state.get_data()
     lang = data.get("language", "uk")
+    company_id = data["company_id"]
 
     # Create client with company_id from deep link
     client = Client(
@@ -90,9 +91,14 @@ async def process_contact(message: Message, state: FSMContext, session: AsyncSes
         last_name=data["last_name"],
         phone=message.contact.phone_number,
         language=Language(lang),
-        company_id=data["company_id"],
+        company_id=company_id,
     )
     session.add(client)
+    await session.flush()  # Get client.id
+
+    # Also create client_companies entry for multi-specialist support
+    client_company = ClientCompany(client_id=client.id, company_id=company_id)
+    session.add(client_company)
     await session.commit()
 
     await state.clear()
@@ -106,6 +112,7 @@ async def process_contact(message: Message, state: FSMContext, session: AsyncSes
 async def process_phone_text(message: Message, state: FSMContext, session: AsyncSession):
     data = await state.get_data()
     lang = data.get("language", "uk")
+    company_id = data["company_id"]
 
     # Handle "Skip" button
     if message.text == t("skip", lang):
@@ -121,9 +128,14 @@ async def process_phone_text(message: Message, state: FSMContext, session: Async
         last_name=data["last_name"],
         phone=phone,
         language=Language(lang),
-        company_id=data["company_id"],
+        company_id=company_id,
     )
     session.add(client)
+    await session.flush()  # Get client.id
+
+    # Also create client_companies entry for multi-specialist support
+    client_company = ClientCompany(client_id=client.id, company_id=company_id)
+    session.add(client_company)
     await session.commit()
 
     await state.clear()
