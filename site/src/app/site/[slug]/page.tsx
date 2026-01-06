@@ -2,7 +2,6 @@ import { notFound } from 'next/navigation'
 import { publicApi, Service, ServiceCategory, WebsiteSection } from '@/lib/api'
 import type { Metadata } from 'next'
 import { SectionRenderer } from '@/components/SectionRenderer'
-import CompanyHeader from '@/components/CompanyHeader'
 import CompanyFooter from '@/components/CompanyFooter'
 import { generateCssVariables, defaultColors } from '@/lib/colors'
 import { getTheme, getThemeShapeVars } from '@/lib/themes'
@@ -131,9 +130,9 @@ export default async function CompanyPage({ params }: Props) {
         style={{
           backgroundColor: 'var(--color-background)',
           fontFamily: 'var(--font-body)',
+          color: 'var(--color-text)',
         }}
       >
-        <CompanyHeader />
         <SectionRenderer
           sections={sections}
           company={company}

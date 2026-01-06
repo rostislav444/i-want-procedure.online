@@ -80,37 +80,50 @@ const TEMPLATE_OPTIONS = [
   { value: 'clinic', label: 'Clinic', description: 'Для клініки або салону' },
 ]
 
-// Accent/primary colors
-const ACCENT_COLORS = [
-  { value: '#3f51b5', label: 'Синій' },
-  { value: '#9c27b0', label: 'Фіолетовий' },
+// Primary colors (buttons, links, accents)
+const PRIMARY_COLORS = [
   { value: '#e91e63', label: 'Рожевий' },
-  { value: '#f44336', label: 'Червоний' },
-  { value: '#ff9800', label: 'Помаранчевий' },
-  { value: '#4caf50', label: 'Зелений' },
+  { value: '#9c27b0', label: 'Фіолетовий' },
+  { value: '#3f51b5', label: 'Синій' },
   { value: '#009688', label: 'Бірюзовий' },
+  { value: '#4caf50', label: 'Зелений' },
+  { value: '#ff9800', label: 'Помаранчевий' },
+  { value: '#f44336', label: 'Червоний' },
+  { value: '#795548', label: 'Коричневий' },
 ]
 
-// Secondary colors (for gradients, hover effects)
+// Secondary colors (gradients, decorative elements)
 const SECONDARY_COLORS = [
   { value: '#9c27b0', label: 'Фіолетовий' },
   { value: '#673ab7', label: 'Індіго' },
   { value: '#3f51b5', label: 'Синій' },
+  { value: '#00bcd4', label: 'Бірюзовий' },
   { value: '#e91e63', label: 'Рожевий' },
   { value: '#ff5722', label: 'Глибокий помаранчевий' },
-  { value: '#00bcd4', label: 'Бірюзовий' },
   { value: '#8bc34a', label: 'Світло-зелений' },
+  { value: '#ffc107', label: 'Жовтий' },
 ]
 
-// Background colors
-const BACKGROUND_COLORS = [
+// Light backgrounds (5 options)
+const LIGHT_BACKGROUNDS = [
   { value: '#ffffff', label: 'Білий' },
+  { value: '#fafafa', label: 'Світло-сірий' },
   { value: '#fffbeb', label: 'Кремовий' },
   { value: '#f0f4ff', label: 'Світло-синій' },
   { value: '#f0fdf4', label: 'Світло-зелений' },
-  { value: '#1a1a2e', label: 'Темно-синій' },
-  { value: '#0f0f0f', label: 'Чорний' },
 ]
+
+// Dark backgrounds (5 options)
+const DARK_BACKGROUNDS = [
+  { value: '#1a1a2e', label: 'Темно-синій' },
+  { value: '#1f2937', label: 'Графіт' },
+  { value: '#171717', label: 'Вугільний' },
+  { value: '#0f172a', label: 'Нічний синій' },
+  { value: '#0c0c0c', label: 'Чорний' },
+]
+
+// Helper to determine if background is dark
+const isDarkBackground = (bg: string) => DARK_BACKGROUNDS.some(b => b.value === bg)
 
 // Font options
 const ACCENT_FONTS = [
@@ -491,11 +504,54 @@ export default function WebsiteBuilderPage() {
             </div>
           </div>
 
-          {/* Colors Selection - 3 color system */}
+          {/* Theme & Colors */}
           <div className="space-y-6">
             <div className="flex items-center gap-2 mb-2">
               <Palette className="h-4 w-4" />
-              <Label>Кольорова палітра</Label>
+              <Label>Тема та кольори</Label>
+            </div>
+
+            {/* Theme Toggle: Light / Dark */}
+            <div className="space-y-3">
+              <Label className="text-sm">Тема сайту</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newBg = LIGHT_BACKGROUNDS[0].value
+                    setBrandingData({ ...brandingData, background_color: newBg })
+                  }}
+                  className={`p-4 rounded-lg border-2 text-center transition-all ${
+                    !isDarkBackground(brandingData.background_color)
+                      ? 'border-primary bg-primary/5'
+                      : 'border-muted hover:border-muted-foreground/30'
+                  }`}
+                >
+                  <div className="flex justify-center mb-2">
+                    <div className="w-12 h-8 rounded bg-white border shadow-sm" />
+                  </div>
+                  <div className="font-medium">Світла</div>
+                  <div className="text-xs text-muted-foreground">Білий/світлий фон</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newBg = DARK_BACKGROUNDS[0].value
+                    setBrandingData({ ...brandingData, background_color: newBg })
+                  }}
+                  className={`p-4 rounded-lg border-2 text-center transition-all ${
+                    isDarkBackground(brandingData.background_color)
+                      ? 'border-primary bg-primary/5'
+                      : 'border-muted hover:border-muted-foreground/30'
+                  }`}
+                >
+                  <div className="flex justify-center mb-2">
+                    <div className="w-12 h-8 rounded bg-gray-900 border border-gray-700" />
+                  </div>
+                  <div className="font-medium">Темна</div>
+                  <div className="text-xs text-muted-foreground">Темний/чорний фон</div>
+                </button>
+              </div>
             </div>
 
             {/* Preview */}
@@ -521,17 +577,38 @@ export default function WebsiteBuilderPage() {
                   }}
                 />
               </div>
-              <p className="text-xs" style={{ color: brandingData.background_color === '#ffffff' || brandingData.background_color === '#fffbeb' || brandingData.background_color === '#f0f4ff' || brandingData.background_color === '#f0fdf4' ? '#6b7280' : '#9ca3af' }}>
-                Превью вашої кольорової палітри
+              <p className="text-xs" style={{ color: isDarkBackground(brandingData.background_color) ? '#9ca3af' : '#6b7280' }}>
+                Превью кольорової палітри
               </p>
             </div>
 
-            {/* Accent/Primary Color */}
+            {/* Background Selection */}
+            <div className="space-y-2">
+              <Label className="text-sm">Фон сторінки</Label>
+              <div className="flex gap-2 flex-wrap">
+                {(isDarkBackground(brandingData.background_color) ? DARK_BACKGROUNDS : LIGHT_BACKGROUNDS).map((color) => (
+                  <button
+                    key={color.value}
+                    type="button"
+                    onClick={() => setBrandingData({ ...brandingData, background_color: color.value })}
+                    className={`w-12 h-10 rounded-lg border-2 transition-transform ${
+                      brandingData.background_color === color.value
+                        ? 'border-primary scale-110'
+                        : 'border-muted hover:scale-105'
+                    }`}
+                    style={{ backgroundColor: color.value }}
+                    title={color.label}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Primary Color */}
             <div className="space-y-2">
               <Label className="text-sm">Основний колір</Label>
-              <p className="text-xs text-muted-foreground">Кнопки, посилання та основні акценти</p>
+              <p className="text-xs text-muted-foreground">Кнопки, посилання, акценти</p>
               <div className="flex gap-2 flex-wrap">
-                {ACCENT_COLORS.map((color) => (
+                {PRIMARY_COLORS.map((color) => (
                   <button
                     key={color.value}
                     type="button"
@@ -551,7 +628,7 @@ export default function WebsiteBuilderPage() {
             {/* Secondary Color */}
             <div className="space-y-2">
               <Label className="text-sm">Вторинний колір</Label>
-              <p className="text-xs text-muted-foreground">Градієнти, hover-ефекти та декоративні елементи</p>
+              <p className="text-xs text-muted-foreground">Градієнти, декоративні елементи</p>
               <div className="flex gap-2 flex-wrap">
                 {SECONDARY_COLORS.map((color) => (
                   <button
@@ -562,28 +639,6 @@ export default function WebsiteBuilderPage() {
                       brandingData.secondary_color === color.value
                         ? 'border-foreground scale-110'
                         : 'border-transparent hover:scale-105'
-                    }`}
-                    style={{ backgroundColor: color.value }}
-                    title={color.label}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Background Color */}
-            <div className="space-y-2">
-              <Label className="text-sm">Фон сторінки</Label>
-              <p className="text-xs text-muted-foreground">Основний фон та поверхні (підтримується темний режим)</p>
-              <div className="flex gap-2 flex-wrap">
-                {BACKGROUND_COLORS.map((color) => (
-                  <button
-                    key={color.value}
-                    type="button"
-                    onClick={() => setBrandingData({ ...brandingData, background_color: color.value })}
-                    className={`w-12 h-10 rounded-lg border-2 transition-transform ${
-                      brandingData.background_color === color.value
-                        ? 'border-foreground scale-110'
-                        : 'border-muted hover:scale-105'
                     }`}
                     style={{ backgroundColor: color.value }}
                     title={color.label}
