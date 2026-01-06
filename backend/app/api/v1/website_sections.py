@@ -27,12 +27,22 @@ from app.schemas.website_section import (
 router = APIRouter(prefix="/website")
 
 
-def is_premium_company(user) -> bool:
+async def is_premium_company(user, db) -> bool:
     """Check if user's company has premium subscription"""
     # For now, check if subscription exists and is active
     # This will be enhanced when subscription logic is fully implemented
-    if user.company and user.company.subscription:
-        return user.company.subscription.status == "active"
+    if not user.company_id:
+        return False
+
+    from app.models.company import Company
+    result = await db.execute(
+        select(Company)
+        .where(Company.id == user.company_id)
+        .options(selectinload(Company.subscription))
+    )
+    company = result.scalar_one_or_none()
+    if company and company.subscription:
+        return company.subscription.status == "active"
     return False
 
 
@@ -65,7 +75,7 @@ async def create_section(
         raise HTTPException(status_code=400, detail=f"Invalid section type: {data.section_type}")
 
     # Check premium restriction
-    is_premium = is_premium_company(current_user)
+    is_premium = await is_premium_company(current_user, db)
     if data.section_type in PREMIUM_SECTIONS and not is_premium:
         raise HTTPException(
             status_code=403,
@@ -257,9 +267,9 @@ async def reset_to_defaults(current_user: CurrentUser, db: DbSession):
 
 
 @router.get("/section-types", response_model=list[SectionTypeInfo])
-async def get_section_types(current_user: CurrentUser):
+async def get_section_types(current_user: CurrentUser, db: DbSession):
     """Get list of available section types with their metadata"""
-    is_premium = is_premium_company(current_user)
+    is_premium = await is_premium_company(current_user, db)
 
     # Return all types, but mark which ones are available
     types = []
