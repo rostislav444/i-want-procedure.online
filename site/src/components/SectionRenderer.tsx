@@ -140,20 +140,20 @@ function PlaceholderSection({ sectionType, theme }: { sectionType: string; theme
   }
 
   return (
-    <section className="py-16 bg-secondary">
+    <section className="py-16" style={{ backgroundColor: 'var(--color-background-alt)' }}>
       <div className="max-w-5xl mx-auto px-4 text-center">
         <div
           className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4"
-          style={{ backgroundColor: `${theme.primaryColor}20` }}
+          style={{ backgroundColor: 'var(--color-primary-100)' }}
         >
-          <span className="text-2xl" style={{ color: theme.primaryColor }}>
+          <span className="text-2xl" style={{ color: 'var(--color-primary-500)' }}>
             {sectionType[0].toUpperCase()}
           </span>
         </div>
-        <h3 className="text-xl font-semibold text-muted-foreground">
+        <h3 className="text-xl font-semibold" style={{ color: 'var(--color-text-muted)' }}>
           {sectionNames[sectionType] || sectionType}
         </h3>
-        <p className="text-sm text-muted-foreground mt-2">
+        <p className="text-sm mt-2" style={{ color: 'var(--color-text-muted)' }}>
           Ця секція буде доступна найближчим часом
         </p>
       </div>

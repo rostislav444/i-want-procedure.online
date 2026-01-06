@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { MapPin, ExternalLink } from 'lucide-react'
 import { Company } from '@/lib/api'
-import { IndustryTheme, getCardStyles, getButtonRadius } from '@/lib/themes'
+import { IndustryTheme } from '@/lib/themes'
 
 interface MapContent {
   title?: string
@@ -27,8 +27,6 @@ export function MapSection({ content, theme, company }: Props) {
   const address = content.address || company.address
   const coords = content.coordinates || { lat: 50.4501, lng: 30.5234 } // Kyiv default
   const zoom = content.zoom || 15
-
-  const cardStyles = getCardStyles(theme)
 
   useEffect(() => {
     setIsClient(true)
@@ -60,14 +58,15 @@ export function MapSection({ content, theme, company }: Props) {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       }).addTo(map)
 
-      // Custom marker with theme color
+      // Custom marker with theme color - use CSS variable from computed style
+      const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--color-primary-500').trim() || '#e91e63'
       const icon = L.divIcon({
         className: 'custom-marker',
         html: `
           <div style="
             width: 40px;
             height: 40px;
-            background: ${theme.primaryColor};
+            background: ${primaryColor};
             border-radius: 50% 50% 50% 0;
             transform: rotate(-45deg);
             display: flex;
@@ -102,27 +101,27 @@ export function MapSection({ content, theme, company }: Props) {
         mapInstanceRef.current = null
       }
     }
-  }, [isClient, coords.lat, coords.lng, zoom, theme.primaryColor, company.name, address])
+  }, [isClient, coords.lat, coords.lng, zoom, company.name, address])
 
   return (
-    <section className="py-16 bg-background">
+    <section className="py-16" style={{ backgroundColor: 'var(--color-background)' }}>
       <div className="max-w-5xl mx-auto px-4">
         <h2
           className="text-3xl font-bold text-center mb-8"
-          style={{ fontFamily: theme.headingFont }}
+          style={{ fontFamily: 'var(--font-accent)', color: 'var(--color-text)' }}
         >
           {title}
         </h2>
 
-        <div className="rounded-2xl overflow-hidden border" style={{ borderColor: `${theme.primaryColor}20` }}>
+        <div className="rounded-2xl overflow-hidden border" style={{ borderColor: 'var(--color-primary-100)' }}>
           {/* Map */}
           <div
             ref={mapRef}
-            className="h-80 w-full bg-muted"
-            style={{ minHeight: '320px' }}
+            className="h-80 w-full"
+            style={{ minHeight: '320px', backgroundColor: 'var(--color-background-alt)' }}
           >
             {!isClient && (
-              <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+              <div className="w-full h-full flex items-center justify-center" style={{ color: 'var(--color-text-muted)' }}>
                 Завантаження карти...
               </div>
             )}
@@ -131,27 +130,28 @@ export function MapSection({ content, theme, company }: Props) {
           {/* Address bar */}
           {address && (
             <div
-              className="p-6 flex flex-col md:flex-row items-center gap-4 bg-card"
-              style={{ borderTop: `1px solid ${theme.primaryColor}20` }}
+              className="p-6 flex flex-col md:flex-row items-center gap-4"
+              style={{ backgroundColor: 'var(--color-surface)', borderTop: '1px solid var(--color-primary-100)' }}
             >
               <div
                 className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ backgroundColor: `${theme.primaryColor}20` }}
+                style={{ backgroundColor: 'var(--color-primary-100)' }}
               >
-                <MapPin className="w-6 h-6" style={{ color: theme.primaryColor }} />
+                <MapPin className="w-6 h-6" style={{ color: 'var(--color-primary-500)' }} />
               </div>
               <div className="text-center md:text-left flex-1">
-                <p className="font-medium">Наша адреса</p>
-                <p className="text-muted-foreground">{address}</p>
+                <p className="font-medium" style={{ color: 'var(--color-text)' }}>Наша адреса</p>
+                <p style={{ color: 'var(--color-text-muted)' }}>{address}</p>
               </div>
               <a
                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 text-white text-sm font-medium hover:opacity-90 transition-opacity"
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity"
                 style={{
-                  backgroundColor: theme.primaryColor,
-                  borderRadius: getButtonRadius(theme),
+                  backgroundColor: 'var(--color-primary-500)',
+                  color: 'var(--color-primary-contrast)',
+                  borderRadius: theme.borderRadius.button,
                 }}
               >
                 <ExternalLink className="w-4 h-4" />

@@ -2,7 +2,7 @@
 
 import { Phone, MessageCircle, Mail, MapPin, Instagram, Facebook } from 'lucide-react'
 import { Company } from '@/lib/api'
-import { IndustryTheme, getButtonStyles, getCardStyles, getButtonRadius } from '@/lib/themes'
+import { IndustryTheme } from '@/lib/themes'
 
 interface ContactContent {
   title?: string
@@ -33,22 +33,23 @@ export function ContactSection({ content, theme, company }: Props) {
     } catch {}
   }
 
-  const cardStyles = getCardStyles(theme)
-  const buttonStyles = getButtonStyles(theme)
-
   return (
-    <section className="py-16 bg-secondary">
+    <section className="py-16" style={{ backgroundColor: 'var(--color-background-alt)' }}>
       <div className="max-w-5xl mx-auto px-4">
         <h2
           className="text-3xl font-bold text-center mb-12"
-          style={{ fontFamily: theme.headingFont }}
+          style={{ fontFamily: 'var(--font-accent)', color: 'var(--color-text)' }}
         >
           {title}
         </h2>
 
         <div
           className="p-8 md:p-12"
-          style={cardStyles}
+          style={{
+            backgroundColor: 'var(--color-surface)',
+            borderRadius: theme.borderRadius.card,
+            boxShadow: theme.shadow.card,
+          }}
         >
           <div className="grid md:grid-cols-2 gap-8">
             {/* Contact info */}
@@ -60,13 +61,13 @@ export function ContactSection({ content, theme, company }: Props) {
                 >
                   <div
                     className="w-14 h-14 rounded-xl flex items-center justify-center transition-colors group-hover:scale-105"
-                    style={{ backgroundColor: `${theme.primaryColor}20` }}
+                    style={{ backgroundColor: 'var(--color-primary-100)' }}
                   >
-                    <Phone className="w-6 h-6" style={{ color: theme.primaryColor }} />
+                    <Phone className="w-6 h-6" style={{ color: 'var(--color-primary-500)' }} />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Телефон</p>
-                    <p className="text-lg font-semibold">{company.phone}</p>
+                    <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>Телефон</p>
+                    <p className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>{company.phone}</p>
                   </div>
                 </a>
               )}
@@ -82,8 +83,8 @@ export function ContactSection({ content, theme, company }: Props) {
                     <MessageCircle className="w-6 h-6 text-sky-500" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Telegram</p>
-                    <p className="text-lg font-semibold">{company.telegram}</p>
+                    <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>Telegram</p>
+                    <p className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>{company.telegram}</p>
                   </div>
                 </a>
               )}
@@ -92,13 +93,13 @@ export function ContactSection({ content, theme, company }: Props) {
                 <div className="flex items-center gap-4">
                   <div
                     className="w-14 h-14 rounded-xl flex items-center justify-center"
-                    style={{ backgroundColor: `${theme.primaryColor}20` }}
+                    style={{ backgroundColor: 'var(--color-primary-100)' }}
                   >
-                    <MapPin className="w-6 h-6" style={{ color: theme.primaryColor }} />
+                    <MapPin className="w-6 h-6" style={{ color: 'var(--color-primary-500)' }} />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Адреса</p>
-                    <p className="text-lg font-semibold">{company.address}</p>
+                    <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>Адреса</p>
+                    <p className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>{company.address}</p>
                   </div>
                 </div>
               )}
@@ -132,7 +133,7 @@ export function ContactSection({ content, theme, company }: Props) {
 
             {/* CTA */}
             <div className="flex flex-col justify-center items-center md:items-end text-center md:text-right">
-              <p className="text-muted-foreground mb-4">
+              <p className="mb-4" style={{ color: 'var(--color-text-muted)' }}>
                 Записуйтесь на процедури онлайн через Telegram бот
               </p>
               {company.telegram && (
@@ -140,10 +141,11 @@ export function ContactSection({ content, theme, company }: Props) {
                   href={`https://t.me/${company.telegram.replace('@', '')}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-8 py-4 text-white font-semibold hover:opacity-90 transition-opacity"
+                  className="inline-flex items-center gap-2 px-8 py-4 font-semibold hover:opacity-90 transition-opacity"
                   style={{
-                    ...buttonStyles,
-                    backgroundColor: theme.primaryColor,
+                    backgroundColor: 'var(--color-primary-500)',
+                    color: 'var(--color-primary-contrast)',
+                    borderRadius: theme.borderRadius.button,
                   }}
                 >
                   <MessageCircle className="w-5 h-5" />
@@ -153,7 +155,7 @@ export function ContactSection({ content, theme, company }: Props) {
 
               {/* Working hours */}
               {company.working_hours && (
-                <div className="mt-6 text-sm text-muted-foreground">
+                <div className="mt-6 text-sm" style={{ color: 'var(--color-text-muted)' }}>
                   <p className="font-medium">Графік роботи:</p>
                   <p>{company.working_hours}</p>
                 </div>

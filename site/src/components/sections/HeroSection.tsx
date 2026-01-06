@@ -2,7 +2,7 @@
 
 import { MessageCircle, Phone, Sparkles } from 'lucide-react'
 import { Company } from '@/lib/api'
-import { IndustryTheme, getButtonStyles, getButtonRadius } from '@/lib/themes'
+import { IndustryTheme } from '@/lib/themes'
 
 interface HeroContent {
   title?: string
@@ -55,13 +55,11 @@ interface HeroVariantProps {
 
 // Gradient Hero - Cosmetology, Beauty themes
 function GradientHero({ title, subtitle, ctaText, ctaLink, theme, company }: HeroVariantProps) {
-  const buttonStyles = getButtonStyles(theme)
-
   return (
     <section
       className="min-h-screen flex items-center justify-center relative overflow-hidden pt-16"
       style={{
-        background: `linear-gradient(135deg, ${theme.gradientFrom}, ${theme.gradientTo})`,
+        background: 'linear-gradient(135deg, var(--color-primary-500), var(--color-secondary-500))',
       }}
     >
       {/* Floating decorative elements */}
@@ -76,7 +74,7 @@ function GradientHero({ title, subtitle, ctaText, ctaLink, theme, company }: Her
         />
         <div
           className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full blur-3xl animate-float opacity-20"
-          style={{ background: theme.accentColor, animationDelay: '2s' }}
+          style={{ background: 'var(--color-secondary-500)', animationDelay: '2s' }}
         />
       </div>
 
@@ -88,7 +86,7 @@ function GradientHero({ title, subtitle, ctaText, ctaLink, theme, company }: Her
 
         <h1
           className="text-5xl md:text-7xl font-bold mb-6 leading-tight"
-          style={{ fontFamily: theme.headingFont }}
+          style={{ fontFamily: 'var(--font-accent)' }}
         >
           {title}
         </h1>
@@ -103,7 +101,7 @@ function GradientHero({ title, subtitle, ctaText, ctaLink, theme, company }: Her
           <a
             href={ctaLink}
             className="inline-flex items-center gap-2 px-8 py-4 bg-white text-gray-900 font-semibold hover:scale-105 transition-transform shadow-xl"
-            style={{ borderRadius: getButtonRadius(theme) }}
+            style={{ borderRadius: theme.borderRadius.button }}
           >
             <MessageCircle className="w-5 h-5" />
             {ctaText}
@@ -113,7 +111,7 @@ function GradientHero({ title, subtitle, ctaText, ctaLink, theme, company }: Her
             <a
               href={`tel:${company.phone}`}
               className="inline-flex items-center gap-2 px-8 py-4 bg-white/20 backdrop-blur-sm text-white font-semibold hover:bg-white/30 transition-colors"
-              style={{ borderRadius: getButtonRadius(theme) }}
+              style={{ borderRadius: theme.borderRadius.button }}
             >
               <Phone className="w-5 h-5" />
               {company.phone}
@@ -127,7 +125,7 @@ function GradientHero({ title, subtitle, ctaText, ctaLink, theme, company }: Her
         <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
           <path
             d="M0 120V60C240 90 480 100 720 80C960 60 1200 30 1440 40V120H0Z"
-            fill="var(--background)"
+            fill="var(--color-background)"
           />
         </svg>
       </div>
@@ -138,13 +136,13 @@ function GradientHero({ title, subtitle, ctaText, ctaLink, theme, company }: Her
 // Minimal Hero - Medical, Wellness themes
 function MinimalHero({ title, subtitle, ctaText, ctaLink, theme, company }: HeroVariantProps) {
   return (
-    <section className="min-h-[80vh] flex items-center pt-20 bg-background">
+    <section className="min-h-[80vh] flex items-center pt-20" style={{ backgroundColor: 'var(--color-background)' }}>
       <div className="max-w-5xl mx-auto px-4 text-center">
         <div
           className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-6"
           style={{
-            backgroundColor: `${theme.primaryColor}15`,
-            color: theme.primaryColor,
+            backgroundColor: 'var(--color-primary-100)',
+            color: 'var(--color-primary-700)',
           }}
         >
           <Sparkles className="w-4 h-4" />
@@ -152,14 +150,14 @@ function MinimalHero({ title, subtitle, ctaText, ctaLink, theme, company }: Hero
         </div>
 
         <h1
-          className="text-4xl md:text-6xl font-bold mb-6 text-foreground"
-          style={{ fontFamily: theme.headingFont }}
+          className="text-4xl md:text-6xl font-bold mb-6"
+          style={{ fontFamily: 'var(--font-accent)', color: 'var(--color-text)' }}
         >
           {title}
         </h1>
 
         {subtitle && (
-          <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto" style={{ color: 'var(--color-text-muted)' }}>
             {subtitle}
           </p>
         )}
@@ -167,10 +165,11 @@ function MinimalHero({ title, subtitle, ctaText, ctaLink, theme, company }: Hero
         <div className="flex flex-wrap items-center justify-center gap-4">
           <a
             href={ctaLink}
-            className="inline-flex items-center gap-2 px-8 py-4 text-white font-semibold hover:opacity-90 transition-opacity"
+            className="inline-flex items-center gap-2 px-8 py-4 font-semibold hover:opacity-90 transition-opacity"
             style={{
-              backgroundColor: theme.primaryColor,
-              borderRadius: getButtonRadius(theme),
+              backgroundColor: 'var(--color-primary-500)',
+              color: 'var(--color-primary-contrast)',
+              borderRadius: theme.borderRadius.button,
             }}
           >
             <MessageCircle className="w-5 h-5" />
@@ -182,9 +181,9 @@ function MinimalHero({ title, subtitle, ctaText, ctaLink, theme, company }: Hero
               href={`tel:${company.phone}`}
               className="inline-flex items-center gap-2 px-8 py-4 font-semibold transition-colors"
               style={{
-                color: theme.primaryColor,
-                border: `2px solid ${theme.primaryColor}`,
-                borderRadius: getButtonRadius(theme),
+                color: 'var(--color-primary-500)',
+                border: '2px solid var(--color-primary-500)',
+                borderRadius: theme.borderRadius.button,
               }}
             >
               <Phone className="w-5 h-5" />
@@ -195,7 +194,7 @@ function MinimalHero({ title, subtitle, ctaText, ctaLink, theme, company }: Hero
 
         {/* Trust badges for medical */}
         {theme.id === 'medical' && (
-          <div className="flex items-center justify-center gap-6 mt-12 text-sm text-muted-foreground">
+          <div className="flex items-center justify-center gap-6 mt-12 text-sm" style={{ color: 'var(--color-text-muted)' }}>
             <span className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-green-500" />
               Досвідчені спеціалісти
@@ -234,7 +233,7 @@ function ImageBgHero({ title, subtitle, ctaText, ctaLink, theme, company, backgr
       ) : (
         <div
           className="absolute inset-0"
-          style={{ background: `linear-gradient(135deg, ${theme.gradientFrom}30, ${theme.gradientTo}30)` }}
+          style={{ background: 'linear-gradient(135deg, var(--color-primary-500), var(--color-secondary-500))' }}
         />
       )}
 
@@ -244,7 +243,7 @@ function ImageBgHero({ title, subtitle, ctaText, ctaLink, theme, company, backgr
       <div className="relative z-10 max-w-4xl mx-auto px-4 text-center text-white">
         <h1
           className="text-5xl md:text-7xl font-bold mb-6"
-          style={{ fontFamily: theme.headingFont }}
+          style={{ fontFamily: 'var(--font-accent)' }}
         >
           {title}
         </h1>
@@ -258,7 +257,7 @@ function ImageBgHero({ title, subtitle, ctaText, ctaLink, theme, company, backgr
         <a
           href={ctaLink}
           className="inline-flex items-center gap-2 px-8 py-4 text-white font-semibold hover:opacity-90 transition-opacity border-2 border-white"
-          style={{ borderRadius: getButtonRadius(theme) }}
+          style={{ borderRadius: theme.borderRadius.button }}
         >
           <MessageCircle className="w-5 h-5" />
           {ctaText}
@@ -281,12 +280,12 @@ function SplitHero({ title, subtitle, ctaText, ctaLink, theme, company, backgrou
       {/* Left side - Content */}
       <div
         className="flex items-center p-8 md:p-16"
-        style={{ background: theme.primaryColor }}
+        style={{ background: 'var(--color-primary-500)' }}
       >
         <div className="text-white max-w-xl">
           <h1
             className="text-5xl md:text-7xl font-bold uppercase tracking-tight mb-6"
-            style={{ fontFamily: theme.headingFont }}
+            style={{ fontFamily: 'var(--font-accent)' }}
           >
             {title}
           </h1>
@@ -300,7 +299,7 @@ function SplitHero({ title, subtitle, ctaText, ctaLink, theme, company, backgrou
           <a
             href={ctaLink}
             className="inline-flex items-center gap-2 px-8 py-4 bg-white text-black font-bold uppercase tracking-wide hover:bg-yellow-400 transition-colors"
-            style={{ borderRadius: getButtonRadius(theme) }}
+            style={{ borderRadius: theme.borderRadius.button }}
           >
             <MessageCircle className="w-5 h-5" />
             {ctaText}
@@ -323,7 +322,7 @@ function SplitHero({ title, subtitle, ctaText, ctaLink, theme, company, backgrou
           <div
             className="w-full h-full"
             style={{
-              background: `linear-gradient(135deg, ${theme.gradientFrom}, ${theme.gradientTo})`,
+              background: 'linear-gradient(135deg, var(--color-primary-500), var(--color-secondary-500))',
               clipPath: 'polygon(10% 0, 100% 0, 100% 100%, 0 100%)',
             }}
           />
