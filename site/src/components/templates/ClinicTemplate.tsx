@@ -9,17 +9,30 @@ interface Props {
   company: Company
   services: Service[]
   categories: ServiceCategory[]
-  servicesByCategory: Map<number | null, Service[]>
-  getCategoryName: (id: number | null) => string
+  servicesByCategoryMap: Record<string, Service[]>
 }
 
 export default function ClinicTemplate({
   company,
   services,
   categories,
-  servicesByCategory,
-  getCategoryName,
+  servicesByCategoryMap,
 }: Props) {
+  // Helper to get category name from id
+  const getCategoryName = (catId: string): string => {
+    if (catId === 'null') return 'Інші послуги'
+    const id = parseInt(catId, 10)
+    const findCat = (cats: ServiceCategory[]): string | undefined => {
+      for (const cat of cats) {
+        if (cat.id === id) return cat.name
+        if (cat.children) {
+          const found = findCat(cat.children)
+          if (found) return found
+        }
+      }
+    }
+    return findCat(categories) || 'Категорія'
+  }
   const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:8000'
   const primaryColor = company.primary_color || '#e91e63'
 
@@ -185,7 +198,7 @@ export default function ClinicTemplate({
 
           {/* Category tabs/cards */}
           <div className="space-y-8">
-            {Array.from(servicesByCategory.entries()).map(([catId, catServices]) => (
+            {Object.entries(servicesByCategoryMap).map(([catId, catServices]) => (
               <div
                 key={catId ?? 'uncategorized'}
                 className="bg-card rounded-2xl border overflow-hidden"

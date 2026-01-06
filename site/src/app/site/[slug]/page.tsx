@@ -40,37 +40,22 @@ export default async function CompanyPage({ params }: Props) {
     notFound()
   }
 
-  // Group services by category
-  const servicesByCategory = new Map<number | null, Service[]>()
+  // Group services by category - convert to serializable format
+  const servicesByCategoryMap: Record<string, Service[]> = {}
   services.forEach((service) => {
-    const catId = service.category_id || null
-    if (!servicesByCategory.has(catId)) {
-      servicesByCategory.set(catId, [])
+    const catId = String(service.category_id ?? 'null')
+    if (!servicesByCategoryMap[catId]) {
+      servicesByCategoryMap[catId] = []
     }
-    servicesByCategory.get(catId)!.push(service)
+    servicesByCategoryMap[catId].push(service)
   })
-
-  const getCategoryName = (id: number | null) => {
-    if (!id) return 'Інші послуги'
-    const findCat = (cats: ServiceCategory[]): string | undefined => {
-      for (const cat of cats) {
-        if (cat.id === id) return cat.name
-        if (cat.children) {
-          const found = findCat(cat.children)
-          if (found) return found
-        }
-      }
-    }
-    return findCat(categories) || 'Категорія'
-  }
 
   // Common props for all templates
   const templateProps = {
     company,
     services,
     categories,
-    servicesByCategory,
-    getCategoryName,
+    servicesByCategoryMap,
   }
 
   // Select template based on company settings

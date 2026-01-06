@@ -10,17 +10,30 @@ interface Props {
   company: Company
   services: Service[]
   categories: ServiceCategory[]
-  servicesByCategory: Map<number | null, Service[]>
-  getCategoryName: (id: number | null) => string
+  servicesByCategoryMap: Record<string, Service[]>
 }
 
 export default function SoloTemplate({
   company,
   services,
   categories,
-  servicesByCategory,
-  getCategoryName,
+  servicesByCategoryMap,
 }: Props) {
+  // Helper to get category name from id
+  const getCategoryName = (catId: string): string => {
+    if (catId === 'null') return 'Інші послуги'
+    const id = parseInt(catId, 10)
+    const findCat = (cats: ServiceCategory[]): string | undefined => {
+      for (const cat of cats) {
+        if (cat.id === id) return cat.name
+        if (cat.children) {
+          const found = findCat(cat.children)
+          if (found) return found
+        }
+      }
+    }
+    return findCat(categories) || 'Категорія'
+  }
   const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:8000'
   const primaryColor = company.primary_color || '#e91e63'
 
@@ -167,7 +180,7 @@ export default function SoloTemplate({
             <h2 className="text-3xl font-bold">Послуги та ціни</h2>
           </div>
 
-          {Array.from(servicesByCategory.entries()).map(([catId, catServices]) => (
+          {Object.entries(servicesByCategoryMap).map(([catId, catServices]) => (
             <div key={catId ?? 'uncategorized'} className="mb-10">
               <h3 className="text-xl font-semibold mb-4 pb-3 border-b flex items-center gap-3" style={{ borderColor: `${primaryColor}40` }}>
                 <span className="w-3 h-3 rounded-full" style={{ backgroundColor: primaryColor }} />
