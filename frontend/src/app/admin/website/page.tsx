@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Plus,
@@ -16,6 +16,13 @@ import {
   ChevronDown,
   ChevronUp,
   Sparkles,
+  Upload,
+  Image,
+  FileText,
+  Clock,
+  Instagram,
+  Facebook,
+  Building2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -25,6 +32,7 @@ import { Textarea } from '@/components/ui/textarea'
 import {
   websiteApi,
   companyApi,
+  uploadApi,
   WebsiteSection,
   SectionTypeInfo,
   IndustryThemeInfo,
@@ -67,10 +75,29 @@ const SECTION_ICONS: Record<string, string> = {
   custom_text: '📝',
 }
 
+const TEMPLATE_OPTIONS = [
+  { value: 'solo', label: 'Solo', description: 'Для індивідуального спеціаліста' },
+  { value: 'clinic', label: 'Clinic', description: 'Для клініки або салону' },
+  { value: 'premium', label: 'Premium', description: 'Розширений шаблон' },
+]
+
+const COLOR_OPTIONS = [
+  { value: '#e91e63', label: 'Рожевий' },
+  { value: '#9c27b0', label: 'Фіолетовий' },
+  { value: '#3f51b5', label: 'Синій' },
+  { value: '#009688', label: 'Бірюзовий' },
+  { value: '#4caf50', label: 'Зелений' },
+  { value: '#ff9800', label: 'Помаранчевий' },
+  { value: '#f44336', label: 'Червоний' },
+]
+
 export default function WebsiteBuilderPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [savingBranding, setSavingBranding] = useState(false)
+  const [uploadingLogo, setUploadingLogo] = useState(false)
+  const [uploadingCover, setUploadingCover] = useState(false)
   const [company, setCompany] = useState<Company | null>(null)
   const [sections, setSections] = useState<WebsiteSection[]>([])
   const [sectionTypes, setSectionTypes] = useState<SectionTypeInfo[]>([])
@@ -80,6 +107,19 @@ export default function WebsiteBuilderPage() {
   const [addDialogOpen, setAddDialogOpen] = useState(false)
   const [editingSection, setEditingSection] = useState<WebsiteSection | null>(null)
   const [expandedSection, setExpandedSection] = useState<number | null>(null)
+
+  // Branding settings state
+  const [brandingData, setBrandingData] = useState({
+    template_type: 'solo',
+    primary_color: '#e91e63',
+    specialization: '',
+    working_hours: '',
+    instagram: '',
+    facebook: '',
+  })
+
+  const logoInputRef = useRef<HTMLInputElement>(null)
+  const coverInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     loadData()
@@ -98,6 +138,23 @@ export default function WebsiteBuilderPage() {
       setSectionTypes(typesData)
       setThemes(themesData)
       setSelectedTheme(companyData.industry_theme || 'cosmetology')
+
+      // Parse social links if exists
+      let socialLinks = { instagram: '', facebook: '' }
+      if (companyData.social_links) {
+        try {
+          socialLinks = JSON.parse(companyData.social_links)
+        } catch {}
+      }
+
+      setBrandingData({
+        template_type: companyData.template_type || 'solo',
+        primary_color: companyData.primary_color || '#e91e63',
+        specialization: companyData.specialization || '',
+        working_hours: companyData.working_hours || '',
+        instagram: socialLinks.instagram || '',
+        facebook: socialLinks.facebook || '',
+      })
     } catch (error) {
       console.error('Error loading data:', error)
     } finally {
@@ -214,6 +271,65 @@ export default function WebsiteBuilderPage() {
     }
   }
 
+  const handleSaveBranding = async () => {
+    try {
+      setSavingBranding(true)
+      const socialLinks = JSON.stringify({
+        instagram: brandingData.instagram,
+        facebook: brandingData.facebook,
+      })
+
+      await companyApi.updateCompany({
+        template_type: brandingData.template_type,
+        primary_color: brandingData.primary_color,
+        specialization: brandingData.specialization || undefined,
+        working_hours: brandingData.working_hours || undefined,
+        social_links: socialLinks,
+      })
+      showSuccess('Налаштування збережено!')
+      await loadData()
+    } catch (error) {
+      console.error('Error saving branding:', error)
+    } finally {
+      setSavingBranding(false)
+    }
+  }
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploadingLogo(true)
+    try {
+      const { url } = await uploadApi.uploadLogo(file)
+      await companyApi.updateCompany({ logo_url: url })
+      showSuccess('Логотип завантажено!')
+      await loadData()
+    } catch (error) {
+      console.error('Error uploading logo:', error)
+    } finally {
+      setUploadingLogo(false)
+    }
+  }
+
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploadingCover(true)
+    try {
+      const { url } = await uploadApi.uploadCover(file)
+      await companyApi.updateCompany({ cover_image_url: url })
+      showSuccess('Обкладинку завантажено!')
+      await loadData()
+    } catch (error) {
+      console.error('Error uploading cover:', error)
+    } finally {
+      setUploadingCover(false)
+    }
+  }
+
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
   const siteUrl = company
     ? `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001'}/site/${company.slug}`
     : ''
@@ -302,6 +418,198 @@ export default function WebsiteBuilderPage() {
               </button>
             ))}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Branding & Additional Info */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Building2 className="h-5 w-5" />
+            Брендинг та інформація
+          </CardTitle>
+          <CardDescription>
+            Налаштуйте вигляд та додаткову інформацію про вашу компанію
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Template Selection */}
+          <div className="space-y-3">
+            <Label className="flex items-center gap-1">
+              <FileText className="h-4 w-4" /> Шаблон сайту
+            </Label>
+            <div className="grid grid-cols-3 gap-3">
+              {TEMPLATE_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setBrandingData({ ...brandingData, template_type: option.value })}
+                  className={`p-4 rounded-lg border-2 text-left transition-all ${
+                    brandingData.template_type === option.value
+                      ? 'border-primary bg-primary/5'
+                      : 'border-muted hover:border-muted-foreground/30'
+                  }`}
+                >
+                  <div className="font-medium">{option.label}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{option.description}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Color Selection */}
+          <div className="space-y-3">
+            <Label className="flex items-center gap-1">
+              <Palette className="h-4 w-4" /> Основний колір
+            </Label>
+            <div className="flex gap-2 flex-wrap">
+              {COLOR_OPTIONS.map((color) => (
+                <button
+                  key={color.value}
+                  type="button"
+                  onClick={() => setBrandingData({ ...brandingData, primary_color: color.value })}
+                  className={`w-10 h-10 rounded-full border-2 transition-transform ${
+                    brandingData.primary_color === color.value
+                      ? 'border-foreground scale-110'
+                      : 'border-transparent hover:scale-105'
+                  }`}
+                  style={{ backgroundColor: color.value }}
+                  title={color.label}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Logo Upload */}
+          <div className="space-y-3">
+            <Label className="flex items-center gap-1">
+              <Upload className="h-4 w-4" /> Логотип
+            </Label>
+            <div className="flex items-center gap-4">
+              {company?.logo_url ? (
+                <img
+                  src={`${apiUrl}${company.logo_url}`}
+                  alt="Logo"
+                  className="w-20 h-20 object-cover rounded-lg border"
+                />
+              ) : (
+                <div className="w-20 h-20 bg-muted rounded-lg border flex items-center justify-center">
+                  <Image className="h-8 w-8 text-muted-foreground" />
+                </div>
+              )}
+              <div>
+                <input
+                  ref={logoInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoUpload}
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => logoInputRef.current?.click()}
+                  disabled={uploadingLogo}
+                >
+                  {uploadingLogo ? 'Завантаження...' : 'Завантажити логотип'}
+                </Button>
+                <p className="text-xs text-muted-foreground mt-1">JPG, PNG до 5MB</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Cover Upload */}
+          <div className="space-y-3">
+            <Label className="flex items-center gap-1">
+              <Image className="h-4 w-4" /> Обкладинка
+            </Label>
+            <div className="space-y-2">
+              {company?.cover_image_url ? (
+                <img
+                  src={`${apiUrl}${company.cover_image_url}`}
+                  alt="Cover"
+                  className="w-full h-32 object-cover rounded-lg border"
+                />
+              ) : (
+                <div className="w-full h-32 bg-muted rounded-lg border flex items-center justify-center">
+                  <Image className="h-8 w-8 text-muted-foreground" />
+                </div>
+              )}
+              <input
+                ref={coverInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleCoverUpload}
+                className="hidden"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => coverInputRef.current?.click()}
+                disabled={uploadingCover}
+              >
+                {uploadingCover ? 'Завантаження...' : 'Завантажити обкладинку'}
+              </Button>
+            </div>
+          </div>
+
+          {/* Specialization & Working Hours */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="specialization">Спеціалізація</Label>
+              <Input
+                id="specialization"
+                value={brandingData.specialization}
+                onChange={(e) => setBrandingData({ ...brandingData, specialization: e.target.value })}
+                placeholder="Косметолог, Масажист, Стоматолог..."
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="working_hours" className="flex items-center gap-1">
+                <Clock className="h-4 w-4" /> Години роботи
+              </Label>
+              <Input
+                id="working_hours"
+                value={brandingData.working_hours}
+                onChange={(e) => setBrandingData({ ...brandingData, working_hours: e.target.value })}
+                placeholder="Пн-Пт: 9:00-18:00"
+              />
+            </div>
+          </div>
+
+          {/* Social Links */}
+          <div className="space-y-3">
+            <Label>Соціальні мережі</Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="instagram" className="text-sm flex items-center gap-1">
+                  <Instagram className="h-4 w-4" /> Instagram
+                </Label>
+                <Input
+                  id="instagram"
+                  value={brandingData.instagram}
+                  onChange={(e) => setBrandingData({ ...brandingData, instagram: e.target.value })}
+                  placeholder="@username"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="facebook" className="text-sm flex items-center gap-1">
+                  <Facebook className="h-4 w-4" /> Facebook
+                </Label>
+                <Input
+                  id="facebook"
+                  value={brandingData.facebook}
+                  onChange={(e) => setBrandingData({ ...brandingData, facebook: e.target.value })}
+                  placeholder="facebook.com/page"
+                />
+              </div>
+            </div>
+          </div>
+
+          <Button onClick={handleSaveBranding} disabled={savingBranding}>
+            <Save className="mr-2 h-4 w-4" />
+            {savingBranding ? 'Збереження...' : 'Зберегти налаштування'}
+          </Button>
         </CardContent>
       </Card>
 

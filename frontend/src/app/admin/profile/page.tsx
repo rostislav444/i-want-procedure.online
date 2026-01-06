@@ -1,14 +1,14 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { User, Building2, Save, Globe, Palette, Upload, Image, ExternalLink, Instagram, Facebook, Phone, MapPin, Clock, FileText, CreditCard, Banknote, Calendar, Link2, Unlink } from 'lucide-react'
+import { User, Building2, Save, Phone, MapPin, CreditCard, Banknote, Calendar, Link2, Unlink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { authApi, companyApi, uploadApi, googleApi, Company, GoogleCalendarInfo } from '@/lib/api'
+import { authApi, companyApi, googleApi, Company, GoogleCalendarInfo } from '@/lib/api'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 interface UserData {
@@ -20,22 +20,6 @@ interface UserData {
   role: string
 }
 
-const TEMPLATE_OPTIONS = [
-  { value: 'solo', label: 'Solo', description: 'Для індивідуального спеціаліста' },
-  { value: 'clinic', label: 'Clinic', description: 'Для клініки або салону' },
-  { value: 'premium', label: 'Premium', description: 'Розширений шаблон' },
-]
-
-const COLOR_OPTIONS = [
-  { value: '#e91e63', label: 'Рожевий' },
-  { value: '#9c27b0', label: 'Фіолетовий' },
-  { value: '#3f51b5', label: 'Синій' },
-  { value: '#009688', label: 'Бірюзовий' },
-  { value: '#4caf50', label: 'Зелений' },
-  { value: '#ff9800', label: 'Помаранчевий' },
-  { value: '#f44336', label: 'Червоний' },
-]
-
 export default function ProfilePage() {
   const router = useRouter()
   const [user, setUser] = useState<UserData | null>(null)
@@ -43,17 +27,11 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [savingCompany, setSavingCompany] = useState(false)
-  const [savingSite, setSavingSite] = useState(false)
   const [savingPayment, setSavingPayment] = useState(false)
   const [success, setSuccess] = useState<string | null>(null)
-  const [uploadingLogo, setUploadingLogo] = useState(false)
-  const [uploadingCover, setUploadingCover] = useState(false)
   const [googleStatus, setGoogleStatus] = useState<GoogleCalendarInfo | null>(null)
   const [googleLoading, setGoogleLoading] = useState(false)
   const [selectedCalendar, setSelectedCalendar] = useState<string>('primary')
-
-  const logoInputRef = useRef<HTMLInputElement>(null)
-  const coverInputRef = useRef<HTMLInputElement>(null)
 
   const [formData, setFormData] = useState({
     first_name: '',
@@ -67,15 +45,6 @@ export default function ProfilePage() {
     phone: '',
     address: '',
     telegram: '',
-  })
-
-  const [siteData, setSiteData] = useState({
-    template_type: 'solo',
-    primary_color: '#e91e63',
-    specialization: '',
-    working_hours: '',
-    instagram: '',
-    facebook: '',
   })
 
   const [paymentData, setPaymentData] = useState({
@@ -114,23 +83,6 @@ export default function ProfilePage() {
         phone: companyData.phone || '',
         address: companyData.address || '',
         telegram: companyData.telegram || '',
-      })
-
-      // Parse social links if exists
-      let socialLinks = { instagram: '', facebook: '' }
-      if (companyData.social_links) {
-        try {
-          socialLinks = JSON.parse(companyData.social_links)
-        } catch {}
-      }
-
-      setSiteData({
-        template_type: companyData.template_type || 'solo',
-        primary_color: companyData.primary_color || '#e91e63',
-        specialization: companyData.specialization || '',
-        working_hours: companyData.working_hours || '',
-        instagram: socialLinks.instagram || '',
-        facebook: socialLinks.facebook || '',
       })
 
       setPaymentData({
@@ -191,31 +143,6 @@ export default function ProfilePage() {
     }
   }
 
-  const handleSubmitSite = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setSavingSite(true)
-    try {
-      const socialLinks = JSON.stringify({
-        instagram: siteData.instagram,
-        facebook: siteData.facebook,
-      })
-
-      await companyApi.updateCompany({
-        template_type: siteData.template_type,
-        primary_color: siteData.primary_color,
-        specialization: siteData.specialization || undefined,
-        working_hours: siteData.working_hours || undefined,
-        social_links: socialLinks,
-      })
-      showSuccess('Налаштування сайту збережено!')
-      await loadData()
-    } catch (error) {
-      console.error('Error updating site settings:', error)
-    } finally {
-      setSavingSite(false)
-    }
-  }
-
   const handleSubmitPayment = async (e: React.FormEvent) => {
     e.preventDefault()
     setSavingPayment(true)
@@ -233,40 +160,6 @@ export default function ProfilePage() {
       console.error('Error updating payment info:', error)
     } finally {
       setSavingPayment(false)
-    }
-  }
-
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    setUploadingLogo(true)
-    try {
-      const { url } = await uploadApi.uploadLogo(file)
-      await companyApi.updateCompany({ logo_url: url })
-      showSuccess('Логотип завантажено!')
-      await loadData()
-    } catch (error) {
-      console.error('Error uploading logo:', error)
-    } finally {
-      setUploadingLogo(false)
-    }
-  }
-
-  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    setUploadingCover(true)
-    try {
-      const { url } = await uploadApi.uploadCover(file)
-      await companyApi.updateCompany({ cover_image_url: url })
-      showSuccess('Обкладинку завантажено!')
-      await loadData()
-    } catch (error) {
-      console.error('Error uploading cover:', error)
-    } finally {
-      setUploadingCover(false)
     }
   }
 
@@ -338,8 +231,6 @@ export default function ProfilePage() {
 
   const botUsername = process.env.NEXT_PUBLIC_CLIENT_BOT_NAME || 'YOUR_BOT'
   const inviteLink = company ? `https://t.me/${botUsername}?start=${company.invite_code}` : ''
-  const siteUrl = company ? `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001'}/${company.slug}` : ''
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -505,216 +396,6 @@ export default function ProfilePage() {
             <Button type="submit" disabled={savingCompany}>
               <Save className="mr-2 h-4 w-4" />
               {savingCompany ? 'Збереження...' : 'Зберегти'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-
-      {/* Site Settings */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Globe className="h-5 w-5" />
-            Налаштування сайту
-          </CardTitle>
-          <CardDescription>
-            Налаштуйте вигляд вашої публічної сторінки
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmitSite} className="space-y-6">
-            {/* Public page link */}
-            <div className="p-4 bg-gradient-to-r from-pink-50 to-rose-50 rounded-lg border border-pink-200">
-              <Label className="text-gray-600 text-sm">Ваша публічна сторінка</Label>
-              <div className="flex items-center gap-2 mt-1">
-                <Input value={siteUrl} readOnly className="font-mono text-sm bg-white" />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => window.open(siteUrl, '_blank')}
-                >
-                  <ExternalLink className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-
-            {/* Template Selection */}
-            <div className="space-y-3">
-              <Label className="flex items-center gap-1">
-                <FileText className="h-4 w-4" /> Шаблон сайту
-              </Label>
-              <div className="grid grid-cols-3 gap-3">
-                {TEMPLATE_OPTIONS.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => setSiteData({ ...siteData, template_type: option.value })}
-                    className={`p-4 rounded-lg border-2 text-left transition-all ${
-                      siteData.template_type === option.value
-                        ? 'border-pink-500 bg-pink-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="font-medium">{option.label}</div>
-                    <div className="text-xs text-gray-500 mt-1">{option.description}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Color Selection */}
-            <div className="space-y-3">
-              <Label className="flex items-center gap-1">
-                <Palette className="h-4 w-4" /> Основний колір
-              </Label>
-              <div className="flex gap-2 flex-wrap">
-                {COLOR_OPTIONS.map((color) => (
-                  <button
-                    key={color.value}
-                    type="button"
-                    onClick={() => setSiteData({ ...siteData, primary_color: color.value })}
-                    className={`w-10 h-10 rounded-full border-2 transition-transform ${
-                      siteData.primary_color === color.value
-                        ? 'border-gray-800 scale-110'
-                        : 'border-transparent'
-                    }`}
-                    style={{ backgroundColor: color.value }}
-                    title={color.label}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Logo Upload */}
-            <div className="space-y-3">
-              <Label className="flex items-center gap-1">
-                <Upload className="h-4 w-4" /> Логотип
-              </Label>
-              <div className="flex items-center gap-4">
-                {company?.logo_url ? (
-                  <img
-                    src={`${apiUrl}${company.logo_url}`}
-                    alt="Logo"
-                    className="w-20 h-20 object-cover rounded-lg border"
-                  />
-                ) : (
-                  <div className="w-20 h-20 bg-gray-100 rounded-lg border flex items-center justify-center">
-                    <Image className="h-8 w-8 text-gray-400" />
-                  </div>
-                )}
-                <div>
-                  <input
-                    ref={logoInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleLogoUpload}
-                    className="hidden"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => logoInputRef.current?.click()}
-                    disabled={uploadingLogo}
-                  >
-                    {uploadingLogo ? 'Завантаження...' : 'Завантажити логотип'}
-                  </Button>
-                  <p className="text-xs text-gray-500 mt-1">JPG, PNG до 5MB</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Cover Upload */}
-            <div className="space-y-3">
-              <Label className="flex items-center gap-1">
-                <Image className="h-4 w-4" /> Обкладинка
-              </Label>
-              <div className="space-y-2">
-                {company?.cover_image_url ? (
-                  <img
-                    src={`${apiUrl}${company.cover_image_url}`}
-                    alt="Cover"
-                    className="w-full h-32 object-cover rounded-lg border"
-                  />
-                ) : (
-                  <div className="w-full h-32 bg-gray-100 rounded-lg border flex items-center justify-center">
-                    <Image className="h-8 w-8 text-gray-400" />
-                  </div>
-                )}
-                <input
-                  ref={coverInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleCoverUpload}
-                  className="hidden"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => coverInputRef.current?.click()}
-                  disabled={uploadingCover}
-                >
-                  {uploadingCover ? 'Завантаження...' : 'Завантажити обкладинку'}
-                </Button>
-              </div>
-            </div>
-
-            {/* Specialization */}
-            <div className="space-y-2">
-              <Label htmlFor="specialization">Спеціалізація</Label>
-              <Input
-                id="specialization"
-                value={siteData.specialization}
-                onChange={(e) => setSiteData({ ...siteData, specialization: e.target.value })}
-                placeholder="Косметолог, Масажист, Стоматолог..."
-              />
-            </div>
-
-            {/* Working Hours */}
-            <div className="space-y-2">
-              <Label htmlFor="working_hours" className="flex items-center gap-1">
-                <Clock className="h-4 w-4" /> Години роботи
-              </Label>
-              <Input
-                id="working_hours"
-                value={siteData.working_hours}
-                onChange={(e) => setSiteData({ ...siteData, working_hours: e.target.value })}
-                placeholder="Пн-Пт: 9:00-18:00, Сб: 10:00-15:00"
-              />
-            </div>
-
-            {/* Social Links */}
-            <div className="space-y-3">
-              <Label>Соціальні мережі</Label>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="instagram" className="text-sm flex items-center gap-1">
-                    <Instagram className="h-4 w-4" /> Instagram
-                  </Label>
-                  <Input
-                    id="instagram"
-                    value={siteData.instagram}
-                    onChange={(e) => setSiteData({ ...siteData, instagram: e.target.value })}
-                    placeholder="@username"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="facebook" className="text-sm flex items-center gap-1">
-                    <Facebook className="h-4 w-4" /> Facebook
-                  </Label>
-                  <Input
-                    id="facebook"
-                    value={siteData.facebook}
-                    onChange={(e) => setSiteData({ ...siteData, facebook: e.target.value })}
-                    placeholder="facebook.com/page"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <Button type="submit" disabled={savingSite}>
-              <Save className="mr-2 h-4 w-4" />
-              {savingSite ? 'Збереження...' : 'Зберегти налаштування'}
             </Button>
           </form>
         </CardContent>
