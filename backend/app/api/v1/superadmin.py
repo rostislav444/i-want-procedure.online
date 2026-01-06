@@ -5,12 +5,12 @@ Only accessible by users with is_superadmin=True.
 from datetime import datetime, timedelta
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy import select, func, and_
 from sqlalchemy.orm import selectinload
 
-from app.api.deps import DbSession, CurrentUser
+from app.api.deps import DbSession, SuperadminUser
 from app.models.company import Company
 from app.models.user import User
 from app.models.client import Client, ClientCompany
@@ -22,18 +22,6 @@ from app.models.subscription import (
 )
 
 router = APIRouter(prefix="/superadmin")
-
-
-# --- Dependency ---
-
-async def verify_superadmin(current_user: CurrentUser) -> User:
-    """Verify that current user is a superadmin."""
-    if not current_user.is_superadmin:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Superadmin access required",
-        )
-    return current_user
 
 
 # --- Schemas ---
@@ -138,7 +126,7 @@ class CreatePaymentRequest(BaseModel):
 @router.get("/stats", response_model=PlatformStats)
 async def get_platform_stats(
     db: DbSession,
-    _: User = Depends(verify_superadmin),
+    _: SuperadminUser,
 ):
     """Get platform-wide statistics."""
     # Total companies
@@ -201,7 +189,7 @@ async def get_platform_stats(
 @router.get("/companies", response_model=list[CompanyListItem])
 async def list_companies(
     db: DbSession,
-    _: User = Depends(verify_superadmin),
+    _: SuperadminUser,
     search: Optional[str] = None,
     subscription_status: Optional[str] = None,
     limit: int = 50,
@@ -260,7 +248,7 @@ async def list_companies(
 async def get_company_detail(
     company_id: int,
     db: DbSession,
-    _: User = Depends(verify_superadmin),
+    _: SuperadminUser,
 ):
     """Get detailed company information."""
     result = await db.execute(
@@ -323,7 +311,7 @@ async def create_or_update_subscription(
     company_id: int,
     data: UpdateSubscriptionRequest,
     db: DbSession,
-    _: User = Depends(verify_superadmin),
+    _: SuperadminUser,
 ):
     """Create or update company subscription."""
     result = await db.execute(
@@ -385,7 +373,7 @@ async def create_or_update_subscription(
 @router.get("/payments", response_model=list[PaymentListItem])
 async def list_payments(
     db: DbSession,
-    _: User = Depends(verify_superadmin),
+    _: SuperadminUser,
     company_id: Optional[int] = None,
     status_filter: Optional[str] = None,
     limit: int = 50,
@@ -430,7 +418,7 @@ async def list_payments(
 async def create_payment(
     data: CreatePaymentRequest,
     db: DbSession,
-    _: User = Depends(verify_superadmin),
+    _: SuperadminUser,
 ):
     """Create a new payment record (typically for manual payments)."""
     # Verify company exists
@@ -486,7 +474,7 @@ async def create_payment(
 async def complete_payment(
     payment_id: int,
     db: DbSession,
-    _: User = Depends(verify_superadmin),
+    _: SuperadminUser,
 ):
     """Mark a pending payment as completed."""
     payment = await db.get(Payment, payment_id)

@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from app.models.schedule import Schedule, ScheduleException
     from app.models.appointment import Appointment
     from app.models.specialty import Specialty
+    from app.models.profiles import SpecialistProfile, ManagerProfile, ClientProfile
 
 
 class UserRole(str, Enum):
@@ -20,6 +21,24 @@ class UserRole(str, Enum):
     SPECIALIST = "specialist"  # врач/косметолог
     MANAGER = "manager"  # менеджер клиники
     CLIENT = "client"  # клиент
+
+
+class UserRoleAssignment(Base):
+    """User roles (many-to-many).
+
+    Allows a user to have multiple roles (e.g., specialist + manager).
+    """
+    __tablename__ = "user_roles"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    role: Mapped[str] = mapped_column(String(20), index=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    # Relationship
+    user: Mapped["User"] = relationship(back_populates="role_assignments")
 
 
 class User(Base):
@@ -62,3 +81,32 @@ class User(Base):
         secondary="user_specialties",
         back_populates="users"
     )
+
+    # Role assignments (many-to-many roles)
+    role_assignments: Mapped[list["UserRoleAssignment"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
+
+    # Profile relationships
+    specialist_profiles: Mapped[list["SpecialistProfile"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
+    manager_profiles: Mapped[list["ManagerProfile"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
+    client_profiles: Mapped[list["ClientProfile"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
+
+    @property
+    def roles(self) -> list[str]:
+        """Get list of user roles."""
+        return [ra.role for ra in self.role_assignments]
+
+    def has_role(self, role: UserRole) -> bool:
+        """Check if user has a specific role."""
+        return role.value in self.roles

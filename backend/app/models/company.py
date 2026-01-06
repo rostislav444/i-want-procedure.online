@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from app.models.client import Client, ClientCompany
     from app.models.subscription import Subscription, Payment
     from app.models.specialty import Specialty
+    from app.models.profiles import SpecialistProfile, ManagerProfile, ClientProfile
 
 
 def generate_invite_code() -> str:
@@ -96,6 +97,20 @@ class Company(Base):
         cascade="all, delete-orphan"
     )
     specialties: Mapped[list["Specialty"]] = relationship(
+        back_populates="company",
+        cascade="all, delete-orphan"
+    )
+
+    # Profile relationships
+    specialist_profiles: Mapped[list["SpecialistProfile"]] = relationship(
+        back_populates="company",
+        cascade="all, delete-orphan"
+    )
+    manager_profiles: Mapped[list["ManagerProfile"]] = relationship(
+        back_populates="company",
+        cascade="all, delete-orphan"
+    )
+    client_profiles: Mapped[list["ClientProfile"]] = relationship(
         back_populates="company",
         cascade="all, delete-orphan"
     )
