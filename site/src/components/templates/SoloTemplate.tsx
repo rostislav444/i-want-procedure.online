@@ -1,6 +1,6 @@
 'use client'
 
-import { Clock, Phone, MapPin, MessageCircle, Star, Instagram, Facebook, ChevronRight, Sparkles, Calendar } from 'lucide-react'
+import { Clock, Phone, MapPin, MessageCircle, Star, Instagram, Facebook, ChevronRight, Calendar } from 'lucide-react'
 import { Company, Service, ServiceCategory } from '@/lib/api'
 import { useState } from 'react'
 
@@ -257,19 +257,12 @@ export default function SoloTemplate({
       </section>
 
       {/* Services Section */}
-      <section className="py-16 relative">
+      <section className="py-8 relative">
         <div className="max-w-4xl mx-auto px-4">
           {/* Section header */}
-          <div className="text-center mb-12">
-            <div
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-4 bg-white dark:bg-slate-800 shadow-md border border-slate-100 dark:border-slate-700"
-              style={{ color: primaryColor }}
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>Прайс-лист</span>
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">
-              Послуги та ціни
+          <div className="text-center mb-8">
+            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">
+              Прайс-лист процедур
             </h2>
           </div>
 
