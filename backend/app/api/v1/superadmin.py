@@ -7,14 +7,14 @@ from typing import Optional
 
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
-from sqlalchemy import select, func, and_
+from sqlalchemy import select, func, and_, case
 from sqlalchemy.orm import selectinload
 
 from app.api.deps import DbSession, SuperadminUser
 from app.models.company import Company
-from app.models.user import User
+from app.models.user import User, UserRoleAssignment
 from app.models.client import Client, ClientCompany
-from app.models.appointment import Appointment
+from app.models.appointment import Appointment, AppointmentStatus
 from app.models.subscription import (
     Subscription, Payment,
     SubscriptionPlan, SubscriptionStatus,
@@ -111,6 +111,78 @@ class UpdateSubscriptionRequest(BaseModel):
     trial_ends_at: Optional[datetime] = None
     current_period_start: Optional[datetime] = None
     current_period_end: Optional[datetime] = None
+
+
+class EmployeeListItem(BaseModel):
+    id: int
+    first_name: str
+    last_name: str
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    roles: list[str]
+    is_active: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ClientListItem(BaseModel):
+    id: int
+    telegram_id: int
+    telegram_username: Optional[str] = None
+    first_name: str
+    last_name: Optional[str] = None
+    phone: Optional[str] = None
+    appointments_count: int = 0
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class CompanyAnalytics(BaseModel):
+    # Appointments by status
+    total_appointments: int = 0
+    pending_appointments: int = 0
+    confirmed_appointments: int = 0
+    completed_appointments: int = 0
+    cancelled_appointments: int = 0
+
+    # Activity metrics
+    appointments_this_week: int = 0
+    appointments_this_month: int = 0
+    new_clients_this_month: int = 0
+
+    # Revenue (from payments)
+    total_revenue: int = 0  # in kopecks
+    revenue_this_month: int = 0
+
+    # Trends
+    appointments_by_day: list[dict] = []  # last 30 days
+
+
+class CompanyDetailExtended(BaseModel):
+    id: int
+    name: str
+    slug: str
+    type: str
+    description: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    telegram: Optional[str] = None
+    template_type: str
+    created_at: datetime
+    users_count: int
+    clients_count: int
+    appointments_count: int
+    subscription: Optional[SubscriptionDetail] = None
+    employees: list[EmployeeListItem] = []
+    clients: list[ClientListItem] = []
+    analytics: Optional[CompanyAnalytics] = None
+
+    class Config:
+        from_attributes = True
 
 
 class CreatePaymentRequest(BaseModel):
@@ -244,13 +316,13 @@ async def list_companies(
     return items
 
 
-@router.get("/companies/{company_id}", response_model=CompanyDetail)
+@router.get("/companies/{company_id}", response_model=CompanyDetailExtended)
 async def get_company_detail(
     company_id: int,
     db: DbSession,
     _: SuperadminUser,
 ):
-    """Get detailed company information."""
+    """Get detailed company information with employees, clients and analytics."""
     result = await db.execute(
         select(Company)
         .where(Company.id == company_id)
@@ -275,6 +347,173 @@ async def get_company_detail(
         select(func.count(Appointment.id)).where(Appointment.company_id == company.id)
     )
 
+    # Get employees with roles
+    employees_result = await db.execute(
+        select(User)
+        .where(User.company_id == company.id)
+        .options(selectinload(User.role_assignments))
+        .order_by(User.created_at.desc())
+    )
+    employees = employees_result.scalars().all()
+
+    employees_list = [
+        EmployeeListItem(
+            id=emp.id,
+            first_name=emp.first_name,
+            last_name=emp.last_name,
+            email=emp.email,
+            phone=emp.phone,
+            roles=[ra.role for ra in emp.role_assignments],
+            is_active=emp.is_active,
+            created_at=emp.created_at,
+        )
+        for emp in employees
+    ]
+
+    # Get clients
+    clients_result = await db.execute(
+        select(Client)
+        .join(ClientCompany, ClientCompany.client_id == Client.id)
+        .where(ClientCompany.company_id == company.id)
+        .order_by(Client.created_at.desc())
+        .limit(100)  # Limit to prevent huge responses
+    )
+    clients = clients_result.scalars().all()
+
+    clients_list = []
+    for client in clients:
+        # Get appointments count for this client in this company
+        client_appointments_count = await db.scalar(
+            select(func.count(Appointment.id))
+            .where(
+                and_(
+                    Appointment.client_id == client.id,
+                    Appointment.company_id == company.id
+                )
+            )
+        )
+        clients_list.append(
+            ClientListItem(
+                id=client.id,
+                telegram_id=client.telegram_id,
+                telegram_username=client.telegram_username,
+                first_name=client.first_name,
+                last_name=client.last_name,
+                phone=client.phone,
+                appointments_count=client_appointments_count or 0,
+                created_at=client.created_at,
+            )
+        )
+
+    # Analytics
+    now = datetime.utcnow()
+    first_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    first_of_week = now - timedelta(days=now.weekday())
+    first_of_week = first_of_week.replace(hour=0, minute=0, second=0, microsecond=0)
+    thirty_days_ago = now - timedelta(days=30)
+
+    # Appointments by status
+    pending_count = await db.scalar(
+        select(func.count(Appointment.id))
+        .where(and_(
+            Appointment.company_id == company.id,
+            Appointment.status == AppointmentStatus.PENDING.value
+        ))
+    )
+    confirmed_count = await db.scalar(
+        select(func.count(Appointment.id))
+        .where(and_(
+            Appointment.company_id == company.id,
+            Appointment.status == AppointmentStatus.CONFIRMED.value
+        ))
+    )
+    completed_count = await db.scalar(
+        select(func.count(Appointment.id))
+        .where(and_(
+            Appointment.company_id == company.id,
+            Appointment.status == AppointmentStatus.COMPLETED.value
+        ))
+    )
+    cancelled_count = await db.scalar(
+        select(func.count(Appointment.id))
+        .where(and_(
+            Appointment.company_id == company.id,
+            Appointment.status == AppointmentStatus.CANCELLED.value
+        ))
+    )
+
+    # Activity metrics
+    appointments_this_week = await db.scalar(
+        select(func.count(Appointment.id))
+        .where(and_(
+            Appointment.company_id == company.id,
+            Appointment.created_at >= first_of_week
+        ))
+    )
+    appointments_this_month = await db.scalar(
+        select(func.count(Appointment.id))
+        .where(and_(
+            Appointment.company_id == company.id,
+            Appointment.created_at >= first_of_month
+        ))
+    )
+    new_clients_this_month = await db.scalar(
+        select(func.count(ClientCompany.id))
+        .where(and_(
+            ClientCompany.company_id == company.id,
+            ClientCompany.created_at >= first_of_month
+        ))
+    )
+
+    # Revenue
+    total_revenue = await db.scalar(
+        select(func.coalesce(func.sum(Payment.amount), 0))
+        .where(and_(
+            Payment.company_id == company.id,
+            Payment.status == PaymentStatus.COMPLETED.value
+        ))
+    )
+    revenue_this_month = await db.scalar(
+        select(func.coalesce(func.sum(Payment.amount), 0))
+        .where(and_(
+            Payment.company_id == company.id,
+            Payment.status == PaymentStatus.COMPLETED.value,
+            Payment.completed_at >= first_of_month
+        ))
+    )
+
+    # Appointments by day (last 30 days)
+    appointments_by_day_result = await db.execute(
+        select(
+            func.date(Appointment.date).label('day'),
+            func.count(Appointment.id).label('count')
+        )
+        .where(and_(
+            Appointment.company_id == company.id,
+            Appointment.date >= thirty_days_ago.date()
+        ))
+        .group_by(func.date(Appointment.date))
+        .order_by(func.date(Appointment.date))
+    )
+    appointments_by_day = [
+        {"date": str(row.day), "count": row.count}
+        for row in appointments_by_day_result.all()
+    ]
+
+    analytics = CompanyAnalytics(
+        total_appointments=appointments_count or 0,
+        pending_appointments=pending_count or 0,
+        confirmed_appointments=confirmed_count or 0,
+        completed_appointments=completed_count or 0,
+        cancelled_appointments=cancelled_count or 0,
+        appointments_this_week=appointments_this_week or 0,
+        appointments_this_month=appointments_this_month or 0,
+        new_clients_this_month=new_clients_this_month or 0,
+        total_revenue=total_revenue or 0,
+        revenue_this_month=revenue_this_month or 0,
+        appointments_by_day=appointments_by_day,
+    )
+
     subscription_detail = None
     if company.subscription:
         subscription_detail = SubscriptionDetail(
@@ -288,7 +527,7 @@ async def get_company_detail(
             created_at=company.subscription.created_at,
         )
 
-    return CompanyDetail(
+    return CompanyDetailExtended(
         id=company.id,
         name=company.name,
         slug=company.slug,
@@ -303,6 +542,9 @@ async def get_company_detail(
         clients_count=clients_count or 0,
         appointments_count=appointments_count or 0,
         subscription=subscription_detail,
+        employees=employees_list,
+        clients=clients_list,
+        analytics=analytics,
     )
 
 

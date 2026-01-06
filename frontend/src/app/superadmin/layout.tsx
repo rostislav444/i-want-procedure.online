@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
+import { useTheme } from 'next-themes'
 import Link from 'next/link'
-import { LayoutDashboard, Building2, CreditCard, LogOut, Shield } from 'lucide-react'
+import { LayoutDashboard, Building2, CreditCard, LogOut, Shield, Sun, Moon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { authApi } from '@/lib/api'
 
@@ -28,8 +29,14 @@ export default function SuperadminLayout({
 }) {
   const router = useRouter()
   const pathname = usePathname()
+  const { theme, setTheme } = useTheme()
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     const token = localStorage.getItem('token')
@@ -117,14 +124,30 @@ export default function SuperadminLayout({
               <p className="text-xs text-slate-400 truncate">{user.email}</p>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            className="w-full justify-start text-slate-300 hover:text-white hover:bg-slate-800"
-            onClick={handleLogout}
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            Logout
-          </Button>
+          <div className="space-y-1">
+            {mounted && (
+              <Button
+                variant="ghost"
+                className="w-full justify-start text-slate-300 hover:text-white hover:bg-slate-800"
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              >
+                {theme === 'dark' ? (
+                  <Sun className="w-4 h-4 mr-2" />
+                ) : (
+                  <Moon className="w-4 h-4 mr-2" />
+                )}
+                {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-slate-300 hover:text-white hover:bg-slate-800"
+              onClick={handleLogout}
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
+          </div>
         </div>
       </aside>
 

@@ -54,6 +54,48 @@ export interface CompanyDetail {
   subscription: SubscriptionDetail | null
 }
 
+export interface EmployeeListItem {
+  id: number
+  first_name: string
+  last_name: string
+  email: string | null
+  phone: string | null
+  roles: string[]
+  is_active: boolean
+  created_at: string
+}
+
+export interface ClientListItem {
+  id: number
+  telegram_id: number
+  telegram_username: string | null
+  first_name: string
+  last_name: string | null
+  phone: string | null
+  appointments_count: number
+  created_at: string
+}
+
+export interface CompanyAnalytics {
+  total_appointments: number
+  pending_appointments: number
+  confirmed_appointments: number
+  completed_appointments: number
+  cancelled_appointments: number
+  appointments_this_week: number
+  appointments_this_month: number
+  new_clients_this_month: number
+  total_revenue: number
+  revenue_this_month: number
+  appointments_by_day: { date: string; count: number }[]
+}
+
+export interface CompanyDetailExtended extends CompanyDetail {
+  employees: EmployeeListItem[]
+  clients: ClientListItem[]
+  analytics: CompanyAnalytics | null
+}
+
 export interface PaymentListItem {
   id: number
   company_id: number
@@ -103,8 +145,8 @@ export const superadminApi = {
     return response.data
   },
 
-  // Get company detail
-  getCompany: async (companyId: number): Promise<CompanyDetail> => {
+  // Get company detail with employees, clients and analytics
+  getCompany: async (companyId: number): Promise<CompanyDetailExtended> => {
     const response = await api.get(`/superadmin/companies/${companyId}`)
     return response.data
   },
