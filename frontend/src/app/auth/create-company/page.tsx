@@ -25,7 +25,7 @@ export default function CreateCompanyPage() {
       try {
         const token = localStorage.getItem('token')
         if (!token) {
-          router.push('/login')
+          router.push('/auth/login')
           return
         }
 
@@ -39,7 +39,7 @@ export default function CreateCompanyPage() {
         // Pre-fill company name with user's name
         setCompanyName(`${user.first_name} ${user.last_name}`)
       } catch (err) {
-        router.push('/login')
+        router.push('/auth/login')
       } finally {
         setCheckingAuth(false)
       }

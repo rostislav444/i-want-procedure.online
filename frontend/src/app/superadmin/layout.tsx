@@ -34,7 +34,7 @@ export default function SuperadminLayout({
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (!token) {
-      router.push('/login')
+      router.push('/auth/login')
       return
     }
 
@@ -49,13 +49,13 @@ export default function SuperadminLayout({
       })
       .catch(() => {
         localStorage.removeItem('token')
-        router.push('/login')
+        router.push('/auth/login')
       })
   }, [router])
 
   const handleLogout = () => {
     localStorage.removeItem('token')
-    router.push('/login')
+    router.push('/auth/login')
   }
 
   if (loading || !user) {

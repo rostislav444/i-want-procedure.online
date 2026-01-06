@@ -11,7 +11,7 @@ export async function serverFetch<T>(
   const token = cookieStore.get('token')?.value
 
   if (!token) {
-    redirect('/login')
+    redirect('/auth/login')
   }
 
   const response = await fetch(`${API_URL}/api/v1${endpoint}`, {
@@ -24,7 +24,7 @@ export async function serverFetch<T>(
   })
 
   if (response.status === 401) {
-    redirect('/login')
+    redirect('/auth/login')
   }
 
   if (!response.ok) {

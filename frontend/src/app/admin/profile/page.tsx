@@ -142,7 +142,7 @@ export default function ProfilePage() {
       })
     } catch (error) {
       console.error('Error loading profile:', error)
-      router.push('/login')
+      router.push('/auth/login')
     } finally {
       setLoading(false)
     }
