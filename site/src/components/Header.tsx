@@ -36,6 +36,7 @@ export default function Header() {
           <Link href="#features" className="text-muted-foreground hover:text-pink-500 transition-colors">Можливості</Link>
           <Link href="#bots" className="text-muted-foreground hover:text-pink-500 transition-colors">Telegram боти</Link>
           <Link href="#screenshots" className="text-muted-foreground hover:text-pink-500 transition-colors">Як це виглядає</Link>
+          <Link href="#pricing" className="text-muted-foreground hover:text-pink-500 transition-colors">Тарифи</Link>
         </nav>
         <div className="flex items-center gap-3">
           <ThemeToggle />
