@@ -9,8 +9,6 @@ from app.core.database import Base
 if TYPE_CHECKING:
     from app.models.user import User
     from app.models.company import Company
-    from app.models.service import Service
-    from app.models.schedule import Schedule, ScheduleException
     from app.models.appointment import Appointment
 
 
@@ -38,9 +36,8 @@ class SpecialistProfile(Base):
     # Relationships
     user: Mapped["User"] = relationship(back_populates="specialist_profiles")
     company: Mapped["Company"] = relationship(back_populates="specialist_profiles")
-    services: Mapped[list["Service"]] = relationship(back_populates="specialist_profile")
-    schedules: Mapped[list["Schedule"]] = relationship(back_populates="specialist_profile")
-    schedule_exceptions: Mapped[list["ScheduleException"]] = relationship(back_populates="specialist_profile")
+    # Note: services, schedules, schedule_exceptions relationships will be added
+    # when those models get specialist_profile_id foreign key
     appointments_as_specialist: Mapped[list["Appointment"]] = relationship(
         back_populates="specialist_profile",
         foreign_keys="Appointment.specialist_profile_id"
