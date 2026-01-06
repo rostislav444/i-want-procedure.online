@@ -55,7 +55,7 @@ export function ServicesSection({ content, theme, company, services, categories 
   return (
     <section
       className="py-20 lg:py-32"
-      style={{ backgroundColor: 'var(--color-background-alt)' }}
+      style={{ backgroundColor: 'var(--color-background)' }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section header */}
@@ -74,14 +74,14 @@ export function ServicesSection({ content, theme, company, services, categories 
             className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4"
             style={{
               fontFamily: 'var(--font-accent)',
-              color: 'var(--color-text-on-alt)',
+              color: 'var(--color-text)',
             }}
           >
             {title}
           </h2>
           <p
             className="text-lg lg:text-xl"
-            style={{ color: 'var(--color-text-muted-on-alt)' }}
+            style={{ color: 'var(--color-text-muted)' }}
           >
             {subtitle}
           </p>
@@ -181,11 +181,11 @@ function BentoLayout({ services, servicesByCategoryMap, getCategoryName, theme, 
             <div>
               <h3
                 className="text-xl font-bold"
-                style={{ color: 'var(--color-text-on-alt)' }}
+                style={{ color: 'var(--color-text)' }}
               >
                 {getCategoryName(catId)}
               </h3>
-              <p className="text-sm" style={{ color: 'var(--color-text-muted-on-alt)' }}>
+              <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
                 {catServices.length} послуг
               </p>
             </div>

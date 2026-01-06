@@ -47,14 +47,14 @@ export function AboutSection({ content, theme, company }: Props) {
       : null
 
   return (
-    <section className="py-20 lg:py-32 relative overflow-hidden" style={{ backgroundColor: 'var(--color-background)' }}>
+    <section className="py-20 lg:py-32 relative overflow-hidden" style={{ backgroundColor: 'var(--color-background-alt)' }}>
       {/* Decorative gradient orbs */}
       <div
-        className="absolute top-20 right-0 w-[500px] h-[500px] rounded-full blur-[120px] opacity-20 pointer-events-none"
+        className="absolute top-20 right-0 w-[500px] h-[500px] rounded-full blur-[120px] opacity-10 pointer-events-none"
         style={{ background: 'var(--color-primary-500)' }}
       />
       <div
-        className="absolute -bottom-20 -left-20 w-[400px] h-[400px] rounded-full blur-[100px] opacity-15 pointer-events-none"
+        className="absolute -bottom-20 -left-20 w-[400px] h-[400px] rounded-full blur-[100px] opacity-10 pointer-events-none"
         style={{ background: 'var(--color-secondary-500)' }}
       />
 
@@ -114,7 +114,7 @@ function TextOnlyLayout({ title, subtitle, text, highlights, theme }: LayoutProp
       <div className="text-center mb-12">
         <h2
           className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6"
-          style={{ fontFamily: 'var(--font-accent)', color: 'var(--color-text)' }}
+          style={{ fontFamily: 'var(--font-accent)', color: 'var(--color-text-on-alt)' }}
         >
           {title}
         </h2>
@@ -134,14 +134,14 @@ function TextOnlyLayout({ title, subtitle, text, highlights, theme }: LayoutProp
         <div
           className="p-8 md:p-12 mb-12"
           style={{
-            backgroundColor: 'var(--color-surface)',
+            backgroundColor: 'var(--color-surface-on-alt)',
             borderRadius: theme.borderRadius.card,
             boxShadow: theme.shadow.card,
           }}
         >
           <p
             className="text-lg md:text-xl leading-relaxed text-center"
-            style={{ color: 'var(--color-text-muted)' }}
+            style={{ color: 'var(--color-text-muted-on-alt)' }}
           >
             {text}
           </p>
@@ -158,7 +158,7 @@ function TextOnlyLayout({ title, subtitle, text, highlights, theme }: LayoutProp
                 key={index}
                 className="group p-6 text-center transition-all duration-300 hover:scale-[1.02]"
                 style={{
-                  backgroundColor: 'var(--color-surface)',
+                  backgroundColor: 'var(--color-surface-on-alt)',
                   borderRadius: theme.borderRadius.card,
                   boxShadow: theme.shadow.card,
                 }}
@@ -169,11 +169,11 @@ function TextOnlyLayout({ title, subtitle, text, highlights, theme }: LayoutProp
                 >
                   <IconComponent className="w-8 h-8" style={{ color: 'var(--color-primary-500)' }} />
                 </div>
-                <h4 className="font-bold text-lg mb-2" style={{ color: 'var(--color-text)' }}>
+                <h4 className="font-bold text-lg mb-2" style={{ color: 'var(--color-text-on-alt)' }}>
                   {item.title}
                 </h4>
                 {item.description && (
-                  <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                  <p className="text-sm" style={{ color: 'var(--color-text-muted-on-alt)' }}>
                     {item.description}
                   </p>
                 )}
@@ -236,7 +236,7 @@ function ImageLayout({ title, subtitle, text, highlights, theme, imageUrl, image
           <div
             className="absolute -bottom-6 -right-6 p-4 hidden md:block"
             style={{
-              backgroundColor: 'var(--color-surface)',
+              backgroundColor: 'var(--color-surface-on-alt)',
               borderRadius: theme.borderRadius.card,
               boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
             }}
@@ -249,8 +249,8 @@ function ImageLayout({ title, subtitle, text, highlights, theme, imageUrl, image
                 <Award className="w-6 h-6" style={{ color: 'var(--color-primary-500)' }} />
               </div>
               <div>
-                <p className="font-bold" style={{ color: 'var(--color-text)' }}>10+ років</p>
-                <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>досвіду</p>
+                <p className="font-bold" style={{ color: 'var(--color-text-on-alt)' }}>10+ років</p>
+                <p className="text-sm" style={{ color: 'var(--color-text-muted-on-alt)' }}>досвіду</p>
               </div>
             </div>
           </div>
@@ -272,7 +272,7 @@ function ImageLayout({ title, subtitle, text, highlights, theme, imageUrl, image
 
         <h2
           className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6"
-          style={{ fontFamily: 'var(--font-accent)', color: 'var(--color-text)' }}
+          style={{ fontFamily: 'var(--font-accent)', color: 'var(--color-text-on-alt)' }}
         >
           {title}
         </h2>
@@ -289,7 +289,7 @@ function ImageLayout({ title, subtitle, text, highlights, theme, imageUrl, image
         {text && (
           <p
             className="text-lg leading-relaxed mb-8"
-            style={{ color: 'var(--color-text-muted)' }}
+            style={{ color: 'var(--color-text-muted-on-alt)' }}
           >
             {text}
           </p>
@@ -305,7 +305,7 @@ function ImageLayout({ title, subtitle, text, highlights, theme, imageUrl, image
                   key={index}
                   className="flex items-start gap-4 p-4 transition-all duration-300 hover:scale-[1.01]"
                   style={{
-                    backgroundColor: 'var(--color-surface)',
+                    backgroundColor: 'var(--color-surface-on-alt)',
                     borderRadius: theme.borderRadius.card,
                   }}
                 >
@@ -316,11 +316,11 @@ function ImageLayout({ title, subtitle, text, highlights, theme, imageUrl, image
                     <IconComponent className="w-6 h-6" style={{ color: 'var(--color-primary-500)' }} />
                   </div>
                   <div>
-                    <h4 className="font-bold" style={{ color: 'var(--color-text)' }}>
+                    <h4 className="font-bold" style={{ color: 'var(--color-text-on-alt)' }}>
                       {item.title}
                     </h4>
                     {item.description && (
-                      <p className="text-sm mt-1" style={{ color: 'var(--color-text-muted)' }}>
+                      <p className="text-sm mt-1" style={{ color: 'var(--color-text-muted-on-alt)' }}>
                         {item.description}
                       </p>
                     )}
