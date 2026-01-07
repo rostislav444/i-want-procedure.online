@@ -55,21 +55,20 @@ export function WaveSection({
 
 function WaveSvg({ variant, fill }: { variant: number; fill: string }) {
   // All waves: 100px height, smooth parabolic/sinusoidal curves
-  // Using cubic bezier curves for smooth parabolic shapes
+  // Paths start from bottom-left, go up with curve, end at bottom-right, close with Z
 
   // Wave variant 1 - Single smooth parabola
   if (variant === 1) {
     return (
       <svg
         viewBox="0 0 1440 100"
-        fill="none"
         xmlns="http://www.w3.org/2000/svg"
         className="w-full block"
         style={{ height: '100px' }}
         preserveAspectRatio="none"
       >
         <path
-          d="M0 100 L0 60 C360 0, 1080 0, 1440 60 L1440 100 Z"
+          d="M0,100 L0,60 C360,0 1080,0 1440,60 L1440,100 L0,100 Z"
           fill={fill}
         />
       </svg>
@@ -81,33 +80,31 @@ function WaveSvg({ variant, fill }: { variant: number; fill: string }) {
     return (
       <svg
         viewBox="0 0 1440 100"
-        fill="none"
         xmlns="http://www.w3.org/2000/svg"
         className="w-full block"
         style={{ height: '100px' }}
         preserveAspectRatio="none"
       >
         <path
-          d="M0 100 L0 70 C180 20, 360 20, 540 50 C720 80, 900 20, 1080 20 C1260 20, 1350 50, 1440 70 L1440 100 Z"
+          d="M0,100 L0,70 C180,20 360,20 540,50 C720,80 900,20 1080,20 C1260,20 1350,50 1440,70 L1440,100 L0,100 Z"
           fill={fill}
         />
       </svg>
     )
   }
 
-  // Wave variant 3 - Classic sine wave (2 full cycles)
+  // Wave variant 3 - Classic sine wave
   if (variant === 3) {
     return (
       <svg
         viewBox="0 0 1440 100"
-        fill="none"
         xmlns="http://www.w3.org/2000/svg"
         className="w-full block"
         style={{ height: '100px' }}
         preserveAspectRatio="none"
       >
         <path
-          d="M0 100 L0 50 C180 10, 360 10, 540 50 C720 90, 900 90, 1080 50 C1260 10, 1350 30, 1440 50 L1440 100 Z"
+          d="M0,100 L0,50 C180,10 360,10 540,50 C720,90 900,90 1080,50 C1260,10 1350,30 1440,50 L1440,100 L0,100 Z"
           fill={fill}
         />
       </svg>
@@ -119,14 +116,13 @@ function WaveSvg({ variant, fill }: { variant: number; fill: string }) {
     return (
       <svg
         viewBox="0 0 1440 100"
-        fill="none"
         xmlns="http://www.w3.org/2000/svg"
         className="w-full block"
         style={{ height: '100px' }}
         preserveAspectRatio="none"
       >
         <path
-          d="M0 100 L0 80 C300 80, 500 15, 800 15 C1100 15, 1300 60, 1440 60 L1440 100 Z"
+          d="M0,100 L0,80 C300,80 500,15 800,15 C1100,15 1300,60 1440,60 L1440,100 L0,100 Z"
           fill={fill}
         />
       </svg>
@@ -138,14 +134,13 @@ function WaveSvg({ variant, fill }: { variant: number; fill: string }) {
     return (
       <svg
         viewBox="0 0 1440 100"
-        fill="none"
         xmlns="http://www.w3.org/2000/svg"
         className="w-full block"
         style={{ height: '100px' }}
         preserveAspectRatio="none"
       >
         <path
-          d="M0 100 L0 60 C120 30, 240 30, 360 50 C480 70, 600 30, 720 30 C840 30, 960 70, 1080 50 C1200 30, 1320 30, 1440 60 L1440 100 Z"
+          d="M0,100 L0,60 C120,30 240,30 360,50 C480,70 600,30 720,30 C840,30 960,70 1080,50 C1200,30 1320,30 1440,60 L1440,100 L0,100 Z"
           fill={fill}
         />
       </svg>
@@ -157,14 +152,13 @@ function WaveSvg({ variant, fill }: { variant: number; fill: string }) {
     return (
       <svg
         viewBox="0 0 1440 100"
-        fill="none"
         xmlns="http://www.w3.org/2000/svg"
         className="w-full block"
         style={{ height: '100px' }}
         preserveAspectRatio="none"
       >
         <path
-          d="M0 100 L0 70 C480 10, 960 10, 1440 70 L1440 100 Z"
+          d="M0,100 L0,70 C480,10 960,10 1440,70 L1440,100 L0,100 Z"
           fill={fill}
         />
       </svg>
