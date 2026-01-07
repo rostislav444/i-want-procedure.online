@@ -2,7 +2,7 @@
 
 import { Company, Service, ServiceCategory, WebsiteSection } from '@/lib/api'
 import { IndustryTheme, getTheme } from '@/lib/themes'
-import { WaveTransition, shouldUseAltBackground } from './ui/WaveTransition'
+import { WaveSection, shouldUseAltBackground } from './ui/WaveSection'
 import {
   HeroSection,
   ServicesSection,
@@ -27,13 +27,11 @@ interface Props {
 
 /**
  * Dynamic section renderer that renders website sections based on their type
- * Handles algorithmic alternation of backgrounds and wave transitions
+ * Uses WaveSection wrapper for seamless wave transitions between sections
  */
 export function SectionRenderer({ sections, company, services, categories }: Props) {
-  // Get the theme based on company's industry_theme
   const theme = getTheme(company.industry_theme)
 
-  // Sort sections by order and filter visible ones
   const visibleSections = sections
     .filter(s => s.is_visible)
     .sort((a, b) => a.order - b.order)
@@ -42,11 +40,17 @@ export function SectionRenderer({ sections, company, services, categories }: Pro
     <>
       {visibleSections.map((section, index) => {
         const isAltBackground = shouldUseAltBackground(index)
-        const isLastSection = index === visibleSections.length - 1
-        const nextIsAlt = !isLastSection && shouldUseAltBackground(index + 1)
+        const bgColor = isAltBackground ? 'var(--color-background-alt)' : 'var(--color-background)'
+        const isFirstSection = index === 0
 
         return (
-          <div key={section.id} className="relative">
+          <WaveSection
+            key={section.id}
+            backgroundColor={bgColor}
+            sectionIndex={index}
+            showTopWave={!isFirstSection}
+            className={!isFirstSection ? '-mt-1' : ''}
+          >
             <SectionComponent
               section={section}
               sectionIndex={index}
@@ -56,14 +60,7 @@ export function SectionRenderer({ sections, company, services, categories }: Pro
               services={services}
               categories={categories}
             />
-            {/* Wave transition to next section */}
-            {!isLastSection && (
-              <WaveTransition
-                sectionIndex={index}
-                nextIsAlt={nextIsAlt}
-              />
-            )}
-          </div>
+          </WaveSection>
         )
       })}
     </>
@@ -82,7 +79,7 @@ interface SectionComponentProps {
 
 /**
  * Renders a single section based on its type
- * Passes sectionIndex and isAltBackground for algorithmic styling
+ * Note: backgroundColor is handled by WaveSection wrapper, sections should use transparent bg
  */
 function SectionComponent({ section, sectionIndex, isAltBackground, theme, company, services, categories }: SectionComponentProps) {
   const content = section.content as Record<string, unknown>
@@ -222,7 +219,6 @@ function SectionComponent({ section, sectionIndex, isAltBackground, theme, compa
         />
       )
 
-    // Sections still in progress
     case 'schedule':
     case 'custom_text':
       return (
@@ -238,9 +234,6 @@ function SectionComponent({ section, sectionIndex, isAltBackground, theme, compa
   }
 }
 
-/**
- * Placeholder for sections not yet implemented
- */
 function PlaceholderSection({ sectionType, theme }: { sectionType: string; theme: IndustryTheme }) {
   const sectionNames: Record<string, string> = {
     schedule: 'Графік роботи',
@@ -248,7 +241,7 @@ function PlaceholderSection({ sectionType, theme }: { sectionType: string; theme
   }
 
   return (
-    <section className="py-16" style={{ backgroundColor: 'var(--color-background-alt)' }}>
+    <section className="py-16">
       <div className="max-w-5xl mx-auto px-4 text-center">
         <div
           className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4"
