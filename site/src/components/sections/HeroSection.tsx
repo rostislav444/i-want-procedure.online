@@ -3,7 +3,6 @@
 import { MessageCircle, Phone, ArrowRight, Sparkles, Star } from 'lucide-react'
 import { Company } from '@/lib/api'
 import { IndustryTheme } from '@/lib/themes'
-import { WaveTransition } from '@/components/ui/WaveTransition'
 
 interface HeroContent {
   title?: string
@@ -18,6 +17,8 @@ interface Props {
   content: HeroContent
   theme: IndustryTheme
   company: Company
+  sectionIndex?: number
+  isAltBackground?: boolean
 }
 
 export function HeroSection({ content, theme, company }: Props) {
@@ -327,8 +328,6 @@ function ModernHero({ title, subtitle, ctaText, ctaLink, theme, company, apiUrl 
         </div>
       </div>
 
-      {/* Bottom wave transition to next section */}
-      <WaveTransition variant={1} fillColor="var(--color-background-alt)" />
     </section>
   )
 }

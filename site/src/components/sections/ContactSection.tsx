@@ -16,9 +16,11 @@ interface Props {
   content: ContactContent
   theme: IndustryTheme
   company: Company
+  sectionIndex?: number
+  isAltBackground?: boolean
 }
 
-export function ContactSection({ content, theme, company }: Props) {
+export function ContactSection({ content, theme, company, isAltBackground = false }: Props) {
   const title = content.title || 'Контакти'
   const showPhone = content.show_phone !== false
   const showTelegram = content.show_telegram !== false
@@ -35,8 +37,13 @@ export function ContactSection({ content, theme, company }: Props) {
     } catch {}
   }
 
+  // Dynamic colors
+  const bgColor = isAltBackground ? 'var(--color-background-alt)' : 'var(--color-background)'
+  const textColor = isAltBackground ? 'var(--color-text-on-alt)' : 'var(--color-text)'
+  const textMutedColor = isAltBackground ? 'var(--color-text-muted-on-alt)' : 'var(--color-text-muted)'
+
   return (
-    <section className="py-20 lg:py-32 relative overflow-hidden" style={{ backgroundColor: 'var(--color-background)' }}>
+    <section className="py-20 lg:py-32 relative overflow-hidden" style={{ backgroundColor: bgColor }}>
       {/* Decorative background */}
       <div
         className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full blur-[150px] opacity-20 pointer-events-none"
@@ -52,7 +59,7 @@ export function ContactSection({ content, theme, company }: Props) {
         <div className="text-center mb-16">
           <h2
             className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6"
-            style={{ fontFamily: 'var(--font-accent)', color: 'var(--color-text)' }}
+            style={{ fontFamily: 'var(--font-accent)', color: textColor }}
           >
             {title}
           </h2>

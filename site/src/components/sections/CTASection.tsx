@@ -19,9 +19,11 @@ interface Props {
   content: CTAContent
   theme: IndustryTheme
   company: Company
+  sectionIndex?: number
+  isAltBackground?: boolean
 }
 
-export function CTASection({ content, theme, company }: Props) {
+export function CTASection({ content, theme, company, isAltBackground = false }: Props) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:8000'
 
   const title = content.title || 'Готові записатися?'

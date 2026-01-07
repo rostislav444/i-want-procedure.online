@@ -16,9 +16,11 @@ interface Props {
   content: MapContent
   theme: IndustryTheme
   company: Company
+  sectionIndex?: number
+  isAltBackground?: boolean
 }
 
-export function MapSection({ content, theme, company }: Props) {
+export function MapSection({ content, theme, company, isAltBackground = false }: Props) {
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<any>(null)
   const [isClient, setIsClient] = useState(false)

@@ -3,7 +3,6 @@
 import { User, Instagram, Phone, Mail } from 'lucide-react'
 import { Company } from '@/lib/api'
 import { IndustryTheme } from '@/lib/themes'
-import { WaveTransition } from '@/components/ui/WaveTransition'
 
 interface TeamMember {
   name: string
@@ -26,9 +25,11 @@ interface Props {
   content: TeamContent
   theme: IndustryTheme
   company: Company
+  sectionIndex?: number
+  isAltBackground?: boolean
 }
 
-export function TeamSection({ content, theme, company }: Props) {
+export function TeamSection({ content, theme, company, isAltBackground = true }: Props) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:8000'
 
   const title = content.title || 'Наша команда'
@@ -46,19 +47,24 @@ export function TeamSection({ content, theme, company }: Props) {
     }
   ]
 
+  // Dynamic colors
+  const bgColor = isAltBackground ? 'var(--color-background-alt)' : 'var(--color-background)'
+  const textColor = isAltBackground ? 'var(--color-text-on-alt)' : 'var(--color-text)'
+  const textMutedColor = isAltBackground ? 'var(--color-text-muted-on-alt)' : 'var(--color-text-muted)'
+
   return (
-    <section className="py-16 md:py-24 relative overflow-hidden" style={{ backgroundColor: 'var(--color-background-alt)' }}>
+    <section className="py-16 md:py-24 relative overflow-hidden" style={{ backgroundColor: bgColor }}>
       <div className="max-w-6xl mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-12">
           <h2
             className="text-3xl md:text-4xl font-bold mb-4"
-            style={{ fontFamily: 'var(--font-accent)', color: 'var(--color-text-on-alt)' }}
+            style={{ fontFamily: 'var(--font-accent)', color: textColor }}
           >
             {title}
           </h2>
           {subtitle && (
-            <p className="text-lg max-w-2xl mx-auto" style={{ color: 'var(--color-text-muted-on-alt)' }}>
+            <p className="text-lg max-w-2xl mx-auto" style={{ color: textMutedColor }}>
               {subtitle}
             </p>
           )}
@@ -66,14 +72,11 @@ export function TeamSection({ content, theme, company }: Props) {
 
         {/* Team Members */}
         {layout === 'featured' && displayMembers.length === 1 ? (
-          <FeaturedLayout member={displayMembers[0]} theme={theme} apiUrl={apiUrl} />
+          <FeaturedLayout member={displayMembers[0]} theme={theme} apiUrl={apiUrl} textColor={textColor} textMutedColor={textMutedColor} />
         ) : (
           <GridLayout members={displayMembers} theme={theme} apiUrl={apiUrl} />
         )}
       </div>
-
-      {/* Wave transition to next section */}
-      <WaveTransition variant={2} fillColor="var(--color-background)" />
     </section>
   )
 }
@@ -185,9 +188,11 @@ interface FeaturedLayoutProps {
   member: TeamMember
   theme: IndustryTheme
   apiUrl: string
+  textColor?: string
+  textMutedColor?: string
 }
 
-function FeaturedLayout({ member, theme, apiUrl }: FeaturedLayoutProps) {
+function FeaturedLayout({ member, theme, apiUrl, textColor = 'var(--color-text-on-alt)', textMutedColor = 'var(--color-text-muted-on-alt)' }: FeaturedLayoutProps) {
   return (
     <div className="grid md:grid-cols-2 gap-12 items-center max-w-4xl mx-auto">
       {/* Photo */}
@@ -217,7 +222,7 @@ function FeaturedLayout({ member, theme, apiUrl }: FeaturedLayoutProps) {
       <div>
         <h3
           className="font-bold text-3xl md:text-4xl mb-2"
-          style={{ fontFamily: 'var(--font-accent)', color: 'var(--color-text-on-alt)' }}
+          style={{ fontFamily: 'var(--font-accent)', color: textColor }}
         >
           {member.name}
         </h3>
@@ -227,7 +232,7 @@ function FeaturedLayout({ member, theme, apiUrl }: FeaturedLayoutProps) {
           </p>
         )}
         {member.description && (
-          <p className="text-lg leading-relaxed mb-6" style={{ color: 'var(--color-text-muted-on-alt)' }}>
+          <p className="text-lg leading-relaxed mb-6" style={{ color: textMutedColor }}>
             {member.description}
           </p>
         )}

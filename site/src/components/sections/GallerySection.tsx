@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { X, ChevronLeft, ChevronRight, Image as ImageIcon, Camera } from 'lucide-react'
 import { Company } from '@/lib/api'
 import { IndustryTheme } from '@/lib/themes'
-import { WaveTransition } from '@/components/ui/WaveTransition'
 
 interface GalleryImage {
   url: string
@@ -23,9 +22,11 @@ interface Props {
   content: GalleryContent
   theme: IndustryTheme
   company: Company
+  sectionIndex?: number
+  isAltBackground?: boolean
 }
 
-export function GallerySection({ content, theme, company }: Props) {
+export function GallerySection({ content, theme, company, isAltBackground = false }: Props) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:8000'
 
   const title = content.title || 'Мої роботи'
@@ -47,8 +48,13 @@ export function GallerySection({ content, theme, company }: Props) {
   const nextImage = () => setCurrentIndex((c) => (c + 1) % images.length)
   const prevImage = () => setCurrentIndex((c) => (c - 1 + images.length) % images.length)
 
+  // Dynamic colors
+  const bgColor = isAltBackground ? 'var(--color-background-alt)' : 'var(--color-background)'
+  const textColor = isAltBackground ? 'var(--color-text-on-alt)' : 'var(--color-text)'
+  const textMutedColor = isAltBackground ? 'var(--color-text-muted-on-alt)' : 'var(--color-text-muted)'
+
   return (
-    <section className="py-20 lg:py-32 relative overflow-hidden" style={{ backgroundColor: 'var(--color-background)' }}>
+    <section className="py-20 lg:py-32 relative overflow-hidden" style={{ backgroundColor: bgColor }}>
       {/* Decorative gradient */}
       <div
         className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full blur-[150px] opacity-10 pointer-events-none"
@@ -60,12 +66,12 @@ export function GallerySection({ content, theme, company }: Props) {
         <div className="text-center mb-16">
           <h2
             className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6"
-            style={{ fontFamily: 'var(--font-accent)', color: 'var(--color-text)' }}
+            style={{ fontFamily: 'var(--font-accent)', color: textColor }}
           >
             {title}
           </h2>
           {subtitle && (
-            <p className="text-lg md:text-xl max-w-2xl mx-auto" style={{ color: 'var(--color-text-muted)' }}>
+            <p className="text-lg md:text-xl max-w-2xl mx-auto" style={{ color: textMutedColor }}>
               {subtitle}
             </p>
           )}
@@ -120,8 +126,6 @@ export function GallerySection({ content, theme, company }: Props) {
         )}
       </div>
 
-      {/* Wave transition to next section */}
-      <WaveTransition variant={1} fillColor="var(--color-background-alt)" />
     </section>
   )
 }

@@ -25,6 +25,8 @@ interface Props {
   content: PricingContent
   theme: IndustryTheme
   company: Company
+  sectionIndex?: number
+  isAltBackground?: boolean
 }
 
 const defaultPlans: PricingPlan[] = [
@@ -52,7 +54,7 @@ const defaultPlans: PricingPlan[] = [
   },
 ]
 
-export function PricingSection({ content, theme, company }: Props) {
+export function PricingSection({ content, theme, company, isAltBackground = true }: Props) {
   const title = content.title || 'Тарифи'
   const subtitle = content.subtitle
   const plans = content.plans?.length ? content.plans : defaultPlans

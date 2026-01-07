@@ -25,6 +25,8 @@ interface Props {
   content: TestimonialsContent
   theme: IndustryTheme
   company: Company
+  sectionIndex?: number
+  isAltBackground?: boolean
 }
 
 const defaultTestimonials: Testimonial[] = [
@@ -45,7 +47,7 @@ const defaultTestimonials: Testimonial[] = [
   },
 ]
 
-export function TestimonialsSection({ content, theme, company }: Props) {
+export function TestimonialsSection({ content, theme, company, isAltBackground = true }: Props) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:8000'
 
   const title = content.title || 'Відгуки клієнтів'

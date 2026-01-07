@@ -3,7 +3,6 @@
 import { Clock, ArrowRight, Sparkles, MessageCircle } from 'lucide-react'
 import { Company, Service, ServiceCategory } from '@/lib/api'
 import { IndustryTheme } from '@/lib/themes'
-import { WaveTransition } from '@/components/ui/WaveTransition'
 
 interface ServicesContent {
   title?: string
@@ -17,9 +16,11 @@ interface Props {
   company: Company
   services: Service[]
   categories: ServiceCategory[]
+  sectionIndex?: number
+  isAltBackground?: boolean
 }
 
-export function ServicesSection({ content, theme, company, services, categories }: Props) {
+export function ServicesSection({ content, theme, company, services, categories, isAltBackground = false }: Props) {
   const displayMode = content.display_mode || 'bento'
   const title = content.title || 'Наші послуги'
   const subtitle = content.subtitle || 'Професійний догляд для вашої краси та здоров\'я'
@@ -53,10 +54,15 @@ export function ServicesSection({ content, theme, company, services, categories 
     return findCat(categories) || 'Категорія'
   }
 
+  // Dynamic colors
+  const bgColor = isAltBackground ? 'var(--color-background-alt)' : 'var(--color-background)'
+  const textColor = isAltBackground ? 'var(--color-text-on-alt)' : 'var(--color-text)'
+  const textMutedColor = isAltBackground ? 'var(--color-text-muted-on-alt)' : 'var(--color-text-muted)'
+
   return (
     <section
       className="py-20 lg:py-32 relative overflow-hidden"
-      style={{ backgroundColor: 'var(--color-background)' }}
+      style={{ backgroundColor: bgColor }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section header */}
@@ -152,8 +158,6 @@ export function ServicesSection({ content, theme, company, services, categories 
         )}
       </div>
 
-      {/* Wave transition to next section */}
-      <WaveTransition variant={3} fillColor="var(--color-background-alt)" />
     </section>
   )
 }

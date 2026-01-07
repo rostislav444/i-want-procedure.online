@@ -3,7 +3,6 @@
 import { User, Award, Heart, Star, Sparkles } from 'lucide-react'
 import { Company } from '@/lib/api'
 import { IndustryTheme } from '@/lib/themes'
-import { WaveTransition } from '@/components/ui/WaveTransition'
 
 interface AboutContent {
   title?: string
@@ -22,6 +21,8 @@ interface Props {
   content: AboutContent
   theme: IndustryTheme
   company: Company
+  sectionIndex?: number
+  isAltBackground?: boolean
 }
 
 const iconMap: Record<string, React.ComponentType<{ className?: string; style?: React.CSSProperties }>> = {
@@ -32,7 +33,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string; style?: 
   sparkles: Sparkles,
 }
 
-export function AboutSection({ content, theme, company }: Props) {
+export function AboutSection({ content, theme, company, isAltBackground = true }: Props) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:8000'
 
   const title = content.title || 'Про мене'
@@ -47,8 +48,14 @@ export function AboutSection({ content, theme, company }: Props) {
       ? `${apiUrl}${company.cover_image_url}`
       : null
 
+  // Dynamic colors based on background
+  const bgColor = isAltBackground ? 'var(--color-background-alt)' : 'var(--color-background)'
+  const textColor = isAltBackground ? 'var(--color-text-on-alt)' : 'var(--color-text)'
+  const textMutedColor = isAltBackground ? 'var(--color-text-muted-on-alt)' : 'var(--color-text-muted)'
+  const surfaceColor = isAltBackground ? 'var(--color-surface-on-alt)' : 'var(--color-surface)'
+
   return (
-    <section className="py-20 lg:py-32 relative overflow-hidden" style={{ backgroundColor: 'var(--color-background-alt)' }}>
+    <section className="py-20 lg:py-32 relative overflow-hidden" style={{ backgroundColor: bgColor }}>
       {/* Decorative gradient orbs */}
       <div
         className="absolute top-20 right-0 w-[500px] h-[500px] rounded-full blur-[120px] opacity-10 pointer-events-none"
@@ -67,6 +74,9 @@ export function AboutSection({ content, theme, company }: Props) {
             text={text}
             highlights={highlights}
             theme={theme}
+            textColor={textColor}
+            textMutedColor={textMutedColor}
+            surfaceColor={surfaceColor}
           />
         )}
 
@@ -79,6 +89,9 @@ export function AboutSection({ content, theme, company }: Props) {
             theme={theme}
             imageUrl={imageUrl}
             imagePosition="left"
+            textColor={textColor}
+            textMutedColor={textMutedColor}
+            surfaceColor={surfaceColor}
           />
         )}
 
@@ -91,12 +104,12 @@ export function AboutSection({ content, theme, company }: Props) {
             theme={theme}
             imageUrl={imageUrl}
             imagePosition="right"
+            textColor={textColor}
+            textMutedColor={textMutedColor}
+            surfaceColor={surfaceColor}
           />
         )}
       </div>
-
-      {/* Wave transition to next section */}
-      <WaveTransition variant={2} fillColor="var(--color-background)" />
     </section>
   )
 }
@@ -109,16 +122,19 @@ interface LayoutProps {
   theme: IndustryTheme
   imageUrl?: string | null
   imagePosition?: 'left' | 'right'
+  textColor: string
+  textMutedColor: string
+  surfaceColor: string
 }
 
-function TextOnlyLayout({ title, subtitle, text, highlights, theme }: LayoutProps) {
+function TextOnlyLayout({ title, subtitle, text, highlights, theme, textColor, textMutedColor, surfaceColor }: LayoutProps) {
   return (
     <div className="max-w-4xl mx-auto">
       {/* Header */}
       <div className="text-center mb-12">
         <h2
           className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6"
-          style={{ fontFamily: 'var(--font-accent)', color: 'var(--color-text-on-alt)' }}
+          style={{ fontFamily: 'var(--font-accent)', color: textColor }}
         >
           {title}
         </h2>
@@ -138,14 +154,14 @@ function TextOnlyLayout({ title, subtitle, text, highlights, theme }: LayoutProp
         <div
           className="p-8 md:p-12 mb-12"
           style={{
-            backgroundColor: 'var(--color-surface-on-alt)',
+            backgroundColor: surfaceColor,
             borderRadius: theme.borderRadius.card,
             boxShadow: theme.shadow.card,
           }}
         >
           <p
             className="text-lg md:text-xl leading-relaxed text-center"
-            style={{ color: 'var(--color-text-muted-on-alt)' }}
+            style={{ color: textMutedColor }}
           >
             {text}
           </p>
@@ -162,7 +178,7 @@ function TextOnlyLayout({ title, subtitle, text, highlights, theme }: LayoutProp
                 key={index}
                 className="group p-6 text-center transition-all duration-300 hover:scale-[1.02]"
                 style={{
-                  backgroundColor: 'var(--color-surface-on-alt)',
+                  backgroundColor: surfaceColor,
                   borderRadius: theme.borderRadius.card,
                   boxShadow: theme.shadow.card,
                 }}
@@ -173,11 +189,11 @@ function TextOnlyLayout({ title, subtitle, text, highlights, theme }: LayoutProp
                 >
                   <IconComponent className="w-8 h-8" style={{ color: 'var(--color-primary-500)' }} />
                 </div>
-                <h4 className="font-bold text-lg mb-2" style={{ color: 'var(--color-text-on-alt)' }}>
+                <h4 className="font-bold text-lg mb-2" style={{ color: textColor }}>
                   {item.title}
                 </h4>
                 {item.description && (
-                  <p className="text-sm" style={{ color: 'var(--color-text-muted-on-alt)' }}>
+                  <p className="text-sm" style={{ color: textMutedColor }}>
                     {item.description}
                   </p>
                 )}
@@ -190,7 +206,7 @@ function TextOnlyLayout({ title, subtitle, text, highlights, theme }: LayoutProp
   )
 }
 
-function ImageLayout({ title, subtitle, text, highlights, theme, imageUrl, imagePosition }: LayoutProps) {
+function ImageLayout({ title, subtitle, text, highlights, theme, imageUrl, imagePosition, textColor, textMutedColor, surfaceColor }: LayoutProps) {
   const isLeft = imagePosition === 'left'
 
   return (
@@ -240,7 +256,7 @@ function ImageLayout({ title, subtitle, text, highlights, theme, imageUrl, image
           <div
             className="absolute -bottom-6 -right-6 p-4 hidden md:block"
             style={{
-              backgroundColor: 'var(--color-surface-on-alt)',
+              backgroundColor: surfaceColor,
               borderRadius: theme.borderRadius.card,
               boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
             }}
@@ -253,8 +269,8 @@ function ImageLayout({ title, subtitle, text, highlights, theme, imageUrl, image
                 <Award className="w-6 h-6" style={{ color: 'var(--color-primary-500)' }} />
               </div>
               <div>
-                <p className="font-bold" style={{ color: 'var(--color-text-on-alt)' }}>10+ років</p>
-                <p className="text-sm" style={{ color: 'var(--color-text-muted-on-alt)' }}>досвіду</p>
+                <p className="font-bold" style={{ color: textColor }}>10+ років</p>
+                <p className="text-sm" style={{ color: textMutedColor }}>досвіду</p>
               </div>
             </div>
           </div>
@@ -276,7 +292,7 @@ function ImageLayout({ title, subtitle, text, highlights, theme, imageUrl, image
 
         <h2
           className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6"
-          style={{ fontFamily: 'var(--font-accent)', color: 'var(--color-text-on-alt)' }}
+          style={{ fontFamily: 'var(--font-accent)', color: textColor }}
         >
           {title}
         </h2>
@@ -293,7 +309,7 @@ function ImageLayout({ title, subtitle, text, highlights, theme, imageUrl, image
         {text && (
           <p
             className="text-lg leading-relaxed mb-8"
-            style={{ color: 'var(--color-text-muted-on-alt)' }}
+            style={{ color: textMutedColor }}
           >
             {text}
           </p>
@@ -309,7 +325,7 @@ function ImageLayout({ title, subtitle, text, highlights, theme, imageUrl, image
                   key={index}
                   className="flex items-start gap-4 p-4 transition-all duration-300 hover:scale-[1.01]"
                   style={{
-                    backgroundColor: 'var(--color-surface-on-alt)',
+                    backgroundColor: surfaceColor,
                     borderRadius: theme.borderRadius.card,
                   }}
                 >
@@ -320,11 +336,11 @@ function ImageLayout({ title, subtitle, text, highlights, theme, imageUrl, image
                     <IconComponent className="w-6 h-6" style={{ color: 'var(--color-primary-500)' }} />
                   </div>
                   <div>
-                    <h4 className="font-bold" style={{ color: 'var(--color-text-on-alt)' }}>
+                    <h4 className="font-bold" style={{ color: textColor }}>
                       {item.title}
                     </h4>
                     {item.description && (
-                      <p className="text-sm mt-1" style={{ color: 'var(--color-text-muted-on-alt)' }}>
+                      <p className="text-sm mt-1" style={{ color: textMutedColor }}>
                         {item.description}
                       </p>
                     )}

@@ -2,6 +2,7 @@
 
 import { Company, Service, ServiceCategory, WebsiteSection } from '@/lib/api'
 import { IndustryTheme, getTheme } from '@/lib/themes'
+import { WaveTransition, shouldUseAltBackground } from './ui/WaveTransition'
 import {
   HeroSection,
   ServicesSection,
@@ -26,6 +27,7 @@ interface Props {
 
 /**
  * Dynamic section renderer that renders website sections based on their type
+ * Handles algorithmic alternation of backgrounds and wave transitions
  */
 export function SectionRenderer({ sections, company, services, categories }: Props) {
   // Get the theme based on company's industry_theme
@@ -38,22 +40,40 @@ export function SectionRenderer({ sections, company, services, categories }: Pro
 
   return (
     <>
-      {visibleSections.map((section) => (
-        <SectionComponent
-          key={section.id}
-          section={section}
-          theme={theme}
-          company={company}
-          services={services}
-          categories={categories}
-        />
-      ))}
+      {visibleSections.map((section, index) => {
+        const isAltBackground = shouldUseAltBackground(index)
+        const isLastSection = index === visibleSections.length - 1
+        const nextIsAlt = !isLastSection && shouldUseAltBackground(index + 1)
+
+        return (
+          <div key={section.id} className="relative">
+            <SectionComponent
+              section={section}
+              sectionIndex={index}
+              isAltBackground={isAltBackground}
+              theme={theme}
+              company={company}
+              services={services}
+              categories={categories}
+            />
+            {/* Wave transition to next section */}
+            {!isLastSection && (
+              <WaveTransition
+                sectionIndex={index}
+                nextIsAlt={nextIsAlt}
+              />
+            )}
+          </div>
+        )
+      })}
     </>
   )
 }
 
 interface SectionComponentProps {
   section: WebsiteSection
+  sectionIndex: number
+  isAltBackground: boolean
   theme: IndustryTheme
   company: Company
   services: Service[]
@@ -62,8 +82,9 @@ interface SectionComponentProps {
 
 /**
  * Renders a single section based on its type
+ * Passes sectionIndex and isAltBackground for algorithmic styling
  */
-function SectionComponent({ section, theme, company, services, categories }: SectionComponentProps) {
+function SectionComponent({ section, sectionIndex, isAltBackground, theme, company, services, categories }: SectionComponentProps) {
   const content = section.content as Record<string, unknown>
 
   switch (section.section_type) {
@@ -73,6 +94,8 @@ function SectionComponent({ section, theme, company, services, categories }: Sec
           content={content as any}
           theme={theme}
           company={company}
+          sectionIndex={sectionIndex}
+          isAltBackground={isAltBackground}
         />
       )
 
@@ -84,6 +107,8 @@ function SectionComponent({ section, theme, company, services, categories }: Sec
           company={company}
           services={services}
           categories={categories}
+          sectionIndex={sectionIndex}
+          isAltBackground={isAltBackground}
         />
       )
 
@@ -93,6 +118,8 @@ function SectionComponent({ section, theme, company, services, categories }: Sec
           content={content as any}
           theme={theme}
           company={company}
+          sectionIndex={sectionIndex}
+          isAltBackground={isAltBackground}
         />
       )
 
@@ -102,6 +129,8 @@ function SectionComponent({ section, theme, company, services, categories }: Sec
           content={content as any}
           theme={theme}
           company={company}
+          sectionIndex={sectionIndex}
+          isAltBackground={isAltBackground}
         />
       )
 
@@ -111,6 +140,8 @@ function SectionComponent({ section, theme, company, services, categories }: Sec
           content={content as any}
           theme={theme}
           company={company}
+          sectionIndex={sectionIndex}
+          isAltBackground={isAltBackground}
         />
       )
 
@@ -120,6 +151,8 @@ function SectionComponent({ section, theme, company, services, categories }: Sec
           content={content as any}
           theme={theme}
           company={company}
+          sectionIndex={sectionIndex}
+          isAltBackground={isAltBackground}
         />
       )
 
@@ -129,6 +162,8 @@ function SectionComponent({ section, theme, company, services, categories }: Sec
           content={content as any}
           theme={theme}
           company={company}
+          sectionIndex={sectionIndex}
+          isAltBackground={isAltBackground}
         />
       )
 
@@ -138,6 +173,8 @@ function SectionComponent({ section, theme, company, services, categories }: Sec
           content={content as any}
           theme={theme}
           company={company}
+          sectionIndex={sectionIndex}
+          isAltBackground={isAltBackground}
         />
       )
 
@@ -147,6 +184,8 @@ function SectionComponent({ section, theme, company, services, categories }: Sec
           content={content as any}
           theme={theme}
           company={company}
+          sectionIndex={sectionIndex}
+          isAltBackground={isAltBackground}
         />
       )
 
@@ -156,6 +195,8 @@ function SectionComponent({ section, theme, company, services, categories }: Sec
           content={content as any}
           theme={theme}
           company={company}
+          sectionIndex={sectionIndex}
+          isAltBackground={isAltBackground}
         />
       )
 
@@ -165,6 +206,8 @@ function SectionComponent({ section, theme, company, services, categories }: Sec
           content={content as any}
           theme={theme}
           company={company}
+          sectionIndex={sectionIndex}
+          isAltBackground={isAltBackground}
         />
       )
 
@@ -174,6 +217,8 @@ function SectionComponent({ section, theme, company, services, categories }: Sec
           content={content as any}
           theme={theme}
           company={company}
+          sectionIndex={sectionIndex}
+          isAltBackground={isAltBackground}
         />
       )
 

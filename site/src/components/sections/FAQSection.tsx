@@ -19,6 +19,8 @@ interface Props {
   content: FAQContent
   theme: IndustryTheme
   company: Company
+  sectionIndex?: number
+  isAltBackground?: boolean
 }
 
 const defaultFAQItems = [
@@ -36,7 +38,7 @@ const defaultFAQItems = [
   },
 ]
 
-export function FAQSection({ content, theme, company }: Props) {
+export function FAQSection({ content, theme, company, isAltBackground = true }: Props) {
   const title = content.title || 'Часті запитання'
   const subtitle = content.subtitle
   const items = content.items?.length ? content.items : defaultFAQItems
