@@ -31,12 +31,14 @@ export function WaveSection({
 
   return (
     <div className={`relative ${className}`}>
-      {/* Wave shape at top - this IS part of the section background */}
+      {/* Wave shape at top - fixed 100px height */}
       {showTopWave && sectionIndex > 0 && (
         <div
-          className="absolute top-0 left-0 right-0 overflow-hidden pointer-events-none"
+          className="absolute left-0 right-0 overflow-hidden pointer-events-none"
           style={{
-            transform: `translateY(-99%) ${flipWave ? 'scaleX(-1)' : ''}`,
+            top: '-99px',
+            height: '100px',
+            transform: flipWave ? 'scaleX(-1)' : undefined,
           }}
         >
           <WaveSvg variant={variant} fill={backgroundColor} />
@@ -52,111 +54,117 @@ export function WaveSection({
 }
 
 function WaveSvg({ variant, fill }: { variant: number; fill: string }) {
-  // All waves: viewBox height determines wave amplitude
-  // Path goes from left edge, curves up/down, ends at right edge, then fills down to bottom
+  // All waves: 100px height, smooth parabolic/sinusoidal curves
+  // Using cubic bezier curves for smooth parabolic shapes
 
-  // Wave variant 1 - Gentle single curve (1 peak)
+  // Wave variant 1 - Single smooth parabola
   if (variant === 1) {
     return (
       <svg
-        viewBox="0 0 1440 80"
+        viewBox="0 0 1440 100"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="w-full h-auto block"
+        className="w-full block"
+        style={{ height: '100px' }}
         preserveAspectRatio="none"
       >
         <path
-          d="M0 80 L0 50 Q360 10, 720 40 Q1080 70, 1440 35 L1440 80 Z"
+          d="M0 100 L0 60 C360 0, 1080 0, 1440 60 L1440 100 Z"
           fill={fill}
         />
       </svg>
     )
   }
 
-  // Wave variant 2 - Two peaks, one valley
+  // Wave variant 2 - Two smooth humps
   if (variant === 2) {
     return (
       <svg
-        viewBox="0 0 1440 90"
+        viewBox="0 0 1440 100"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="w-full h-auto block"
+        className="w-full block"
+        style={{ height: '100px' }}
         preserveAspectRatio="none"
       >
         <path
-          d="M0 90 L0 45 Q180 15, 400 35 Q620 55, 800 25 Q1000 -5, 1200 30 Q1350 50, 1440 40 L1440 90 Z"
+          d="M0 100 L0 70 C180 20, 360 20, 540 50 C720 80, 900 20, 1080 20 C1260 20, 1350 50, 1440 70 L1440 100 Z"
           fill={fill}
         />
       </svg>
     )
   }
 
-  // Wave variant 3 - Two peaks, two valleys (smoother)
+  // Wave variant 3 - Classic sine wave (2 full cycles)
   if (variant === 3) {
     return (
       <svg
         viewBox="0 0 1440 100"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="w-full h-auto block"
+        className="w-full block"
+        style={{ height: '100px' }}
         preserveAspectRatio="none"
       >
         <path
-          d="M0 100 L0 55 Q200 25, 360 50 Q520 75, 720 40 Q920 5, 1080 45 Q1240 85, 1440 55 L1440 100 Z"
+          d="M0 100 L0 50 C180 10, 360 10, 540 50 C720 90, 900 90, 1080 50 C1260 10, 1350 30, 1440 50 L1440 100 Z"
           fill={fill}
         />
       </svg>
     )
   }
 
-  // Wave variant 4 - Asymmetric with steep rise
+  // Wave variant 4 - Asymmetric smooth curve
   if (variant === 4) {
     return (
       <svg
-        viewBox="0 0 1440 85"
+        viewBox="0 0 1440 100"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="w-full h-auto block"
+        className="w-full block"
+        style={{ height: '100px' }}
         preserveAspectRatio="none"
       >
         <path
-          d="M0 85 L0 60 Q300 35, 600 45 Q800 50, 950 20 Q1100 -5, 1250 30 Q1350 50, 1440 45 L1440 85 Z"
+          d="M0 100 L0 80 C300 80, 500 15, 800 15 C1100 15, 1300 60, 1440 60 L1440 100 Z"
           fill={fill}
         />
       </svg>
     )
   }
 
-  // Wave variant 5 - Three small peaks
+  // Wave variant 5 - Three gentle bumps
   if (variant === 5) {
     return (
       <svg
-        viewBox="0 0 1440 75"
+        viewBox="0 0 1440 100"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="w-full h-auto block"
+        className="w-full block"
+        style={{ height: '100px' }}
         preserveAspectRatio="none"
       >
         <path
-          d="M0 75 L0 50 Q120 25, 280 40 Q440 55, 560 30 Q680 5, 840 35 Q1000 65, 1160 35 Q1320 10, 1440 40 L1440 75 Z"
+          d="M0 100 L0 60 C120 30, 240 30, 360 50 C480 70, 600 30, 720 30 C840 30, 960 70, 1080 50 C1200 30, 1320 30, 1440 60 L1440 100 Z"
           fill={fill}
         />
       </svg>
     )
   }
 
-  // Wave variant 6 - Deep single curve with wide radius
+  // Wave variant 6 - Wide parabola
   if (variant === 6) {
     return (
       <svg
-        viewBox="0 0 1440 95"
+        viewBox="0 0 1440 100"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="w-full h-auto block"
+        className="w-full block"
+        style={{ height: '100px' }}
         preserveAspectRatio="none"
       >
         <path
-          d="M0 95 L0 70 Q400 15, 720 30 Q1040 45, 1440 65 L1440 95 Z"
+          d="M0 100 L0 70 C480 10, 960 10, 1440 70 L1440 100 Z"
           fill={fill}
         />
       </svg>
