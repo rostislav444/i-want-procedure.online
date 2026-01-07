@@ -44,8 +44,14 @@ export function FAQSection({ content, theme, company, isAltBackground = true }: 
   const items = content.items?.length ? content.items : defaultFAQItems
   const layout = content.layout || 'accordion'
 
+  // Dynamic colors based on background
+  const bgColor = isAltBackground ? 'var(--color-background-alt)' : 'var(--color-background)'
+  const textColor = isAltBackground ? 'var(--color-text-on-alt)' : 'var(--color-text)'
+  const textMutedColor = isAltBackground ? 'var(--color-text-muted-on-alt)' : 'var(--color-text-muted)'
+  const surfaceColor = isAltBackground ? 'var(--color-surface-on-alt)' : 'var(--color-surface)'
+
   return (
-    <section className="py-16 md:py-24" style={{ backgroundColor: 'var(--color-background)' }}>
+    <section className="py-16 md:py-24" style={{ backgroundColor: bgColor }}>
       <div className="max-w-4xl mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-12">
@@ -61,12 +67,12 @@ export function FAQSection({ content, theme, company, isAltBackground = true }: 
           </div>
           <h2
             className="text-3xl md:text-4xl font-bold mb-4"
-            style={{ fontFamily: 'var(--font-accent)', color: 'var(--color-text)' }}
+            style={{ fontFamily: 'var(--font-accent)', color: textColor }}
           >
             {title}
           </h2>
           {subtitle && (
-            <p className="text-lg max-w-2xl mx-auto" style={{ color: 'var(--color-text-muted)' }}>
+            <p className="text-lg max-w-2xl mx-auto" style={{ color: textMutedColor }}>
               {subtitle}
             </p>
           )}
@@ -74,11 +80,11 @@ export function FAQSection({ content, theme, company, isAltBackground = true }: 
 
         {/* FAQ Items */}
         {layout === 'accordion' && (
-          <AccordionLayout items={items} theme={theme} />
+          <AccordionLayout items={items} theme={theme} textColor={textColor} textMutedColor={textMutedColor} surfaceColor={surfaceColor} />
         )}
 
         {layout === 'grid' && (
-          <GridLayout items={items} theme={theme} />
+          <GridLayout items={items} theme={theme} textColor={textColor} textMutedColor={textMutedColor} surfaceColor={surfaceColor} />
         )}
       </div>
     </section>
@@ -88,9 +94,12 @@ export function FAQSection({ content, theme, company, isAltBackground = true }: 
 interface LayoutProps {
   items: NonNullable<FAQContent['items']>
   theme: IndustryTheme
+  textColor: string
+  textMutedColor: string
+  surfaceColor: string
 }
 
-function AccordionLayout({ items, theme }: LayoutProps) {
+function AccordionLayout({ items, theme, textColor, textMutedColor, surfaceColor }: LayoutProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(0)
 
   return (
@@ -102,7 +111,7 @@ function AccordionLayout({ items, theme }: LayoutProps) {
             key={index}
             className="overflow-hidden"
             style={{
-              backgroundColor: 'var(--color-surface)',
+              backgroundColor: surfaceColor,
               borderRadius: theme.borderRadius.card,
               boxShadow: theme.shadow.card,
             }}
@@ -111,7 +120,7 @@ function AccordionLayout({ items, theme }: LayoutProps) {
               className="w-full flex items-center justify-between p-5 text-left"
               onClick={() => setOpenIndex(isOpen ? null : index)}
             >
-              <span className="font-semibold pr-4" style={{ color: 'var(--color-text)' }}>
+              <span className="font-semibold pr-4" style={{ color: textColor }}>
                 {item.question}
               </span>
               <ChevronDown
@@ -124,7 +133,7 @@ function AccordionLayout({ items, theme }: LayoutProps) {
             >
               <div
                 className="px-5 pb-5 pt-0"
-                style={{ color: 'var(--color-text-muted)' }}
+                style={{ color: textMutedColor }}
               >
                 {item.answer}
               </div>
@@ -136,7 +145,7 @@ function AccordionLayout({ items, theme }: LayoutProps) {
   )
 }
 
-function GridLayout({ items, theme }: LayoutProps) {
+function GridLayout({ items, theme, textColor, textMutedColor, surfaceColor }: LayoutProps) {
   return (
     <div className="grid md:grid-cols-2 gap-6">
       {items.map((item, index) => (
@@ -144,15 +153,15 @@ function GridLayout({ items, theme }: LayoutProps) {
           key={index}
           className="p-6"
           style={{
-            backgroundColor: 'var(--color-surface)',
+            backgroundColor: surfaceColor,
             borderRadius: theme.borderRadius.card,
             boxShadow: theme.shadow.card,
           }}
         >
-          <h3 className="font-semibold mb-3" style={{ color: 'var(--color-text)' }}>
+          <h3 className="font-semibold mb-3" style={{ color: textColor }}>
             {item.question}
           </h3>
-          <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+          <p className="text-sm" style={{ color: textMutedColor }}>
             {item.answer}
           </p>
         </div>

@@ -55,19 +55,25 @@ export function TestimonialsSection({ content, theme, company, isAltBackground =
   const testimonials = content.testimonials?.length ? content.testimonials : defaultTestimonials
   const layout = content.layout || 'carousel'
 
+  // Dynamic colors based on background
+  const bgColor = isAltBackground ? 'var(--color-background-alt)' : 'var(--color-background)'
+  const textColor = isAltBackground ? 'var(--color-text-on-alt)' : 'var(--color-text)'
+  const textMutedColor = isAltBackground ? 'var(--color-text-muted-on-alt)' : 'var(--color-text-muted)'
+  const surfaceColor = isAltBackground ? 'var(--color-surface-on-alt)' : 'var(--color-surface)'
+
   return (
-    <section className="py-16 md:py-24" style={{ backgroundColor: 'var(--color-background)' }}>
+    <section className="py-16 md:py-24" style={{ backgroundColor: bgColor }}>
       <div className="max-w-6xl mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-12">
           <h2
             className="text-3xl md:text-4xl font-bold mb-4"
-            style={{ fontFamily: 'var(--font-accent)', color: 'var(--color-text)' }}
+            style={{ fontFamily: 'var(--font-accent)', color: textColor }}
           >
             {title}
           </h2>
           {subtitle && (
-            <p className="text-lg max-w-2xl mx-auto" style={{ color: 'var(--color-text-muted)' }}>
+            <p className="text-lg max-w-2xl mx-auto" style={{ color: textMutedColor }}>
               {subtitle}
             </p>
           )}
@@ -75,15 +81,15 @@ export function TestimonialsSection({ content, theme, company, isAltBackground =
 
         {/* Testimonials */}
         {layout === 'carousel' && (
-          <CarouselLayout testimonials={testimonials} theme={theme} apiUrl={apiUrl} />
+          <CarouselLayout testimonials={testimonials} theme={theme} apiUrl={apiUrl} textColor={textColor} textMutedColor={textMutedColor} surfaceColor={surfaceColor} />
         )}
 
         {layout === 'grid' && (
-          <GridLayout testimonials={testimonials} theme={theme} apiUrl={apiUrl} />
+          <GridLayout testimonials={testimonials} theme={theme} apiUrl={apiUrl} textColor={textColor} textMutedColor={textMutedColor} surfaceColor={surfaceColor} />
         )}
 
         {layout === 'stacked' && (
-          <StackedLayout testimonials={testimonials} theme={theme} apiUrl={apiUrl} />
+          <StackedLayout testimonials={testimonials} theme={theme} apiUrl={apiUrl} textColor={textColor} textMutedColor={textMutedColor} surfaceColor={surfaceColor} />
         )}
       </div>
     </section>
@@ -94,9 +100,12 @@ interface LayoutProps {
   testimonials: Testimonial[]
   theme: IndustryTheme
   apiUrl: string
+  textColor: string
+  textMutedColor: string
+  surfaceColor: string
 }
 
-function CarouselLayout({ testimonials, theme, apiUrl }: LayoutProps) {
+function CarouselLayout({ testimonials, theme, apiUrl, textColor, textMutedColor, surfaceColor }: LayoutProps) {
   const [current, setCurrent] = useState(0)
 
   const next = () => setCurrent((c) => (c + 1) % testimonials.length)
@@ -109,7 +118,7 @@ function CarouselLayout({ testimonials, theme, apiUrl }: LayoutProps) {
       <div
         className="p-8 md:p-12 text-center relative"
         style={{
-          backgroundColor: 'var(--color-surface)',
+          backgroundColor: surfaceColor,
           borderRadius: theme.borderRadius.card,
           boxShadow: theme.shadow.elevated,
         }}
@@ -139,7 +148,7 @@ function CarouselLayout({ testimonials, theme, apiUrl }: LayoutProps) {
         {/* Text */}
         <p
           className="text-xl md:text-2xl leading-relaxed mb-8"
-          style={{ fontFamily: 'var(--font-accent)', color: 'var(--color-text)' }}
+          style={{ fontFamily: 'var(--font-accent)', color: textColor }}
         >
           "{testimonial.text}"
         </p>
@@ -161,11 +170,11 @@ function CarouselLayout({ testimonials, theme, apiUrl }: LayoutProps) {
             </div>
           )}
           <div className="text-left">
-            <p className="font-semibold" style={{ color: 'var(--color-text)' }}>
+            <p className="font-semibold" style={{ color: textColor }}>
               {testimonial.author}
             </p>
             {testimonial.role && (
-              <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+              <p className="text-sm" style={{ color: textMutedColor }}>
                 {testimonial.role}
               </p>
             )}
@@ -208,7 +217,7 @@ function CarouselLayout({ testimonials, theme, apiUrl }: LayoutProps) {
   )
 }
 
-function GridLayout({ testimonials, theme, apiUrl }: LayoutProps) {
+function GridLayout({ testimonials, theme, apiUrl, textColor, textMutedColor, surfaceColor }: LayoutProps) {
   return (
     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
       {testimonials.map((testimonial, index) => (
@@ -216,7 +225,7 @@ function GridLayout({ testimonials, theme, apiUrl }: LayoutProps) {
           key={index}
           className="p-6"
           style={{
-            backgroundColor: 'var(--color-surface)',
+            backgroundColor: surfaceColor,
             borderRadius: theme.borderRadius.card,
             boxShadow: theme.shadow.card,
           }}
@@ -236,7 +245,7 @@ function GridLayout({ testimonials, theme, apiUrl }: LayoutProps) {
           )}
 
           {/* Text */}
-          <p className="mb-4" style={{ color: 'var(--color-text)' }}>
+          <p className="mb-4" style={{ color: textColor }}>
             "{testimonial.text}"
           </p>
 
@@ -257,11 +266,11 @@ function GridLayout({ testimonials, theme, apiUrl }: LayoutProps) {
               </div>
             )}
             <div>
-              <p className="font-semibold text-sm" style={{ color: 'var(--color-text)' }}>
+              <p className="font-semibold text-sm" style={{ color: textColor }}>
                 {testimonial.author}
               </p>
               {testimonial.date && (
-                <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                <p className="text-xs" style={{ color: textMutedColor }}>
                   {testimonial.date}
                 </p>
               )}
@@ -273,7 +282,7 @@ function GridLayout({ testimonials, theme, apiUrl }: LayoutProps) {
   )
 }
 
-function StackedLayout({ testimonials, theme, apiUrl }: LayoutProps) {
+function StackedLayout({ testimonials, theme, apiUrl, textColor, textMutedColor, surfaceColor }: LayoutProps) {
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
       {testimonials.map((testimonial, index) => (
@@ -281,7 +290,7 @@ function StackedLayout({ testimonials, theme, apiUrl }: LayoutProps) {
           key={index}
           className="p-6 flex gap-6"
           style={{
-            backgroundColor: 'var(--color-surface)',
+            backgroundColor: surfaceColor,
             borderRadius: theme.borderRadius.card,
             boxShadow: theme.shadow.card,
             borderLeft: '4px solid var(--color-primary-500)',
@@ -319,7 +328,7 @@ function StackedLayout({ testimonials, theme, apiUrl }: LayoutProps) {
             )}
 
             {/* Text */}
-            <p className="mb-3" style={{ color: 'var(--color-text)' }}>
+            <p className="mb-3" style={{ color: textColor }}>
               "{testimonial.text}"
             </p>
 
@@ -327,7 +336,7 @@ function StackedLayout({ testimonials, theme, apiUrl }: LayoutProps) {
             <p className="font-semibold text-sm" style={{ color: 'var(--color-primary-500)' }}>
               {testimonial.author}
               {testimonial.date && (
-                <span style={{ color: 'var(--color-text-muted)' }}> · {testimonial.date}</span>
+                <span style={{ color: textMutedColor }}> · {testimonial.date}</span>
               )}
             </p>
           </div>

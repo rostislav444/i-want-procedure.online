@@ -61,19 +61,25 @@ export function PricingSection({ content, theme, company, isAltBackground = true
 
   const ctaLink = company.telegram ? `https://t.me/${company.telegram.replace('@', '')}` : '#'
 
+  // Dynamic colors based on background
+  const bgColor = isAltBackground ? 'var(--color-background-alt)' : 'var(--color-background)'
+  const textColor = isAltBackground ? 'var(--color-text-on-alt)' : 'var(--color-text)'
+  const textMutedColor = isAltBackground ? 'var(--color-text-muted-on-alt)' : 'var(--color-text-muted)'
+  const surfaceColor = isAltBackground ? 'var(--color-surface-on-alt)' : 'var(--color-surface)'
+
   return (
-    <section className="py-16 md:py-24" style={{ backgroundColor: 'var(--color-background)' }}>
+    <section className="py-16 md:py-24" style={{ backgroundColor: bgColor }}>
       <div className="max-w-6xl mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-12">
           <h2
             className="text-3xl md:text-4xl font-bold mb-4"
-            style={{ fontFamily: 'var(--font-accent)', color: 'var(--color-text)' }}
+            style={{ fontFamily: 'var(--font-accent)', color: textColor }}
           >
             {title}
           </h2>
           {subtitle && (
-            <p className="text-lg max-w-2xl mx-auto" style={{ color: 'var(--color-text-muted)' }}>
+            <p className="text-lg max-w-2xl mx-auto" style={{ color: textMutedColor }}>
               {subtitle}
             </p>
           )}
@@ -86,7 +92,7 @@ export function PricingSection({ content, theme, company, isAltBackground = true
               key={index}
               className={`relative p-8 flex flex-col ${plan.highlighted ? 'md:-mt-4 md:mb-4' : ''}`}
               style={{
-                backgroundColor: plan.highlighted ? 'var(--color-primary-500)' : 'var(--color-surface)',
+                backgroundColor: plan.highlighted ? 'var(--color-primary-500)' : surfaceColor,
                 borderRadius: theme.borderRadius.card,
                 boxShadow: plan.highlighted ? theme.shadow.elevated : theme.shadow.card,
               }}
@@ -108,7 +114,7 @@ export function PricingSection({ content, theme, company, isAltBackground = true
               {/* Plan name */}
               <h3
                 className="text-xl font-semibold mb-2"
-                style={{ color: plan.highlighted ? 'white' : 'var(--color-text)' }}
+                style={{ color: plan.highlighted ? 'white' : textColor }}
               >
                 {plan.name}
               </h3>
@@ -117,7 +123,7 @@ export function PricingSection({ content, theme, company, isAltBackground = true
               {plan.description && (
                 <p
                   className="text-sm mb-4"
-                  style={{ color: plan.highlighted ? 'rgba(255,255,255,0.8)' : 'var(--color-text-muted)' }}
+                  style={{ color: plan.highlighted ? 'rgba(255,255,255,0.8)' : textMutedColor }}
                 >
                   {plan.description}
                 </p>
@@ -127,14 +133,14 @@ export function PricingSection({ content, theme, company, isAltBackground = true
               <div className="mb-6">
                 <span
                   className="text-4xl font-bold"
-                  style={{ color: plan.highlighted ? 'white' : 'var(--color-text)' }}
+                  style={{ color: plan.highlighted ? 'white' : textColor }}
                 >
                   {plan.price} ₴
                 </span>
                 {plan.period && (
                   <span
                     className="text-sm ml-2"
-                    style={{ color: plan.highlighted ? 'rgba(255,255,255,0.8)' : 'var(--color-text-muted)' }}
+                    style={{ color: plan.highlighted ? 'rgba(255,255,255,0.8)' : textMutedColor }}
                   >
                     {plan.period}
                   </span>
@@ -147,7 +153,7 @@ export function PricingSection({ content, theme, company, isAltBackground = true
                   <li
                     key={i}
                     className="flex items-center gap-3 text-sm"
-                    style={{ color: plan.highlighted ? 'rgba(255,255,255,0.9)' : 'var(--color-text)' }}
+                    style={{ color: plan.highlighted ? 'rgba(255,255,255,0.9)' : textColor }}
                   >
                     <div
                       className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"

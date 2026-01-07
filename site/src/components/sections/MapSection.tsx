@@ -30,6 +30,12 @@ export function MapSection({ content, theme, company, isAltBackground = false }:
   const coords = content.coordinates || { lat: 50.4501, lng: 30.5234 } // Kyiv default
   const zoom = content.zoom || 15
 
+  // Dynamic colors based on background
+  const bgColor = isAltBackground ? 'var(--color-background-alt)' : 'var(--color-background)'
+  const textColor = isAltBackground ? 'var(--color-text-on-alt)' : 'var(--color-text)'
+  const textMutedColor = isAltBackground ? 'var(--color-text-muted-on-alt)' : 'var(--color-text-muted)'
+  const surfaceColor = isAltBackground ? 'var(--color-surface-on-alt)' : 'var(--color-surface)'
+
   useEffect(() => {
     setIsClient(true)
   }, [])
@@ -106,11 +112,11 @@ export function MapSection({ content, theme, company, isAltBackground = false }:
   }, [isClient, coords.lat, coords.lng, zoom, company.name, address])
 
   return (
-    <section className="py-16" style={{ backgroundColor: 'var(--color-background)' }}>
+    <section className="py-16" style={{ backgroundColor: bgColor }}>
       <div className="max-w-5xl mx-auto px-4">
         <h2
           className="text-3xl font-bold text-center mb-8"
-          style={{ fontFamily: 'var(--font-accent)', color: 'var(--color-text)' }}
+          style={{ fontFamily: 'var(--font-accent)', color: textColor }}
         >
           {title}
         </h2>
@@ -123,7 +129,7 @@ export function MapSection({ content, theme, company, isAltBackground = false }:
             style={{ minHeight: '320px', backgroundColor: 'var(--color-background-alt)' }}
           >
             {!isClient && (
-              <div className="w-full h-full flex items-center justify-center" style={{ color: 'var(--color-text-muted)' }}>
+              <div className="w-full h-full flex items-center justify-center" style={{ color: textMutedColor }}>
                 Завантаження карти...
               </div>
             )}
@@ -133,7 +139,7 @@ export function MapSection({ content, theme, company, isAltBackground = false }:
           {address && (
             <div
               className="p-6 flex flex-col md:flex-row items-center gap-4"
-              style={{ backgroundColor: 'var(--color-surface)', borderTop: '1px solid var(--color-primary-100)' }}
+              style={{ backgroundColor: surfaceColor, borderTop: '1px solid var(--color-primary-100)' }}
             >
               <div
                 className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
@@ -142,8 +148,8 @@ export function MapSection({ content, theme, company, isAltBackground = false }:
                 <MapPin className="w-6 h-6" style={{ color: 'var(--color-primary-500)' }} />
               </div>
               <div className="text-center md:text-left flex-1">
-                <p className="font-medium" style={{ color: 'var(--color-text)' }}>Наша адреса</p>
-                <p style={{ color: 'var(--color-text-muted)' }}>{address}</p>
+                <p className="font-medium" style={{ color: textColor }}>Наша адреса</p>
+                <p style={{ color: textMutedColor }}>{address}</p>
               </div>
               <a
                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
