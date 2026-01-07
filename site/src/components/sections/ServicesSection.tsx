@@ -3,6 +3,7 @@
 import { Clock, ArrowRight, Sparkles, MessageCircle } from 'lucide-react'
 import { Company, Service, ServiceCategory } from '@/lib/api'
 import { IndustryTheme } from '@/lib/themes'
+import { WaveTransition } from '@/components/ui/WaveTransition'
 
 interface ServicesContent {
   title?: string
@@ -54,7 +55,7 @@ export function ServicesSection({ content, theme, company, services, categories 
 
   return (
     <section
-      className="py-20 lg:py-32"
+      className="py-20 lg:py-32 relative overflow-hidden"
       style={{ backgroundColor: 'var(--color-background)' }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -150,6 +151,9 @@ export function ServicesSection({ content, theme, company, services, categories 
           </div>
         )}
       </div>
+
+      {/* Wave transition to next section */}
+      <WaveTransition variant={3} fillColor="var(--color-background-alt)" />
     </section>
   )
 }

@@ -3,6 +3,7 @@
 import { User, Instagram, Phone, Mail } from 'lucide-react'
 import { Company } from '@/lib/api'
 import { IndustryTheme } from '@/lib/themes'
+import { WaveTransition } from '@/components/ui/WaveTransition'
 
 interface TeamMember {
   name: string
@@ -46,7 +47,7 @@ export function TeamSection({ content, theme, company }: Props) {
   ]
 
   return (
-    <section className="py-16 md:py-24" style={{ backgroundColor: 'var(--color-background-alt)' }}>
+    <section className="py-16 md:py-24 relative overflow-hidden" style={{ backgroundColor: 'var(--color-background-alt)' }}>
       <div className="max-w-6xl mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-12">
@@ -70,6 +71,9 @@ export function TeamSection({ content, theme, company }: Props) {
           <GridLayout members={displayMembers} theme={theme} apiUrl={apiUrl} />
         )}
       </div>
+
+      {/* Wave transition to next section */}
+      <WaveTransition variant={2} fillColor="var(--color-background)" />
     </section>
   )
 }

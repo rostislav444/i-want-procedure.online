@@ -3,6 +3,7 @@
 import { Shield, Clock, Award, Heart, Star, Check, Zap, Users, Sparkles } from 'lucide-react'
 import { Company } from '@/lib/api'
 import { IndustryTheme } from '@/lib/themes'
+import { WaveTransition } from '@/components/ui/WaveTransition'
 
 interface BenefitsContent {
   title?: string
@@ -49,7 +50,7 @@ export function BenefitsSection({ content, theme, company }: Props) {
   const columns = content.columns || 4
 
   return (
-    <section className="py-20 lg:py-32 relative overflow-hidden" style={{ backgroundColor: 'var(--color-background)' }}>
+    <section className="py-20 lg:py-32 relative overflow-hidden" style={{ backgroundColor: 'var(--color-background-alt)' }}>
       {/* Background decorations */}
       <div
         className="absolute inset-0 opacity-5"
@@ -64,12 +65,12 @@ export function BenefitsSection({ content, theme, company }: Props) {
         <div className="text-center mb-16">
           <h2
             className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6"
-            style={{ fontFamily: 'var(--font-accent)', color: 'var(--color-text)' }}
+            style={{ fontFamily: 'var(--font-accent)', color: 'var(--color-text-on-alt)' }}
           >
             {title}
           </h2>
           {subtitle && (
-            <p className="text-lg md:text-xl max-w-2xl mx-auto" style={{ color: 'var(--color-text-muted)' }}>
+            <p className="text-lg md:text-xl max-w-2xl mx-auto" style={{ color: 'var(--color-text-muted-on-alt)' }}>
               {subtitle}
             </p>
           )}
@@ -88,6 +89,9 @@ export function BenefitsSection({ content, theme, company }: Props) {
           <AlternatingLayout benefits={benefits} theme={theme} />
         )}
       </div>
+
+      {/* Wave transition to next section */}
+      <WaveTransition variant={4} fillColor="var(--color-background)" />
     </section>
   )
 }

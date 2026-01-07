@@ -3,6 +3,7 @@
 import { User, Award, Heart, Star, Sparkles } from 'lucide-react'
 import { Company } from '@/lib/api'
 import { IndustryTheme } from '@/lib/themes'
+import { WaveTransition } from '@/components/ui/WaveTransition'
 
 interface AboutContent {
   title?: string
@@ -93,6 +94,9 @@ export function AboutSection({ content, theme, company }: Props) {
           />
         )}
       </div>
+
+      {/* Wave transition to next section */}
+      <WaveTransition variant={2} fillColor="var(--color-background)" />
     </section>
   )
 }

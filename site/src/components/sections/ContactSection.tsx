@@ -36,7 +36,7 @@ export function ContactSection({ content, theme, company }: Props) {
   }
 
   return (
-    <section className="py-20 lg:py-32 relative overflow-hidden" style={{ backgroundColor: 'var(--color-background-alt)' }}>
+    <section className="py-20 lg:py-32 relative overflow-hidden" style={{ backgroundColor: 'var(--color-background)' }}>
       {/* Decorative background */}
       <div
         className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full blur-[150px] opacity-20 pointer-events-none"
@@ -52,7 +52,7 @@ export function ContactSection({ content, theme, company }: Props) {
         <div className="text-center mb-16">
           <h2
             className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6"
-            style={{ fontFamily: 'var(--font-accent)', color: 'var(--color-text-on-alt)' }}
+            style={{ fontFamily: 'var(--font-accent)', color: 'var(--color-text)' }}
           >
             {title}
           </h2>
@@ -63,12 +63,12 @@ export function ContactSection({ content, theme, company }: Props) {
           <div
             className="p-8 md:p-10"
             style={{
-              backgroundColor: 'var(--color-surface-on-alt)',
+              backgroundColor: 'var(--color-surface)',
               borderRadius: theme.borderRadius.card,
               boxShadow: theme.shadow.card,
             }}
           >
-            <h3 className="text-2xl font-bold mb-8" style={{ color: 'var(--color-text-on-alt)' }}>
+            <h3 className="text-2xl font-bold mb-8" style={{ color: 'var(--color-text)' }}>
               Зв'яжіться з нами
             </h3>
 
@@ -85,8 +85,8 @@ export function ContactSection({ content, theme, company }: Props) {
                     <Phone className="w-6 h-6" style={{ color: 'var(--color-primary-500)' }} />
                   </div>
                   <div>
-                    <p className="text-sm font-medium" style={{ color: 'var(--color-text-muted-on-alt)' }}>Телефон</p>
-                    <p className="text-lg font-bold" style={{ color: 'var(--color-text-on-alt)' }}>{company.phone}</p>
+                    <p className="text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>Телефон</p>
+                    <p className="text-lg font-bold" style={{ color: 'var(--color-text)' }}>{company.phone}</p>
                   </div>
                 </a>
               )}
@@ -105,8 +105,8 @@ export function ContactSection({ content, theme, company }: Props) {
                     <Send className="w-6 h-6" style={{ color: 'var(--color-primary-500)' }} />
                   </div>
                   <div>
-                    <p className="text-sm font-medium" style={{ color: 'var(--color-text-muted-on-alt)' }}>Telegram</p>
-                    <p className="text-lg font-bold" style={{ color: 'var(--color-text-on-alt)' }}>{company.telegram}</p>
+                    <p className="text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>Telegram</p>
+                    <p className="text-lg font-bold" style={{ color: 'var(--color-text)' }}>{company.telegram}</p>
                   </div>
                 </a>
               )}
@@ -120,8 +120,8 @@ export function ContactSection({ content, theme, company }: Props) {
                     <MapPin className="w-6 h-6" style={{ color: 'var(--color-primary-500)' }} />
                   </div>
                   <div>
-                    <p className="text-sm font-medium" style={{ color: 'var(--color-text-muted-on-alt)' }}>Адреса</p>
-                    <p className="text-lg font-bold" style={{ color: 'var(--color-text-on-alt)' }}>{company.address}</p>
+                    <p className="text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>Адреса</p>
+                    <p className="text-lg font-bold" style={{ color: 'var(--color-text)' }}>{company.address}</p>
                   </div>
                 </div>
               )}
@@ -136,16 +136,16 @@ export function ContactSection({ content, theme, company }: Props) {
                     <Clock className="w-6 h-6" style={{ color: 'var(--color-primary-500)' }} />
                   </div>
                   <div>
-                    <p className="text-sm font-medium" style={{ color: 'var(--color-text-muted-on-alt)' }}>Графік роботи</p>
-                    <p className="text-lg font-bold" style={{ color: 'var(--color-text-on-alt)' }}>{company.working_hours}</p>
+                    <p className="text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>Графік роботи</p>
+                    <p className="text-lg font-bold" style={{ color: 'var(--color-text)' }}>{company.working_hours}</p>
                   </div>
                 </div>
               )}
 
               {/* Social links */}
               {(socialLinks.instagram || socialLinks.facebook) && (
-                <div className="pt-6 border-t" style={{ borderColor: 'var(--color-surface-border-on-alt)' }}>
-                  <p className="text-sm font-medium mb-4" style={{ color: 'var(--color-text-muted-on-alt)' }}>
+                <div className="pt-6 border-t" style={{ borderColor: 'var(--color-surface-border)' }}>
+                  <p className="text-sm font-medium mb-4" style={{ color: 'var(--color-text-muted)' }}>
                     Ми в соцмережах
                   </p>
                   <div className="flex items-center gap-3">

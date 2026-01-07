@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { X, ChevronLeft, ChevronRight, Image as ImageIcon, Camera } from 'lucide-react'
 import { Company } from '@/lib/api'
 import { IndustryTheme } from '@/lib/themes'
+import { WaveTransition } from '@/components/ui/WaveTransition'
 
 interface GalleryImage {
   url: string
@@ -118,6 +119,9 @@ export function GallerySection({ content, theme, company }: Props) {
           </>
         )}
       </div>
+
+      {/* Wave transition to next section */}
+      <WaveTransition variant={1} fillColor="var(--color-background-alt)" />
     </section>
   )
 }

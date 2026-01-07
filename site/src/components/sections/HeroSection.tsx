@@ -3,6 +3,7 @@
 import { MessageCircle, Phone, ArrowRight, Sparkles, Star } from 'lucide-react'
 import { Company } from '@/lib/api'
 import { IndustryTheme } from '@/lib/themes'
+import { WaveTransition } from '@/components/ui/WaveTransition'
 
 interface HeroContent {
   title?: string
@@ -327,14 +328,7 @@ function ModernHero({ title, subtitle, ctaText, ctaLink, theme, company, apiUrl 
       </div>
 
       {/* Bottom wave transition to next section */}
-      <div className="absolute bottom-0 left-0 right-0">
-        <svg viewBox="0 0 1440 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
-          <path
-            d="M0 100V50C360 80 720 20 1080 50C1260 65 1380 75 1440 70V100H0Z"
-            style={{ fill: 'var(--color-background-alt)' }}
-          />
-        </svg>
-      </div>
+      <WaveTransition variant={1} fillColor="var(--color-background-alt)" />
     </section>
   )
 }
