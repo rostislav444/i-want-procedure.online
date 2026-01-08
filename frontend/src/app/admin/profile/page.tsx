@@ -1,14 +1,14 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { User, Building2, Save, Phone, MapPin, CreditCard, Banknote, Calendar, Link2, Unlink } from 'lucide-react'
+import { User, Building2, Save, Phone, MapPin, CreditCard, Banknote, Calendar, Link2, Unlink, Camera, Upload, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { authApi, companyApi, googleApi, Company, GoogleCalendarInfo } from '@/lib/api'
+import { authApi, companyApi, googleApi, uploadApi, Company, GoogleCalendarInfo } from '@/lib/api'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 interface UserData {
@@ -32,6 +32,8 @@ export default function ProfilePage() {
   const [googleStatus, setGoogleStatus] = useState<GoogleCalendarInfo | null>(null)
   const [googleLoading, setGoogleLoading] = useState(false)
   const [selectedCalendar, setSelectedCalendar] = useState<string>('primary')
+  const [uploadingPhoto, setUploadingPhoto] = useState(false)
+  const photoInputRef = useRef<HTMLInputElement>(null)
 
   const [formData, setFormData] = useState({
     first_name: '',
@@ -221,6 +223,40 @@ export default function ProfilePage() {
     }
   }
 
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      showSuccess('Будь ласка, оберіть зображення')
+      return
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      showSuccess('Розмір файлу не повинен перевищувати 5MB')
+      return
+    }
+
+    setUploadingPhoto(true)
+    try {
+      const { url } = await uploadApi.uploadLogo(file)
+      await companyApi.updateCompany({ logo_url: url })
+      showSuccess('Фото успішно завантажено!')
+      await loadData()
+    } catch (error) {
+      console.error('Error uploading photo:', error)
+      showSuccess('Помилка при завантаженні фото')
+    } finally {
+      setUploadingPhoto(false)
+      // Reset input
+      if (photoInputRef.current) {
+        photoInputRef.current.value = ''
+      }
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -255,6 +291,69 @@ export default function ProfilePage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {/* Photo Upload Section */}
+          <div className="flex items-center gap-6 mb-6 pb-6 border-b">
+            <div className="relative group">
+              <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-100 border-2 border-gray-200">
+                {company?.logo_url ? (
+                  <img
+                    src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:8000'}${company.logo_url}`}
+                    alt="Фото спеціаліста"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <User className="w-12 h-12 text-gray-400" />
+                  </div>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => photoInputRef.current?.click()}
+                disabled={uploadingPhoto}
+                className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              >
+                {uploadingPhoto ? (
+                  <Loader2 className="w-6 h-6 text-white animate-spin" />
+                ) : (
+                  <Camera className="w-6 h-6 text-white" />
+                )}
+              </button>
+              <input
+                ref={photoInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoUpload}
+                className="hidden"
+              />
+            </div>
+            <div>
+              <h3 className="font-medium text-gray-900">Фото профілю</h3>
+              <p className="text-sm text-gray-500 mb-2">
+                Це фото буде відображатись на вашому сайті
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => photoInputRef.current?.click()}
+                disabled={uploadingPhoto}
+              >
+                {uploadingPhoto ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Завантаження...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="mr-2 h-4 w-4" />
+                    Завантажити фото
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+
           <form onSubmit={handleSubmitUser} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>

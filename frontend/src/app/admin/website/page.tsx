@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Plus,
@@ -24,6 +24,10 @@ import {
   Type,
   Copy,
   Check,
+  Image,
+  Upload,
+  Loader2,
+  X,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -33,6 +37,7 @@ import { Textarea } from '@/components/ui/textarea'
 import {
   websiteApi,
   companyApi,
+  uploadApi,
   WebsiteSection,
   SectionTypeInfo,
   IndustryThemeInfo,
@@ -155,6 +160,8 @@ export default function WebsiteBuilderPage() {
   const [editingSection, setEditingSection] = useState<WebsiteSection | null>(null)
   const [expandedSection, setExpandedSection] = useState<number | null>(null)
   const [copied, setCopied] = useState(false)
+  const [uploadingCover, setUploadingCover] = useState(false)
+  const coverInputRef = useRef<HTMLInputElement>(null)
 
   // Branding settings state
   const [brandingData, setBrandingData] = useState({
@@ -364,6 +371,52 @@ export default function WebsiteBuilderPage() {
     }
   }
 
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      showSuccess('Будь ласка, оберіть зображення')
+      return
+    }
+
+    // Validate file size (max 10MB for cover images)
+    if (file.size > 10 * 1024 * 1024) {
+      showSuccess('Розмір файлу не повинен перевищувати 10MB')
+      return
+    }
+
+    setUploadingCover(true)
+    try {
+      const { url } = await uploadApi.uploadCover(file)
+      await companyApi.updateCompany({ cover_image_url: url })
+      showSuccess('Фонове зображення завантажено!')
+      await loadData()
+    } catch (error) {
+      console.error('Error uploading cover:', error)
+      showSuccess('Помилка при завантаженні')
+    } finally {
+      setUploadingCover(false)
+      if (coverInputRef.current) {
+        coverInputRef.current.value = ''
+      }
+    }
+  }
+
+  const handleRemoveCover = async () => {
+    try {
+      setSaving(true)
+      await companyApi.updateCompany({ cover_image_url: '' })
+      showSuccess('Фонове зображення видалено')
+      await loadData()
+    } catch (error) {
+      console.error('Error removing cover:', error)
+    } finally {
+      setSaving(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -502,6 +555,91 @@ export default function WebsiteBuilderPage() {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Cover Image Upload */}
+          <div className="space-y-3">
+            <Label className="flex items-center gap-1">
+              <Image className="h-4 w-4" /> Фонове зображення (Hero)
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              Зображення буде використовуватись як фон у головній секції сайту
+            </p>
+
+            {company?.cover_image_url ? (
+              <div className="relative rounded-lg overflow-hidden border">
+                <div className="aspect-[21/9] relative">
+                  <img
+                    src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:8000'}${company.cover_image_url}`}
+                    alt="Фонове зображення"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                </div>
+                <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+                  <span className="text-xs text-white/80">Поточне фонове зображення</span>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => coverInputRef.current?.click()}
+                      disabled={uploadingCover}
+                    >
+                      {uploadingCover ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Upload className="h-4 w-4 mr-1" />
+                          Замінити
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleRemoveCover}
+                      disabled={saving}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => coverInputRef.current?.click()}
+                disabled={uploadingCover}
+                className="w-full aspect-[21/9] rounded-lg border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 transition-colors flex flex-col items-center justify-center gap-2 cursor-pointer"
+              >
+                {uploadingCover ? (
+                  <>
+                    <Loader2 className="h-8 w-8 text-muted-foreground animate-spin" />
+                    <span className="text-sm text-muted-foreground">Завантаження...</span>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-8 w-8 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">
+                      Натисніть, щоб завантажити зображення
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      PNG, JPG до 10MB. Рекомендовано 1920x800
+                    </span>
+                  </>
+                )}
+              </button>
+            )}
+
+            <input
+              ref={coverInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleCoverUpload}
+              className="hidden"
+            />
           </div>
 
           {/* Theme & Colors */}
@@ -1081,6 +1219,33 @@ interface EditorProps {
 }
 
 function HeroEditor({ content, onChange, onSave, onCancel, saving }: EditorProps) {
+  const [uploadingHeroImage, setUploadingHeroImage] = useState(false)
+  const heroImageInputRef = useRef<HTMLInputElement>(null)
+
+  const handleHeroImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) return
+    if (file.size > 10 * 1024 * 1024) return
+
+    setUploadingHeroImage(true)
+    try {
+      const { url } = await uploadApi.uploadCover(file)
+      onChange('image', url)
+    } catch (error) {
+      console.error('Error uploading hero image:', error)
+    } finally {
+      setUploadingHeroImage(false)
+      if (heroImageInputRef.current) {
+        heroImageInputRef.current.value = ''
+      }
+    }
+  }
+
+  const currentImage = content.image as string | undefined
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:8000'
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
@@ -1127,6 +1292,81 @@ function HeroEditor({ content, onChange, onSave, onCancel, saving }: EditorProps
           placeholder="Записатися"
         />
       </div>
+
+      {/* Hero Image Upload */}
+      <div className="space-y-2">
+        <Label className="flex items-center gap-1">
+          <Image className="h-4 w-4" /> Фото спеціаліста (Hero)
+        </Label>
+        <p className="text-xs text-muted-foreground">
+          Зображення для варіантів "Розділений" та "Modern"
+        </p>
+
+        {currentImage ? (
+          <div className="flex items-center gap-3">
+            <div className="w-20 h-20 rounded-lg overflow-hidden border">
+              <img
+                src={currentImage.startsWith('/') ? `${apiUrl}${currentImage}` : currentImage}
+                alt="Hero"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => heroImageInputRef.current?.click()}
+                disabled={uploadingHeroImage}
+              >
+                {uploadingHeroImage ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    <Upload className="h-4 w-4 mr-1" />
+                    Замінити
+                  </>
+                )}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => onChange('image', '')}
+                className="text-destructive hover:text-destructive"
+              >
+                <X className="h-4 w-4 mr-1" />
+                Видалити
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => heroImageInputRef.current?.click()}
+            disabled={uploadingHeroImage}
+            className="w-full h-24 rounded-lg border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 transition-colors flex flex-col items-center justify-center gap-1 cursor-pointer"
+          >
+            {uploadingHeroImage ? (
+              <Loader2 className="h-6 w-6 text-muted-foreground animate-spin" />
+            ) : (
+              <>
+                <Upload className="h-6 w-6 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">Завантажити фото</span>
+              </>
+            )}
+          </button>
+        )}
+
+        <input
+          ref={heroImageInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleHeroImageUpload}
+          className="hidden"
+        />
+      </div>
+
       <EditorActions onSave={onSave} onCancel={onCancel} saving={saving} />
     </div>
   )
