@@ -8,9 +8,12 @@ services:
         - NEXT_PUBLIC_TELEGRAM_BOT_NAME=doctor_i_want_procedure_bot
         - NEXT_PUBLIC_CLIENT_BOT_NAME=i_want_procedure_bot
     container_name: procedure_frontend
+    environment:
+      - API_URL_INTERNAL=http://api:8000/api/v1
     expose:
       - '3000'
     networks:
+      - default
       - procedure_network
     restart: unless-stopped
 

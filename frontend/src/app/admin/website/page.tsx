@@ -360,7 +360,7 @@ export default function WebsiteBuilderPage() {
   }
 
   const siteUrl = company
-    ? `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001'}/site/${company.slug}`
+    ? `${typeof window !== 'undefined' ? window.location.origin : ''}/site/${company.slug}`
     : ''
 
   const handleCopyUrl = async () => {
