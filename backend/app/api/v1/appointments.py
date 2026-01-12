@@ -30,7 +30,12 @@ async def get_appointments(
     date_from: Optional[date] = None,
     date_to: Optional[date] = None,
     status_filter: Optional[AppointmentStatus] = None,
+    specialist_id: Optional[int] = None,
 ):
+    """
+    Get appointments for the company.
+    For clinics, can filter by specialist_id (specialist_profile_id).
+    """
     query = (
         select(Appointment)
         .options(selectinload(Appointment.client), selectinload(Appointment.service))
@@ -43,6 +48,8 @@ async def get_appointments(
         query = query.where(Appointment.date <= date_to)
     if status_filter:
         query = query.where(Appointment.status == status_filter)
+    if specialist_id:
+        query = query.where(Appointment.specialist_profile_id == specialist_id)
 
     query = query.order_by(Appointment.date, Appointment.start_time)
     result = await db.execute(query)

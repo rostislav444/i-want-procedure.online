@@ -22,3 +22,6 @@ certbot/
 
 # Google OAuth credentials
 client_secret*.json
+
+# Test credentials
+TEST_CREDENTIALS.md

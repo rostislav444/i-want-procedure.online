@@ -6,8 +6,9 @@ from app.models.client import Client
 from app.models.appointment import Appointment
 from app.models.subscription import Subscription, Payment
 from app.models.specialty import Specialty
-from app.models.profiles import SpecialistProfile, ManagerProfile, ClientProfile
+from app.models.profiles import SpecialistProfile, ManagerProfile, ClientProfile, SpecialistService
 from app.models.website_section import WebsiteSection, SectionType
+from app.models.position import Position
 
 __all__ = [
     "Company",
@@ -25,6 +26,8 @@ __all__ = [
     "SpecialistProfile",
     "ManagerProfile",
     "ClientProfile",
+    "SpecialistService",
     "WebsiteSection",
     "SectionType",
+    "Position",
 ]

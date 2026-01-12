@@ -105,6 +105,7 @@ class ServiceCreate(BaseModel):
     price: Decimal
     category_id: Optional[int] = None
     specialty_id: Optional[int] = None
+    position_id: Optional[int] = None
     doctor_id: Optional[int] = None
     steps: Optional[list[ServiceStepCreate]] = None
     products: Optional[list[ServiceProductCreate]] = None
@@ -117,6 +118,7 @@ class ServiceUpdate(BaseModel):
     price: Optional[Decimal] = None
     category_id: Optional[int] = None
     specialty_id: Optional[int] = None
+    position_id: Optional[int] = None
     is_active: Optional[bool] = None
 
 
@@ -142,6 +144,7 @@ class ServiceResponse(BaseModel):
     company_id: int
     category_id: Optional[int] = None
     specialty_id: Optional[int] = None
+    position_id: Optional[int] = None
     doctor_id: Optional[int] = None
     name: str
     description: Optional[str] = None
@@ -161,6 +164,7 @@ class ServiceDetailResponse(BaseModel):
     company_id: int
     category_id: Optional[int] = None
     specialty_id: Optional[int] = None
+    position_id: Optional[int] = None
     doctor_id: Optional[int] = None
     name: str
     description: Optional[str] = None

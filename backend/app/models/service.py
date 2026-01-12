@@ -12,6 +12,8 @@ if TYPE_CHECKING:
     from app.models.user import User
     from app.models.appointment import Appointment
     from app.models.specialty import Specialty
+    from app.models.profiles import SpecialistService
+    from app.models.position import Position
 
 
 class ServiceCategory(Base):
@@ -52,6 +54,9 @@ class Service(Base):
     specialty_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey("specialties.id", ondelete="SET NULL"), nullable=True
     )
+    position_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("positions.id", ondelete="SET NULL"), nullable=True
+    )
     doctor_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
     name: Mapped[str] = mapped_column(String(255))
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
@@ -66,12 +71,16 @@ class Service(Base):
     company: Mapped["Company"] = relationship(back_populates="services")
     category: Mapped[Optional["ServiceCategory"]] = relationship(back_populates="services")
     specialty: Mapped[Optional["Specialty"]] = relationship(back_populates="services")
+    position: Mapped[Optional["Position"]] = relationship(back_populates="services")
     doctor: Mapped[Optional["User"]] = relationship(back_populates="services")
     appointments: Mapped[list["Appointment"]] = relationship(back_populates="service")
     steps: Mapped[list["ServiceStep"]] = relationship(
         back_populates="service", cascade="all, delete-orphan", order_by="ServiceStep.order"
     )
     products: Mapped[list["ServiceProduct"]] = relationship(
+        back_populates="service", cascade="all, delete-orphan"
+    )
+    specialist_services: Mapped[list["SpecialistService"]] = relationship(
         back_populates="service", cascade="all, delete-orphan"
     )
 

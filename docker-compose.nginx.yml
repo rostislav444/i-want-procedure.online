@@ -13,8 +13,7 @@ services:
       - procedure_network
     depends_on:
       - api
-      - frontend-admin
-      - frontend-site
+      - frontend
     restart: unless-stopped
 
 networks:

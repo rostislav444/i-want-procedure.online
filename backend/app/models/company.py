@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from app.models.specialty import Specialty
     from app.models.profiles import SpecialistProfile, ManagerProfile, ClientProfile
     from app.models.website_section import WebsiteSection
+    from app.models.position import Position
 
 
 def generate_invite_code() -> str:
@@ -63,6 +64,10 @@ class Company(Base):
     address: Mapped[str | None] = mapped_column(String(500), nullable=True)
     telegram: Mapped[str | None] = mapped_column(String(100), nullable=True)
     invite_code: Mapped[str] = mapped_column(
+        String(20), unique=True, index=True, default=generate_invite_code
+    )
+    # Team invite code for inviting specialists to join the clinic
+    team_invite_code: Mapped[str] = mapped_column(
         String(20), unique=True, index=True, default=generate_invite_code
     )
     created_at: Mapped[datetime] = mapped_column(
@@ -140,4 +145,11 @@ class Company(Base):
         back_populates="company",
         cascade="all, delete-orphan",
         order_by="WebsiteSection.order"
+    )
+
+    # Positions (job roles)
+    positions: Mapped[list["Position"]] = relationship(
+        back_populates="company",
+        cascade="all, delete-orphan",
+        order_by="Position.order"
     )

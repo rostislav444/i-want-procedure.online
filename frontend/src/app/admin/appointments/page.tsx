@@ -1,13 +1,15 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, parseISO, addMonths, subMonths, isSameDay, isSameMonth, addDays, } from 'date-fns'
 import { uk } from 'date-fns/locale'
-import { ChevronLeft, ChevronRight, User, Phone } from 'lucide-react'
+import { ChevronLeft, ChevronRight, User, Phone, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { CalendarView, CalendarEvent, ViewMode } from '@/components/calendar'
-import { appointmentsApi } from '@/lib/api'
+import { SpecialistFilter } from '@/components/SpecialistFilter'
+import { appointmentsApi, specialistsApi, SpecialistListItem } from '@/lib/api'
+import { useCompany } from '@/contexts/CompanyContext'
 
 interface Client {
   id: number
@@ -24,15 +26,38 @@ interface Service {
   price: number
 }
 
+interface Specialist {
+  id: number
+  user_id: number
+  first_name: string
+  last_name: string
+  position?: string
+}
+
 interface Appointment {
   id: number
+  doctor_id: number
+  specialist_profile_id?: number
   date: string
   start_time: string
   end_time: string
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed'
   client: Client | null
   service: Service | null
+  specialist?: Specialist
 }
+
+// Specialist color palette
+const SPECIALIST_COLORS = [
+  { bg: 'bg-blue-100 dark:bg-blue-900/30', border: 'bg-blue-500', text: 'text-blue-700 dark:text-blue-300' },
+  { bg: 'bg-purple-100 dark:bg-purple-900/30', border: 'bg-purple-500', text: 'text-purple-700 dark:text-purple-300' },
+  { bg: 'bg-pink-100 dark:bg-pink-900/30', border: 'bg-pink-500', text: 'text-pink-700 dark:text-pink-300' },
+  { bg: 'bg-cyan-100 dark:bg-cyan-900/30', border: 'bg-cyan-500', text: 'text-cyan-700 dark:text-cyan-300' },
+  { bg: 'bg-orange-100 dark:bg-orange-900/30', border: 'bg-orange-500', text: 'text-orange-700 dark:text-orange-300' },
+  { bg: 'bg-teal-100 dark:bg-teal-900/30', border: 'bg-teal-500', text: 'text-teal-700 dark:text-teal-300' },
+  { bg: 'bg-indigo-100 dark:bg-indigo-900/30', border: 'bg-indigo-500', text: 'text-indigo-700 dark:text-indigo-300' },
+  { bg: 'bg-rose-100 dark:bg-rose-900/30', border: 'bg-rose-500', text: 'text-rose-700 dark:text-rose-300' },
+]
 
 const STATUS_COLORS = {
   pending: 'bg-amber-100 dark:bg-amber-900/30',
@@ -56,21 +81,49 @@ const STATUS_LABELS = {
 }
 
 export default function AppointmentsPage() {
+  const { companyType, canViewAllAppointments } = useCompany()
   const [appointments, setAppointments] = useState<Appointment[]>([])
+  const [specialists, setSpecialists] = useState<SpecialistListItem[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [calendarMonth, setCalendarMonth] = useState(new Date())
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null)
   const [viewMode, setViewMode] = useState<ViewMode>('day')
+  const [selectedSpecialist, setSelectedSpecialist] = useState<number | null>(null)
 
   const weekStart = startOfWeek(selectedDate, { weekStartsOn: 1 })
   const weekEnd = endOfWeek(selectedDate, { weekStartsOn: 1 })
   const monthStart = startOfMonth(selectedDate)
   const monthEnd = endOfMonth(selectedDate)
 
+  // Load specialists for clinic managers
+  useEffect(() => {
+    if (companyType === 'clinic' && canViewAllAppointments) {
+      loadSpecialists()
+    }
+  }, [companyType, canViewAllAppointments])
+
   useEffect(() => {
     loadAppointments()
-  }, [selectedDate, viewMode])
+  }, [selectedDate, viewMode, selectedSpecialist])
+
+  const loadSpecialists = async () => {
+    try {
+      const data = await specialistsApi.getAll()
+      setSpecialists(data)
+    } catch (error) {
+      console.error('Failed to load specialists:', error)
+    }
+  }
+
+  // Map specialist profile ID to color
+  const specialistColorMap = useMemo(() => {
+    const map = new Map<number, typeof SPECIALIST_COLORS[0]>()
+    specialists.forEach((sp, index) => {
+      map.set(sp.id, SPECIALIST_COLORS[index % SPECIALIST_COLORS.length])
+    })
+    return map
+  }, [specialists])
 
   const loadAppointments = async () => {
     setLoading(true)
@@ -88,7 +141,11 @@ export default function AppointmentsPage() {
         dateTo = format(monthEnd, 'yyyy-MM-dd')
       }
 
-      const data = await appointmentsApi.getAll({ date_from: dateFrom, date_to: dateTo })
+      const data = await appointmentsApi.getAll({
+        date_from: dateFrom,
+        date_to: dateTo,
+        specialist_id: selectedSpecialist || undefined,
+      })
       setAppointments(data)
     } catch (error) {
       console.error('Error loading appointments:', error)
@@ -107,20 +164,42 @@ export default function AppointmentsPage() {
     }
   }
 
+  // Get specialist info by profile ID
+  const getSpecialistInfo = (profileId?: number) => {
+    if (!profileId) return null
+    return specialists.find(sp => sp.id === profileId)
+  }
+
   // Convert appointments to CalendarEvents
-  const calendarEvents: CalendarEvent[] = appointments
-    .filter(a => a.status !== 'cancelled')
-    .map(appt => ({
-      id: appt.id,
-      date: appt.date,
-      start_time: appt.start_time,
-      end_time: appt.end_time,
-      title: appt.service?.name || 'Запис',
-      subtitle: `${appt.client?.first_name || ''} ${appt.client?.last_name || ''}`.trim(),
-      color: STATUS_COLORS[appt.status],
-      borderColor: STATUS_BG[appt.status],
-      onClick: () => setSelectedAppointment(appt),
-    }))
+  const calendarEvents: CalendarEvent[] = useMemo(() => {
+    const showingAllSpecialists = companyType === 'clinic' && canViewAllAppointments && !selectedSpecialist
+
+    return appointments
+      .filter(a => a.status !== 'cancelled')
+      .map(appt => {
+        const specialistColor = appt.specialist_profile_id
+          ? specialistColorMap.get(appt.specialist_profile_id)
+          : null
+        const specialist = getSpecialistInfo(appt.specialist_profile_id)
+
+        // Use specialist colors when showing all, status colors when filtered
+        const useSpecialistColors = showingAllSpecialists && specialistColor
+
+        return {
+          id: appt.id,
+          date: appt.date,
+          start_time: appt.start_time,
+          end_time: appt.end_time,
+          title: appt.service?.name || 'Запис',
+          subtitle: showingAllSpecialists && specialist
+            ? `${specialist.first_name} ${specialist.last_name}`
+            : `${appt.client?.first_name || ''} ${appt.client?.last_name || ''}`.trim(),
+          color: useSpecialistColors ? specialistColor.bg : STATUS_COLORS[appt.status],
+          borderColor: useSpecialistColors ? specialistColor.border : STATUS_BG[appt.status],
+          onClick: () => setSelectedAppointment(appt),
+        }
+      })
+  }, [appointments, specialists, selectedSpecialist, companyType, canViewAllAppointments, specialistColorMap])
 
   const handleDateClick = (date: Date) => {
     setSelectedDate(date)
@@ -147,13 +226,43 @@ export default function AppointmentsPage() {
     return appointments.filter(a => a.date === dateStr && a.status !== 'cancelled')
   }
 
+  const showingAllSpecialists = companyType === 'clinic' && canViewAllAppointments && !selectedSpecialist
+
   return (
     <div className="flex h-[calc(100vh-120px)] gap-6">
       {/* Main view */}
       <div className="flex-1 flex flex-col min-w-0">
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-center justify-between gap-2 mb-4">
           <h1 className="text-2xl font-bold">Записи</h1>
+          {companyType === 'clinic' && (
+            <SpecialistFilter
+              value={selectedSpecialist}
+              onChange={setSelectedSpecialist}
+            />
+          )}
         </div>
+
+        {/* Specialist legend when showing all */}
+        {showingAllSpecialists && specialists.length > 0 && (
+          <div className="flex flex-wrap gap-3 mb-4">
+            {specialists.map((sp) => {
+              const color = specialistColorMap.get(sp.id)
+              return (
+                <button
+                  key={sp.id}
+                  onClick={() => setSelectedSpecialist(sp.id)}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full border hover:bg-muted/50 transition-colors text-sm"
+                >
+                  <div className={`w-3 h-3 rounded-full ${color?.border}`} />
+                  <span>{sp.first_name} {sp.last_name}</span>
+                  {sp.position && (
+                    <span className="text-muted-foreground text-xs">({sp.position})</span>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        )}
 
         {loading ? (
           <Card className="flex-1 flex items-center justify-center">
@@ -250,6 +359,27 @@ export default function AppointmentsPage() {
                       {selectedAppointment.service?.duration_minutes} хв • {selectedAppointment.service?.price} грн
                     </div>
                   </div>
+                  {/* Specialist info (for clinics) */}
+                  {companyType === 'clinic' && selectedAppointment.specialist_profile_id && (
+                    <div>
+                      <div className="text-xs text-muted-foreground">Спеціаліст</div>
+                      {(() => {
+                        const specialist = getSpecialistInfo(selectedAppointment.specialist_profile_id)
+                        const color = specialistColorMap.get(selectedAppointment.specialist_profile_id!)
+                        return specialist ? (
+                          <div className="flex items-center gap-1.5 text-sm">
+                            <div className={`w-2.5 h-2.5 rounded-full ${color?.border}`} />
+                            <span className="font-medium">
+                              {specialist.first_name} {specialist.last_name}
+                            </span>
+                            {specialist.position && (
+                              <span className="text-xs text-muted-foreground">({specialist.position})</span>
+                            )}
+                          </div>
+                        ) : null
+                      })()}
+                    </div>
+                  )}
                   <div>
                     <div className="text-xs text-muted-foreground">Клієнт</div>
                     <div className="flex items-center gap-1.5 text-sm">
@@ -299,22 +429,36 @@ export default function AppointmentsPage() {
                   <p className="text-xs text-muted-foreground">Немає записів</p>
                 ) : (
                   <div className="space-y-1.5">
-                    {getAppointmentsForDate(selectedDate).map((appt) => (
-                      <div
-                        key={appt.id}
-                        className="flex cursor-pointer"
-                        onClick={() => setSelectedAppointment(appt)}
-                      >
-                        <div className={`w-1 rounded-l ${STATUS_BG[appt.status]}`} />
-                        <div className={`flex-1 p-2 rounded-r ${STATUS_COLORS[appt.status]}`}>
-                          <div className="text-xs font-medium">{appt.start_time.slice(0, 5)} - {appt.end_time.slice(0, 5)}</div>
-                          <div className="text-xs truncate">{appt.service?.name}</div>
-                          <div className="text-xs text-muted-foreground truncate">
-                            {appt.client?.first_name} {appt.client?.last_name || ''}
+                    {getAppointmentsForDate(selectedDate).map((appt) => {
+                      const specialist = getSpecialistInfo(appt.specialist_profile_id)
+                      const specialistColor = appt.specialist_profile_id
+                        ? specialistColorMap.get(appt.specialist_profile_id)
+                        : null
+                      const useSpecialistColors = showingAllSpecialists && specialistColor
+
+                      return (
+                        <div
+                          key={appt.id}
+                          className="flex cursor-pointer"
+                          onClick={() => setSelectedAppointment(appt)}
+                        >
+                          <div className={`w-1 rounded-l ${useSpecialistColors ? specialistColor.border : STATUS_BG[appt.status]}`} />
+                          <div className={`flex-1 p-2 rounded-r ${useSpecialistColors ? specialistColor.bg : STATUS_COLORS[appt.status]}`}>
+                            <div className="text-xs font-medium">{appt.start_time.slice(0, 5)} - {appt.end_time.slice(0, 5)}</div>
+                            <div className="text-xs truncate">{appt.service?.name}</div>
+                            {showingAllSpecialists && specialist ? (
+                              <div className="text-xs font-medium truncate">
+                                {specialist.first_name} {specialist.last_name}
+                              </div>
+                            ) : (
+                              <div className="text-xs text-muted-foreground truncate">
+                                {appt.client?.first_name} {appt.client?.last_name || ''}
+                              </div>
+                            )}
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 )}
               </div>

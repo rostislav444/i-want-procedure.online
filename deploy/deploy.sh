@@ -18,7 +18,6 @@ mkdir -p certbot/letsencrypt
 # Step 1: Start with HTTP-only config for certbot
 echo "Step 1: Starting services with HTTP config for SSL generation..."
 cp deploy/nginx.certbot.conf deploy/nginx.conf.bak
-cp deploy/nginx.certbot.conf deploy/nginx.conf
 
 # Build and start all services
 echo "Building and starting services..."
@@ -42,90 +41,9 @@ docker run --rm \
   -d $DOMAIN \
   -d www.$DOMAIN
 
-# Step 3: Switch to HTTPS config
-echo "Step 3: Switching to HTTPS config..."
-mv deploy/nginx.conf.bak deploy/nginx.certbot.conf
-cat > deploy/nginx.conf << 'NGINX_CONF'
-# HTTP - redirect to HTTPS
-server {
-    listen 80;
-    server_name i-want-procedure.online www.i-want-procedure.online;
-
-    # Certbot challenge
-    location /.well-known/acme-challenge/ {
-        root /app/certbot;
-    }
-
-    # Redirect all HTTP to HTTPS
-    location / {
-        return 301 https://$host$request_uri;
-    }
-}
-
-# HTTPS
-server {
-    listen 443 ssl http2;
-    server_name i-want-procedure.online www.i-want-procedure.online;
-
-    # SSL certificates
-    ssl_certificate /etc/letsencrypt/live/i-want-procedure.online/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/i-want-procedure.online/privkey.pem;
-
-    # SSL settings
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384;
-    ssl_prefer_server_ciphers off;
-    ssl_session_cache shared:SSL:10m;
-    ssl_session_timeout 1d;
-
-    # Docker DNS resolver
-    resolver 127.0.0.11 valid=30s;
-
-    # Proxy settings
-    proxy_http_version 1.1;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-    proxy_set_header Upgrade $http_upgrade;
-    proxy_set_header Connection "upgrade";
-
-    # API backend
-    location /api/ {
-        proxy_pass http://api:8000/api/;
-    }
-
-    # Admin panel (frontend)
-    location /admin {
-        proxy_pass http://frontend-admin:3000;
-    }
-
-    location /admin/ {
-        proxy_pass http://frontend-admin:3000/admin/;
-    }
-
-    # Admin static files
-    location /_next/ {
-        # Check if request came from /admin
-        if ($http_referer ~* "/admin") {
-            proxy_pass http://frontend-admin:3000;
-        }
-        # Otherwise serve from site
-        proxy_pass http://frontend-site:3001;
-    }
-
-    # Landing site (root)
-    location / {
-        proxy_pass http://frontend-site:3001;
-    }
-
-    # Error pages
-    error_page 500 502 503 504 /50x.html;
-    location = /50x.html {
-        root /usr/share/nginx/html;
-    }
-}
-NGINX_CONF
+# Step 3: Restore nginx config and restart
+echo "Step 3: Restoring HTTPS config..."
+mv deploy/nginx.conf.bak deploy/nginx.certbot.conf 2>/dev/null || true
 
 # Restart nginx with HTTPS config
 echo "Restarting nginx with HTTPS..."
@@ -135,6 +53,7 @@ echo ""
 echo "=== Deployment Complete ==="
 echo "Site: https://$DOMAIN"
 echo "Admin: https://$DOMAIN/admin"
+echo "Public sites: https://$DOMAIN/site/{slug}"
 echo ""
 echo "Don't forget to:"
 echo "1. Update EMAIL variable in this script"

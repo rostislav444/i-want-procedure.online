@@ -49,6 +49,7 @@ class CompanyResponse(BaseModel):
     address: str | None = None
     telegram: str | None = None
     invite_code: str
+    team_invite_code: str
     created_at: datetime
     # Template settings
     template_type: str = "solo"

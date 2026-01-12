@@ -120,6 +120,7 @@ export interface Service {
   id: number
   company_id: number
   category_id?: number
+  position_id?: number
   doctor_id?: number
   name: string
   description?: string
@@ -295,6 +296,7 @@ export const appointmentsApi = {
     date_from?: string
     date_to?: string
     status?: string
+    specialist_id?: number  // Filter by specialist (for clinics)
   }) => {
     const response = await api.get('/appointments', { params })
     return response.data
@@ -370,6 +372,7 @@ export interface Company {
   address: string | null
   telegram: string | null
   invite_code: string
+  team_invite_code: string
   created_at: string
   // Template settings
   template_type: string
@@ -563,5 +566,164 @@ export const googleApi = {
   disconnect: async (): Promise<{ message: string }> => {
     const response = await api.delete('/auth/google/disconnect')
     return response.data
+  },
+}
+
+// Specialist Types
+export interface SpecialistListItem {
+  id: number
+  user_id: number
+  first_name: string
+  last_name: string
+  position: string | null
+  is_active: boolean
+  services_count: number
+  google_connected: boolean
+}
+
+export interface SpecialistProfile {
+  id: number
+  user_id: number
+  company_id: number
+  position: string | null
+  bio: string | null
+  is_active: boolean
+  created_at: string
+  first_name: string
+  last_name: string
+  email: string | null
+  phone: string | null
+  services_count: number
+  clients_count: number
+  appointments_today: number
+  google_connected: boolean
+}
+
+export interface SpecialistService {
+  id: number
+  specialist_profile_id: number
+  service_id: number
+  service_name: string
+  service_price: number
+  service_duration_minutes: number
+  custom_price: number | null
+  custom_duration_minutes: number | null
+  is_active: boolean
+  created_at: string
+}
+
+// Specialists API
+export const specialistsApi = {
+  getAll: async (includeInactive = false): Promise<SpecialistListItem[]> => {
+    const response = await api.get('/specialists', { params: { include_inactive: includeInactive } })
+    return response.data
+  },
+  getMe: async (): Promise<SpecialistProfile> => {
+    const response = await api.get('/specialists/me')
+    return response.data
+  },
+  getById: async (id: number): Promise<SpecialistProfile> => {
+    const response = await api.get(`/specialists/${id}`)
+    return response.data
+  },
+  update: async (id: number, data: {
+    position?: string
+    bio?: string
+    is_active?: boolean
+  }): Promise<SpecialistProfile> => {
+    const response = await api.patch(`/specialists/${id}`, data)
+    return response.data
+  },
+  // Services
+  getServices: async (specialistId: number): Promise<SpecialistService[]> => {
+    const response = await api.get(`/specialists/${specialistId}/services`)
+    return response.data
+  },
+  assignServices: async (specialistId: number, serviceIds: number[]): Promise<SpecialistService[]> => {
+    const response = await api.post(`/specialists/${specialistId}/services`, { service_ids: serviceIds })
+    return response.data
+  },
+  removeService: async (specialistId: number, serviceId: number): Promise<void> => {
+    await api.delete(`/specialists/${specialistId}/services/${serviceId}`)
+  },
+  // Appointments
+  getAppointments: async (specialistId: number, params?: { date_from?: string; date_to?: string }): Promise<Appointment[]> => {
+    const response = await api.get(`/specialists/${specialistId}/appointments`, { params })
+    return response.data
+  },
+  // Clients
+  getClients: async (specialistId: number): Promise<Client[]> => {
+    const response = await api.get(`/specialists/${specialistId}/clients`)
+    return response.data
+  },
+}
+
+// Position types
+export interface Position {
+  id: number
+  company_id: number
+  name: string
+  description: string | null
+  color: string | null
+  order: number
+  created_at: string
+  services_count: number
+}
+
+export interface PositionService {
+  id: number
+  name: string
+  description: string | null
+  duration_minutes: number
+  price: number
+  is_active: boolean
+}
+
+export interface PositionSpecialist {
+  id: number
+  first_name: string
+  last_name: string
+  email: string | null
+  phone: string | null
+  bio: string | null
+  is_active: boolean
+}
+
+export interface PositionDetail extends Position {
+  services: PositionService[]
+  specialists: PositionSpecialist[]
+  specialists_count: number
+}
+
+// Positions API
+export const positionsApi = {
+  getAll: async (): Promise<Position[]> => {
+    const response = await api.get('/positions')
+    return response.data
+  },
+  getById: async (id: number): Promise<PositionDetail> => {
+    const response = await api.get(`/positions/${id}`)
+    return response.data
+  },
+  create: async (data: {
+    name: string
+    description?: string
+    color?: string
+    order?: number
+  }): Promise<Position> => {
+    const response = await api.post('/positions', data)
+    return response.data
+  },
+  update: async (id: number, data: {
+    name?: string
+    description?: string
+    color?: string
+    order?: number
+  }): Promise<Position> => {
+    const response = await api.patch(`/positions/${id}`, data)
+    return response.data
+  },
+  delete: async (id: number): Promise<void> => {
+    await api.delete(`/positions/${id}`)
   },
 }

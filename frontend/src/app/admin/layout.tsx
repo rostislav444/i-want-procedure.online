@@ -1,22 +1,44 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Calendar, Clock, Users, LogOut, Menu, X, LinkIcon, Copy, Check, Home, Scissors, ChevronLeft, ChevronRight, Globe } from 'lucide-react'
+import { Calendar, Clock, Users, LogOut, Menu, X, LinkIcon, Copy, Check, Home, Scissors, ChevronLeft, ChevronRight, Globe, UsersRound, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ThemeSettings } from '@/components/theme-settings'
 import { authApi, companyApi } from '@/lib/api'
+import { CompanyProvider } from '@/contexts/CompanyContext'
 
-const navigation = [
+// Base navigation items
+const baseNavigation = [
   { name: 'Головна', href: '/admin', icon: Home },
   { name: 'Записи', href: '/admin/appointments', icon: Calendar },
   { name: 'Послуги', href: '/admin/services', icon: Scissors },
   { name: 'Розклад', href: '/admin/schedule', icon: Clock },
   { name: 'Клієнти', href: '/admin/clients', icon: Users },
   { name: 'Мій сайт', href: '/admin/website', icon: Globe },
+  { name: 'Посилання', href: '/admin/links', icon: LinkIcon },
 ]
+
+// Additional navigation for clinics
+const clinicNavigation = [
+  { name: 'Команда', href: '/admin/team', icon: UsersRound },
+  { name: 'Налаштування', href: '/admin/settings', icon: Settings },
+]
+
+// Get navigation based on company type
+function getNavigation(companyType: 'solo' | 'clinic' | null) {
+  if (companyType === 'clinic') {
+    // Insert "Команда" after "Головна"
+    return [
+      baseNavigation[0], // Головна
+      ...clinicNavigation,
+      ...baseNavigation.slice(1),
+    ]
+  }
+  return baseNavigation
+}
 
 export default function DashboardLayout({
   children,
@@ -76,6 +98,11 @@ export default function DashboardLayout({
     localStorage.removeItem('token')
     router.push('/auth/login')
   }
+
+  // Dynamic navigation based on company type
+  const navigation = useMemo(() => {
+    return getNavigation(company?.type || null)
+  }, [company?.type])
 
   if (!user) {
     return (
@@ -306,7 +333,9 @@ export default function DashboardLayout({
           </div>
         </div>
         <main className="p-4 lg:p-8">
-          {children}
+          <CompanyProvider>
+            {children}
+          </CompanyProvider>
         </main>
       </div>
     </div>

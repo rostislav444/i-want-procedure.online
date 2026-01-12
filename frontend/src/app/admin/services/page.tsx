@@ -14,11 +14,27 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { servicesApi, categoriesApi, Service, ServiceCategory } from '@/lib/api'
+import { servicesApi, categoriesApi, positionsApi, Service, ServiceCategory, Position } from '@/lib/api'
+import { useCompany } from '@/contexts/CompanyContext'
+import { Briefcase } from 'lucide-react'
+
+const POSITION_COLORS: Record<string, string> = {
+  blue: 'bg-blue-500',
+  purple: 'bg-purple-500',
+  green: 'bg-green-500',
+  orange: 'bg-orange-500',
+  pink: 'bg-pink-500',
+  cyan: 'bg-cyan-500',
+  yellow: 'bg-yellow-500',
+  red: 'bg-red-500',
+}
 
 export default function ServicesPage() {
+  const { companyType } = useCompany()
   const [services, setServices] = useState<Service[]>([])
   const [categories, setCategories] = useState<ServiceCategory[]>([])
+  const [positions, setPositions] = useState<Position[]>([])
+  const [selectedPositionId, setSelectedPositionId] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [expandedCategories, setExpandedCategories] = useState<Set<number>>(new Set())
   const [categoryPanelOpen, setCategoryPanelOpen] = useState(false)
@@ -70,12 +86,14 @@ export default function ServicesPage() {
 
   const loadData = async () => {
     try {
-      const [servicesData, categoriesData] = await Promise.all([
+      const [servicesData, categoriesData, positionsData] = await Promise.all([
         servicesApi.getAll(),
         categoriesApi.getTree(),
+        companyType === 'clinic' ? positionsApi.getAll() : Promise.resolve([]),
       ])
       setServices(servicesData)
       setCategories(categoriesData)
+      setPositions(positionsData)
       // Expand all categories by default
       const allIds = getAllCategoryIds(categoriesData)
       setExpandedCategories(new Set(allIds))
@@ -194,13 +212,25 @@ export default function ServicesPage() {
     }
   }
 
+  // Filter services by selected position
+  const filteredServices = selectedPositionId === null
+    ? services
+    : selectedPositionId === -1
+      ? services.filter(s => !s.position_id) // "Without position" filter
+      : services.filter(s => s.position_id === selectedPositionId)
+
   // Group services by category
   const getServicesByCategory = (categoryId: number): Service[] => {
-    return services.filter(s => s.category_id === categoryId)
+    return filteredServices.filter(s => s.category_id === categoryId)
   }
 
   // Services without category
-  const uncategorizedServices = services.filter(s => !s.category_id)
+  const uncategorizedServices = filteredServices.filter(s => !s.category_id)
+
+  // Get color class for position
+  const getPositionColorClass = (color: string | null) => {
+    return POSITION_COLORS[color || ''] || 'bg-gray-500'
+  }
 
   // Get flat list of categories for parent selector
   const getFlatCategories = (cats: ServiceCategory[], level = 0): { id: number; name: string; level: number }[] => {
@@ -214,7 +244,7 @@ export default function ServicesPage() {
     return result
   }
 
-  // Count total services in category including children recursively
+  // Count total services in category including children recursively (uses filtered services)
   const getTotalServicesInCategory = (category: ServiceCategory): number => {
     let count = getServicesByCategory(category.id).length
     if (category.children) {
@@ -225,9 +255,12 @@ export default function ServicesPage() {
     return count
   }
 
+  // Count services without position
+  const servicesWithoutPosition = services.filter(s => !s.position_id).length
+
   // Render service card
   const renderServiceCard = (service: Service) => (
-    <Link key={service.id} href={`/services/${service.id}`}>
+    <Link key={service.id} href={`/admin/services/${service.id}`}>
       <Card className="h-full hover:shadow-md transition-shadow cursor-pointer group">
         <CardContent className="p-4">
           <div className="flex items-start justify-between gap-2">
@@ -443,7 +476,7 @@ export default function ServicesPage() {
               <div>
                 <h1 className="text-2xl font-bold">Послуги</h1>
                 <p className="text-sm text-muted-foreground">
-                  {services.length} послуг у {categories.length} категоріях
+                  {selectedPositionId !== null ? `${filteredServices.length} з ${services.length}` : services.length} послуг у {categories.length} категоріях
                 </p>
               </div>
             </div>
@@ -465,12 +498,12 @@ export default function ServicesPage() {
               >
                 <ChevronsDownUp className="h-5 w-5" />
               </Button>
-              <Link href="/categories">
+              <Link href="/admin/categories">
                 <Button variant="outline" size="icon" title="Керування категоріями">
                   <Settings className="h-5 w-5" />
                 </Button>
               </Link>
-              <Link href="/services/new">
+              <Link href="/admin/services/new">
                 <Button>
                   <Plus className="mr-2 h-4 w-4" />
                   Додати послугу
@@ -478,6 +511,52 @@ export default function ServicesPage() {
               </Link>
             </div>
           </div>
+
+          {/* Position filter buttons (only for clinics) */}
+          {companyType === 'clinic' && positions.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm text-muted-foreground mr-1">
+                <Briefcase className="h-4 w-4 inline mr-1" />
+                Посади:
+              </span>
+              <Button
+                variant={selectedPositionId === null ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSelectedPositionId(null)}
+                className="h-8"
+              >
+                Всі
+                <span className="ml-1 text-xs opacity-70">({services.length})</span>
+              </Button>
+              {positions.map((pos) => {
+                const count = services.filter(s => s.position_id === pos.id).length
+                return (
+                  <Button
+                    key={pos.id}
+                    variant={selectedPositionId === pos.id ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setSelectedPositionId(pos.id)}
+                    className="h-8"
+                  >
+                    <div className={`w-2.5 h-2.5 rounded-full mr-1.5 ${getPositionColorClass(pos.color)}`} />
+                    {pos.name}
+                    <span className="ml-1 text-xs opacity-70">({count})</span>
+                  </Button>
+                )
+              })}
+              {servicesWithoutPosition > 0 && (
+                <Button
+                  variant={selectedPositionId === -1 ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSelectedPositionId(-1)}
+                  className="h-8 text-muted-foreground"
+                >
+                  Без посади
+                  <span className="ml-1 text-xs opacity-70">({servicesWithoutPosition})</span>
+                </Button>
+              )}
+            </div>
+          )}
 
           {/* Categories with services (accordion) */}
           <div className="space-y-3">
@@ -530,7 +609,7 @@ export default function ServicesPage() {
                 <p className="text-muted-foreground mb-4">
                   Ви ще не додали жодної послуги.
                 </p>
-                <Link href="/services/new">
+                <Link href="/admin/services/new">
                   <Button>
                     <Plus className="mr-2 h-4 w-4" />
                     Додати послугу
