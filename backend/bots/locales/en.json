@@ -22,6 +22,8 @@
     "select_service": "Select a service:",
     "select_date": "Select a date:",
     "select_time": "Select a time:",
+    "no_services": "Sorry, no services available.",
+    "not_registered": "You are not registered. Please use the link from your specialist.",
     "no_available_slots": "Sorry, no available slots for this date. Please choose another date.",
     "confirm_booking": "Confirm your booking:\n\nService: {service}\nDate: {date}\nTime: {time}\nPrice: {price}",
     "booking_confirmed": "Your appointment is booked! Waiting for confirmation from the specialist.",

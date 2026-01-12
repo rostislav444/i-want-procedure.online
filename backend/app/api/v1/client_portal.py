@@ -185,14 +185,42 @@ async def get_client_specialists(telegram_id: int, db: DbSession):
             detail="Client not found",
         )
 
+    # Get company IDs from client_companies
+    company_ids = {cc.company_id for cc in client.client_companies}
+
+    # Also get company IDs from appointments (for backwards compatibility)
+    appointments_result = await db.execute(
+        select(Appointment.company_id)
+        .where(Appointment.client_id == client.id)
+        .distinct()
+    )
+    appointment_company_ids = {row[0] for row in appointments_result.fetchall() if row[0]}
+
+    # Merge both sets
+    all_company_ids = company_ids | appointment_company_ids
+
+    # Create missing ClientCompany records
+    for cid in appointment_company_ids - company_ids:
+        cc = ClientCompany(client_id=client.id, company_id=cid)
+        db.add(cc)
+    if appointment_company_ids - company_ids:
+        await db.commit()
+
     specialists = []
-    for cc in client.client_companies:
-        company = cc.company
+    for company_id in all_company_ids:
+        # Get company
+        company_result = await db.execute(
+            select(Company).where(Company.id == company_id)
+        )
+        company = company_result.scalar_one_or_none()
+        if not company:
+            continue
+
         # Count appointments
         count_result = await db.execute(
             select(Appointment)
             .where(Appointment.client_id == client.id)
-            .where(Appointment.company_id == company.id)
+            .where(Appointment.company_id == company_id)
         )
         appointments_count = len(count_result.scalars().all())
 

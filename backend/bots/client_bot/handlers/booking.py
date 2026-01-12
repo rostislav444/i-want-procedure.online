@@ -75,9 +75,32 @@ async def get_client_lang(session: AsyncSession, telegram_id: int) -> str:
 async def start_booking(message: Message, state: FSMContext, session: AsyncSession):
     lang = await get_client_lang(session, message.from_user.id)
 
-    # Get active services (for now, get all - TODO: filter by company)
+    # Get client
     result = await session.execute(
-        select(Service).where(Service.is_active == True)
+        select(Client).where(Client.telegram_id == message.from_user.id)
+    )
+    client = result.scalar_one_or_none()
+
+    if not client:
+        await message.answer(t("booking.not_registered", lang))
+        return
+
+    # Get company_id from state (if came from deep link) or client's primary company
+    state_data = await state.get_data()
+    company_id = state_data.get("company_id") or client.company_id
+
+    if not company_id:
+        await message.answer(
+            "Для запису на процедури вам потрібне посилання від вашого спеціаліста."
+        )
+        return
+
+    # Get active services for this company only
+    result = await session.execute(
+        select(Service).where(
+            Service.company_id == company_id,
+            Service.is_active == True
+        )
     )
     services = result.scalars().all()
 
@@ -90,7 +113,7 @@ async def start_booking(message: Message, state: FSMContext, session: AsyncSessi
         for s in services
     ]
 
-    await state.update_data(services=services_data, lang=lang)
+    await state.update_data(services=services_data, lang=lang, company_id=company_id)
     await state.set_state(BookingStates.selecting_service)
 
     await message.answer(
