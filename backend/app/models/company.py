@@ -9,7 +9,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.database import Base
 
 if TYPE_CHECKING:
-    from app.models.user import User
     from app.models.service import Service, ServiceCategory
     from app.models.appointment import Appointment
     from app.models.client import Client, ClientCompany
@@ -103,7 +102,6 @@ class Company(Base):
     payment_monobank_jar: Mapped[str | None] = mapped_column(String(200), nullable=True)  # Monobank jar link
 
     # Relationships
-    users: Mapped[list["User"]] = relationship(back_populates="company")
     services: Mapped[list["Service"]] = relationship(back_populates="company")
     service_categories: Mapped[list["ServiceCategory"]] = relationship(back_populates="company")
     appointments: Mapped[list["Appointment"]] = relationship(back_populates="company")
