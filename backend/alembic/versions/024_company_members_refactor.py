@@ -90,9 +90,10 @@ def upgrade() -> None:
     """)
 
     # 5. Migrate specialist_profiles data into company_members if not already migrated
+    # Note: photo_url column may not exist in specialist_profiles, so we skip it
     op.execute("""
-        INSERT INTO company_members (user_id, company_id, position_id, is_specialist, bio, photo_url, is_active)
-        SELECT sp.user_id, sp.company_id, sp.position_id, true, sp.bio, sp.photo_url, sp.is_active
+        INSERT INTO company_members (user_id, company_id, position_id, is_specialist, bio, is_active)
+        SELECT sp.user_id, sp.company_id, sp.position_id, true, sp.bio, sp.is_active
         FROM specialist_profiles sp
         WHERE NOT EXISTS (
             SELECT 1 FROM company_members cm
@@ -101,7 +102,6 @@ def upgrade() -> None:
         ON CONFLICT (user_id, company_id) DO UPDATE SET
             position_id = EXCLUDED.position_id,
             bio = COALESCE(EXCLUDED.bio, company_members.bio),
-            photo_url = COALESCE(EXCLUDED.photo_url, company_members.photo_url),
             is_specialist = true
     """)
 
