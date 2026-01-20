@@ -60,7 +60,9 @@ export interface EmployeeListItem {
   last_name: string
   email: string | null
   phone: string | null
-  roles: string[]
+  is_owner: boolean
+  is_manager: boolean
+  is_specialist: boolean
   is_active: boolean
   created_at: string
 }
