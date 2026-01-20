@@ -318,11 +318,15 @@ export default function CompaniesPage() {
                                     </div>
                                   </div>
                                   <div className="flex flex-wrap gap-1">
-                                    {emp.roles.map((role) => (
-                                      <Badge key={role} className={`text-xs ${ROLE_COLORS[role] || 'bg-slate-600'}`}>
-                                        {role}
-                                      </Badge>
-                                    ))}
+                                    {emp.is_owner && (
+                                      <Badge className="text-xs bg-amber-600">owner</Badge>
+                                    )}
+                                    {emp.is_manager && (
+                                      <Badge className="text-xs bg-blue-600">manager</Badge>
+                                    )}
+                                    {emp.is_specialist && (
+                                      <Badge className="text-xs bg-green-600">specialist</Badge>
+                                    )}
                                   </div>
                                 </div>
                               ))}

@@ -7,16 +7,14 @@ import { authApi, companyApi, Company, specialistsApi, SpecialistProfile } from 
 // User types
 export interface User {
   id: number
-  company_id: number | null
   email: string | null
   first_name: string
   last_name: string
   patronymic: string | null
   phone: string | null
+  city: string | null
   telegram_id: number | null
   telegram_username: string | null
-  role: 'specialist' | 'manager' | 'client' | 'superadmin'
-  roles: string[]
   is_active: boolean
   is_superadmin: boolean
   created_at: string
@@ -61,22 +59,17 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
   const companyType = company?.type || null
 
   // Determine user role within company
+  // For now, if user has a company, they are the owner (created via registration)
+  // TODO: Extend API to return membership info for proper role handling
   const getUserRole = (): CompanyRole | null => {
     if (!user || !company) return null
 
     // If superadmin, treat as owner
     if (user.is_superadmin) return 'owner'
 
-    // For solo company, the user is the owner
-    if (company.type === 'solo') return 'owner'
-
-    // For clinic, check roles
-    if (user.roles.includes('manager')) return 'manager'
-    if (user.roles.includes('specialist')) return 'specialist'
-
-    // Default fallback based on primary role
-    if (user.role === 'manager') return 'manager'
-    return 'specialist'
+    // For now, if user has access to this company, they're the owner
+    // This is because we create users as owners during registration
+    return 'owner'
   }
 
   const userRole = getUserRole()
@@ -105,8 +98,9 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
       setUser(userData)
       setCompany(companyData)
 
-      // Load specialist profile if user is a specialist
-      if (companyData && userData.roles?.includes('specialist')) {
+      // Load specialist profile for all users with a company
+      // (all company owners are also specialists in the new model)
+      if (companyData) {
         try {
           const profile = await specialistsApi.getMe()
           setSpecialistProfile(profile)
