@@ -110,7 +110,7 @@ def upgrade() -> None:
         INSERT INTO member_services (member_id, service_id, custom_price, custom_duration_minutes, is_active)
         SELECT cm.id, ss.service_id, ss.custom_price, ss.custom_duration_minutes, ss.is_active
         FROM specialist_services ss
-        JOIN specialist_profiles sp ON sp.id = ss.specialist_id
+        JOIN specialist_profiles sp ON sp.id = ss.specialist_profile_id
         JOIN company_members cm ON cm.user_id = sp.user_id AND cm.company_id = sp.company_id
         ON CONFLICT (member_id, service_id) DO NOTHING
     """)
