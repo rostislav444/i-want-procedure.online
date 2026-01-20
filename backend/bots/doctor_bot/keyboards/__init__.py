@@ -95,6 +95,22 @@ def confirm_registration_keyboard() -> InlineKeyboardMarkup:
     )
 
 
+def company_type_keyboard() -> InlineKeyboardMarkup:
+    """Keyboard for selecting company type"""
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(
+                text="👤 Індивідуальний спеціаліст (ФОП)",
+                callback_data="company_type_solo"
+            )],
+            [InlineKeyboardButton(
+                text="🏥 Клініка / Салон",
+                callback_data="company_type_clinic"
+            )],
+        ]
+    )
+
+
 def remove_keyboard() -> ReplyKeyboardRemove:
     """Remove reply keyboard"""
     return ReplyKeyboardRemove()

@@ -1,3 +1,5 @@
+import re
+
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
@@ -6,6 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user import User
+from app.models.company import Company
 from app.models.company_member import CompanyMember
 from app.core.config import settings
 from bots.doctor_bot.keyboards import (
@@ -13,13 +16,29 @@ from bots.doctor_bot.keyboards import (
     skip_keyboard,
     contact_keyboard,
     confirm_registration_keyboard,
+    company_type_keyboard,
     remove_keyboard,
 )
 
 router = Router()
 
 
+def generate_slug(name: str) -> str:
+    """Generate URL-friendly slug from name"""
+    try:
+        import transliterate
+        slug = transliterate.translit(name, 'uk', reversed=True)
+    except:
+        slug = name
+    slug = slug.lower()
+    slug = re.sub(r'[^a-z0-9]+', '-', slug)
+    slug = slug.strip('-')
+    return slug or 'company'
+
+
 class RegistrationStates(StatesGroup):
+    waiting_for_company_type = State()
+    waiting_for_company_name = State()
     waiting_for_first_name = State()
     waiting_for_last_name = State()
     waiting_for_patronymic = State()
@@ -45,23 +64,66 @@ async def start_registration(callback: CallbackQuery, state: FSMContext, session
         return
 
     # Pre-fill with Telegram data
-    telegram_first_name = callback.from_user.first_name or ""
-
     await state.update_data(
         telegram_id=callback.from_user.id,
         telegram_username=callback.from_user.username,
     )
+    await state.set_state(RegistrationStates.waiting_for_company_type)
+
+    await callback.message.answer(
+        "Чудово! Давайте створимо ваш акаунт.\n\n"
+        "Оберіть тип вашої діяльності:",
+        reply_markup=company_type_keyboard(),
+    )
+    await callback.answer()
+
+
+@router.callback_query(F.data == "company_type_solo", RegistrationStates.waiting_for_company_type)
+async def select_solo_type(callback: CallbackQuery, state: FSMContext):
+    """User selected solo specialist type"""
+    await state.update_data(company_type="solo")
     await state.set_state(RegistrationStates.waiting_for_first_name)
 
-    text = "Чудово! Давайте створимо ваш акаунт.\n\nВведіть ваше ім'я:"
+    telegram_first_name = callback.from_user.first_name or ""
+    text = "Введіть ваше ім'я:"
     if telegram_first_name:
-        await callback.message.answer(
-            text,
-            reply_markup=skip_keyboard(telegram_first_name),
-        )
+        await callback.message.answer(text, reply_markup=skip_keyboard(telegram_first_name))
     else:
         await callback.message.answer(text, reply_markup=remove_keyboard())
     await callback.answer()
+
+
+@router.callback_query(F.data == "company_type_clinic", RegistrationStates.waiting_for_company_type)
+async def select_clinic_type(callback: CallbackQuery, state: FSMContext):
+    """User selected clinic type"""
+    await state.update_data(company_type="clinic")
+    await state.set_state(RegistrationStates.waiting_for_company_name)
+
+    await callback.message.answer(
+        "Введіть назву вашої клініки/салону:",
+        reply_markup=remove_keyboard(),
+    )
+    await callback.answer()
+
+
+@router.message(RegistrationStates.waiting_for_company_name)
+async def process_company_name(message: Message, state: FSMContext):
+    """Process company name input"""
+    company_name = message.text.strip() if message.text else ""
+
+    if not company_name or len(company_name) < 2:
+        await message.answer("Назва повинна містити мінімум 2 символи. Спробуйте ще раз:")
+        return
+
+    await state.update_data(company_name=company_name)
+    await state.set_state(RegistrationStates.waiting_for_first_name)
+
+    telegram_first_name = message.from_user.first_name or ""
+    text = "Тепер введіть ваше ім'я:"
+    if telegram_first_name:
+        await message.answer(text, reply_markup=skip_keyboard(telegram_first_name))
+    else:
+        await message.answer(text, reply_markup=remove_keyboard())
 
 
 @router.message(RegistrationStates.waiting_for_first_name)
@@ -208,8 +270,15 @@ async def process_email(message: Message, state: FSMContext, session: AsyncSessi
     data = await state.get_data()
     await state.set_state(RegistrationStates.confirm_registration)
 
+    # Determine company name for display
+    if data.get('company_type') == 'clinic' and data.get('company_name'):
+        company_display = f"🏥 Клініка: {data['company_name']}"
+    else:
+        company_display = f"👤 ФОП: {data['first_name']} {data['last_name']}"
+
     summary = (
         "Перевірте ваші дані:\n\n"
+        f"{company_display}\n\n"
         f"Ім'я: {data['first_name']}\n"
         f"Прізвище: {data['last_name']}\n"
     )
@@ -229,7 +298,7 @@ async def process_email(message: Message, state: FSMContext, session: AsyncSessi
 
 @router.callback_query(F.data == "confirm_registration", RegistrationStates.confirm_registration)
 async def confirm_registration(callback: CallbackQuery, state: FSMContext, session: AsyncSession):
-    """Complete registration - create user"""
+    """Complete registration - create user, company, and membership"""
     data = await state.get_data()
 
     # Create user
@@ -256,37 +325,75 @@ async def confirm_registration(callback: CallbackQuery, state: FSMContext, sessi
             is_active=True,
         )
         session.add(member)
+        company_name = data.get('team_company_name', 'команда')
+    else:
+        # Create company for the user
+        if data.get('company_type') == 'clinic' and data.get('company_name'):
+            company_name = data['company_name']
+            company_type = 'clinic'
+        else:
+            company_name = f"{data['first_name']} {data['last_name']}"
+            company_type = 'solo'
+
+        # Generate unique slug
+        base_slug = generate_slug(company_name)
+        slug = base_slug
+        counter = 1
+        while True:
+            result = await session.execute(select(Company).where(Company.slug == slug))
+            if not result.scalar_one_or_none():
+                break
+            slug = f"{base_slug}-{counter}"
+            counter += 1
+
+        company = Company(
+            name=company_name,
+            slug=slug,
+            type=company_type,
+        )
+        session.add(company)
+        await session.flush()  # Get company.id
+
+        # Create membership (owner + manager + specialist)
+        member = CompanyMember(
+            user_id=user.id,
+            company_id=company.id,
+            is_owner=True,
+            is_manager=True,
+            is_specialist=True,
+            is_active=True,
+        )
+        session.add(member)
 
     await session.commit()
 
     await state.clear()
 
-    # Send success message with link to create company in admin
-    admin_url = f"{settings.FRONTEND_URL}"
+    # Send success message
+    admin_url = f"{settings.FRONTEND_URL}/admin"
 
-    if data.get('team_company_name'):
+    if data.get('team_company_id'):
         # Joined a team
         await callback.message.answer(
             f"Реєстрація успішна!\n\n"
             f"Вітаємо, {user.first_name}! Ваш акаунт створено.\n"
-            f"Ви приєдналися до команди \"{data['team_company_name']}\".\n\n"
+            f"Ви приєдналися до команди \"{company_name}\".\n\n"
             f"Перейдіть в адмін-панель для налаштувань:\n"
             f"{admin_url}",
             reply_markup=main_menu_keyboard(),
         )
     else:
-        # New user without team
+        # New user with own company
         await callback.message.answer(
             f"Реєстрація успішна!\n\n"
-            f"Вітаємо, {user.first_name}! Ваш акаунт створено.\n\n"
-            f"Тепер перейдіть в адмін-панель для створення вашої компанії:\n"
+            f"Вітаємо, {user.first_name}! Ваш акаунт та компанію створено.\n\n"
+            f"Перейдіть в адмін-панель:\n"
             f"{admin_url}\n\n"
             f"Там ви зможете:\n"
-            f"- Створити свою компанію\n"
             f"- Додати послуги та ціни\n"
             f"- Налаштувати розклад роботи\n"
             f"- Отримувати записи від клієнтів",
-            reply_markup=remove_keyboard(),
+            reply_markup=main_menu_keyboard(),
         )
     await callback.answer()
 
