@@ -50,12 +50,8 @@ function LoginForm() {
       localStorage.setItem('token', data.access_token)
       document.cookie = `token=${data.access_token}; path=/; max-age=${60 * 60 * 24 * 7}`
 
-      const me = await authApi.getMe()
-      if (!me.company_id) {
-        router.push('/create-company')
-      } else {
-        router.push('/admin')
-      }
+      // After login, always go to admin
+      router.push('/admin')
     } catch (err: any) {
       const detail = err.response?.data?.detail
       if (detail?.includes('not found')) {
@@ -78,12 +74,8 @@ function LoginForm() {
       localStorage.setItem('token', data.access_token)
       document.cookie = `token=${data.access_token}; path=/; max-age=${60 * 60 * 24 * 7}`
 
-      const me = await authApi.getMe()
-      if (!me.company_id) {
-        router.push('/create-company')
-      } else {
-        router.push('/admin')
-      }
+      // After login, always go to admin
+      router.push('/admin')
     } catch (err: any) {
       const detail = err.response?.data?.detail
       setError(detail || 'Невірний email або пароль')
@@ -211,7 +203,7 @@ function LoginForm() {
 
           <p className="text-sm text-center text-gray-500 mt-4">
             Немає акаунту?{' '}
-            <a href="/register" className="text-primary hover:underline">
+            <a href="/auth/register" className="text-primary hover:underline">
               Зареєструватися
             </a>
             {TELEGRAM_BOT_NAME && (
