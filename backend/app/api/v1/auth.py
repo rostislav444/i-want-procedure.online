@@ -12,8 +12,9 @@ from pydantic import BaseModel
 from app.api.deps import DbSession, CurrentUser, OptionalCurrentUser
 from app.core.config import settings
 from app.core.security import verify_password, get_password_hash, create_access_token, verify_telegram_auth
-from app.models.user import User, UserRole
+from app.models.user import User
 from app.models.company import Company
+from app.models.company_member import CompanyMember
 from app.schemas.auth import Token, UserCreate, UserLogin, TelegramAuthData
 from app.schemas.user import UserResponse, UserUpdate
 from app.services.google_calendar import (
@@ -75,15 +76,26 @@ async def register(user_data: UserCreate, db: DbSession):
 
     # Create user
     user = User(
-        company_id=company.id,
         email=user_data.email,
         hashed_password=get_password_hash(user_data.password),
         first_name=user_data.first_name,
         last_name=user_data.last_name,
         telegram_id=user_data.telegram_id,
-        role=UserRole.SPECIALIST,
     )
     db.add(user)
+    await db.flush()
+
+    # Create company membership (owner + manager + specialist for FOP)
+    member = CompanyMember(
+        user_id=user.id,
+        company_id=company.id,
+        is_owner=True,
+        is_manager=True,
+        is_specialist=True,
+        is_active=True,
+    )
+    db.add(member)
+
     await db.commit()
     await db.refresh(user)
 
@@ -257,7 +269,7 @@ async def google_oauth_callback(
     state_data = _google_oauth_states.pop(state, None)
     if not state_data:
         return RedirectResponse(
-            url=f"{settings.FRONTEND_URL}/login?error=invalid_state"
+            url=f"{settings.FRONTEND_URL}/auth/login?error=invalid_state"
         )
 
     try:
@@ -279,7 +291,7 @@ async def google_oauth_callback(
             user = await db.get(User, state_data["user_id"])
             if not user:
                 return RedirectResponse(
-                    url=f"{settings.FRONTEND_URL}/profile?error=user_not_found"
+                    url=f"{settings.FRONTEND_URL}/admin/profile?error=user_not_found"
                 )
 
             # Check if Google account already linked to another user
@@ -288,7 +300,7 @@ async def google_oauth_callback(
             )
             if result.scalar_one_or_none():
                 return RedirectResponse(
-                    url=f"{settings.FRONTEND_URL}/profile?error=google_already_linked"
+                    url=f"{settings.FRONTEND_URL}/admin/profile?error=google_already_linked"
                 )
 
             # Link Google account
@@ -300,7 +312,7 @@ async def google_oauth_callback(
             await db.commit()
 
             return RedirectResponse(
-                url=f"{settings.FRONTEND_URL}/profile?google_linked=true"
+                url=f"{settings.FRONTEND_URL}/admin/profile?google_linked=true"
             )
 
         else:
@@ -340,15 +352,25 @@ async def google_oauth_callback(
                 await db.flush()
 
                 user = User(
-                    company_id=company.id,
                     email=google_email,
                     google_id=google_id,
                     google_email=google_email,
                     first_name=first_name,
                     last_name=last_name,
-                    role=UserRole.SPECIALIST,
                 )
                 db.add(user)
+                await db.flush()
+
+                # Create company membership (owner + manager + specialist)
+                member = CompanyMember(
+                    user_id=user.id,
+                    company_id=company.id,
+                    is_owner=True,
+                    is_manager=True,
+                    is_specialist=True,
+                    is_active=True,
+                )
+                db.add(member)
 
             # Update tokens
             user.google_access_token = access_token
@@ -363,12 +385,12 @@ async def google_oauth_callback(
             jwt_token = create_access_token(data={"sub": str(user.id)})
 
             return RedirectResponse(
-                url=f"{settings.FRONTEND_URL}/login?token={jwt_token}"
+                url=f"{settings.FRONTEND_URL}/auth/login?token={jwt_token}"
             )
 
     except Exception as e:
         return RedirectResponse(
-            url=f"{settings.FRONTEND_URL}/login?error=google_auth_failed&message={str(e)}"
+            url=f"{settings.FRONTEND_URL}/auth/login?error=google_auth_failed&message={str(e)}"
         )
 
 
