@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from app.models.user import User
     from app.models.appointment import Appointment
     from app.models.specialty import Specialty
-    from app.models.profiles import SpecialistService
+    from app.models.company_member import MemberService
     from app.models.position import Position
 
 
@@ -80,7 +80,7 @@ class Service(Base):
     products: Mapped[list["ServiceProduct"]] = relationship(
         back_populates="service", cascade="all, delete-orphan"
     )
-    specialist_services: Mapped[list["SpecialistService"]] = relationship(
+    member_services: Mapped[list["MemberService"]] = relationship(
         back_populates="service", cascade="all, delete-orphan"
     )
 

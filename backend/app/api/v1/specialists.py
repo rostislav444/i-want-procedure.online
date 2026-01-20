@@ -6,12 +6,12 @@ Specialists can only view/edit their own profile and services.
 """
 from datetime import date
 from fastapi import APIRouter, HTTPException, status, Depends
-from sqlalchemy import select, func
+from sqlalchemy import select, func, delete
 from sqlalchemy.orm import selectinload
 
-from app.api.deps import DbSession, CurrentUser, require_any_role
-from app.models.user import User, UserRole
-from app.models.profiles import SpecialistProfile, SpecialistService
+from app.api.deps import DbSession, CurrentUser
+from app.models.user import User
+from app.models.company_member import CompanyMember, MemberService
 from app.models.service import Service
 from app.models.appointment import Appointment
 from app.models.client import Client
@@ -28,20 +28,20 @@ router = APIRouter(prefix="/specialists")
 
 # ===== Helper Functions =====
 
-async def get_specialist_stats(db: DbSession, specialist_profile_id: int) -> dict:
-    """Get stats for a specialist profile."""
+async def get_specialist_stats(db: DbSession, member_id: int) -> dict:
+    """Get stats for a company member (specialist)."""
     # Services count
     services_result = await db.execute(
-        select(func.count(SpecialistService.id))
-        .where(SpecialistService.specialist_profile_id == specialist_profile_id)
-        .where(SpecialistService.is_active == True)
+        select(func.count(MemberService.id))
+        .where(MemberService.member_id == member_id)
+        .where(MemberService.is_active == True)
     )
     services_count = services_result.scalar() or 0
 
     # Unique clients count
     clients_result = await db.execute(
         select(func.count(func.distinct(Appointment.client_id)))
-        .where(Appointment.specialist_profile_id == specialist_profile_id)
+        .where(Appointment.member_id == member_id)
     )
     clients_count = clients_result.scalar() or 0
 
@@ -49,7 +49,7 @@ async def get_specialist_stats(db: DbSession, specialist_profile_id: int) -> dic
     today = date.today()
     today_result = await db.execute(
         select(func.count(Appointment.id))
-        .where(Appointment.specialist_profile_id == specialist_profile_id)
+        .where(Appointment.member_id == member_id)
         .where(Appointment.date == today)
     )
     appointments_today = today_result.scalar() or 0
@@ -61,16 +61,27 @@ async def get_specialist_stats(db: DbSession, specialist_profile_id: int) -> dic
     }
 
 
-def check_manager_access(current_user: User, target_specialist_profile: SpecialistProfile) -> bool:
+async def get_user_membership(db: DbSession, user: User, company_id: int) -> CompanyMember | None:
+    """Get user's membership in a company."""
+    result = await db.execute(
+        select(CompanyMember)
+        .where(CompanyMember.user_id == user.id)
+        .where(CompanyMember.company_id == company_id)
+        .where(CompanyMember.is_active == True)
+    )
+    return result.scalar_one_or_none()
+
+
+def check_manager_access(current_membership: CompanyMember, target_member: CompanyMember, is_superadmin: bool = False) -> bool:
     """Check if current user can manage the target specialist."""
     # Same company check
-    if current_user.company_id != target_specialist_profile.company_id:
+    if current_membership.company_id != target_member.company_id:
         return False
-    # Manager or owner can manage
-    if current_user.has_role(UserRole.MANAGER) or current_user.is_superadmin:
+    # Owner or manager can manage
+    if current_membership.is_owner or current_membership.is_manager or is_superadmin:
         return True
-    # Specialist can manage themselves
-    if target_specialist_profile.user_id == current_user.id:
+    # User can manage themselves
+    if target_member.user_id == current_membership.user_id:
         return True
     return False
 
@@ -81,37 +92,51 @@ def check_manager_access(current_user: User, target_specialist_profile: Speciali
 async def get_specialists(
     current_user: CurrentUser,
     db: DbSession,
+    company_id: int,
     include_inactive: bool = False,
 ):
     """
-    Get all specialists in the current user's company.
-    Available to all authenticated users in the company.
+    Get all specialists in a company.
+    Available to all authenticated users who are members of the company.
     """
+    # Verify user is member of this company
+    membership = await get_user_membership(db, current_user, company_id)
+    if not membership and not current_user.is_superadmin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not a member of this company",
+        )
+
     query = (
-        select(SpecialistProfile)
-        .options(selectinload(SpecialistProfile.user))
-        .where(SpecialistProfile.company_id == current_user.company_id)
+        select(CompanyMember)
+        .options(
+            selectinload(CompanyMember.user),
+            selectinload(CompanyMember.position),
+        )
+        .where(CompanyMember.company_id == company_id)
+        .where(CompanyMember.is_specialist == True)
     )
 
     if not include_inactive:
-        query = query.where(SpecialistProfile.is_active == True)
+        query = query.where(CompanyMember.is_active == True)
 
-    result = await db.execute(query.order_by(SpecialistProfile.created_at.desc()))
-    profiles = result.scalars().all()
+    result = await db.execute(query.order_by(CompanyMember.created_at.desc()))
+    members = result.scalars().all()
 
     # Build response with stats
     specialists = []
-    for profile in profiles:
-        stats = await get_specialist_stats(db, profile.id)
+    for member in members:
+        stats = await get_specialist_stats(db, member.id)
         specialists.append(SpecialistListItem(
-            id=profile.id,
-            user_id=profile.user_id,
-            first_name=profile.user.first_name,
-            last_name=profile.user.last_name,
-            position=profile.position,
-            is_active=profile.is_active,
+            id=member.id,
+            user_id=member.user_id,
+            first_name=member.user.first_name,
+            last_name=member.user.last_name,
+            position=member.position.name if member.position else None,
+            position_id=member.position_id,
+            is_active=member.is_active,
             services_count=stats["services_count"],
-            google_connected=profile.user.google_refresh_token is not None,
+            google_connected=member.user.google_refresh_token is not None,
         ))
 
     return specialists
@@ -123,37 +148,44 @@ async def get_specialists(
 async def get_my_specialist_profile(
     current_user: CurrentUser,
     db: DbSession,
+    company_id: int,
 ):
-    """Get current user's specialist profile in their company."""
+    """Get current user's specialist profile in a company."""
     result = await db.execute(
-        select(SpecialistProfile)
-        .options(selectinload(SpecialistProfile.user))
-        .where(SpecialistProfile.user_id == current_user.id)
-        .where(SpecialistProfile.company_id == current_user.company_id)
+        select(CompanyMember)
+        .options(
+            selectinload(CompanyMember.user),
+            selectinload(CompanyMember.position),
+        )
+        .where(CompanyMember.user_id == current_user.id)
+        .where(CompanyMember.company_id == company_id)
+        .where(CompanyMember.is_specialist == True)
     )
-    profile = result.scalar_one_or_none()
+    member = result.scalar_one_or_none()
 
-    if not profile:
+    if not member:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Specialist profile not found",
         )
 
-    stats = await get_specialist_stats(db, profile.id)
+    stats = await get_specialist_stats(db, member.id)
 
     return SpecialistProfileResponse(
-        id=profile.id,
-        user_id=profile.user_id,
-        company_id=profile.company_id,
-        position=profile.position,
-        bio=profile.bio,
-        is_active=profile.is_active,
-        created_at=profile.created_at,
-        first_name=profile.user.first_name,
-        last_name=profile.user.last_name,
-        email=profile.user.email,
-        phone=profile.user.phone,
-        google_connected=profile.user.google_refresh_token is not None,
+        id=member.id,
+        user_id=member.user_id,
+        company_id=member.company_id,
+        position=member.position.name if member.position else None,
+        position_id=member.position_id,
+        bio=member.bio,
+        photo_url=member.photo_url,
+        is_active=member.is_active,
+        created_at=member.created_at,
+        first_name=member.user.first_name,
+        last_name=member.user.last_name,
+        email=member.user.email,
+        phone=member.user.phone,
+        google_connected=member.user.google_refresh_token is not None,
         **stats,
     )
 
@@ -163,37 +195,52 @@ async def get_specialist(
     specialist_id: int,
     current_user: CurrentUser,
     db: DbSession,
+    company_id: int,
 ):
     """Get a specific specialist's profile."""
-    result = await db.execute(
-        select(SpecialistProfile)
-        .options(selectinload(SpecialistProfile.user))
-        .where(SpecialistProfile.id == specialist_id)
-        .where(SpecialistProfile.company_id == current_user.company_id)
-    )
-    profile = result.scalar_one_or_none()
+    # Verify user has access to this company
+    membership = await get_user_membership(db, current_user, company_id)
+    if not membership and not current_user.is_superadmin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not a member of this company",
+        )
 
-    if not profile:
+    result = await db.execute(
+        select(CompanyMember)
+        .options(
+            selectinload(CompanyMember.user),
+            selectinload(CompanyMember.position),
+        )
+        .where(CompanyMember.id == specialist_id)
+        .where(CompanyMember.company_id == company_id)
+        .where(CompanyMember.is_specialist == True)
+    )
+    member = result.scalar_one_or_none()
+
+    if not member:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Specialist not found",
         )
 
-    stats = await get_specialist_stats(db, profile.id)
+    stats = await get_specialist_stats(db, member.id)
 
     return SpecialistProfileResponse(
-        id=profile.id,
-        user_id=profile.user_id,
-        company_id=profile.company_id,
-        position=profile.position,
-        bio=profile.bio,
-        is_active=profile.is_active,
-        created_at=profile.created_at,
-        first_name=profile.user.first_name,
-        last_name=profile.user.last_name,
-        email=profile.user.email,
-        phone=profile.user.phone,
-        google_connected=profile.user.google_refresh_token is not None,
+        id=member.id,
+        user_id=member.user_id,
+        company_id=member.company_id,
+        position=member.position.name if member.position else None,
+        position_id=member.position_id,
+        bio=member.bio,
+        photo_url=member.photo_url,
+        is_active=member.is_active,
+        created_at=member.created_at,
+        first_name=member.user.first_name,
+        last_name=member.user.last_name,
+        email=member.user.email,
+        phone=member.user.phone,
+        google_connected=member.user.google_refresh_token is not None,
         **stats,
     )
 
@@ -206,54 +253,75 @@ async def update_specialist(
     update_data: SpecialistProfileUpdate,
     current_user: CurrentUser,
     db: DbSession,
+    company_id: int,
 ):
     """
     Update a specialist's profile.
     Managers can update any specialist. Specialists can only update themselves.
     """
-    result = await db.execute(
-        select(SpecialistProfile)
-        .options(selectinload(SpecialistProfile.user))
-        .where(SpecialistProfile.id == specialist_id)
-        .where(SpecialistProfile.company_id == current_user.company_id)
-    )
-    profile = result.scalar_one_or_none()
+    # Get current user's membership
+    current_membership = await get_user_membership(db, current_user, company_id)
+    if not current_membership and not current_user.is_superadmin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not a member of this company",
+        )
 
-    if not profile:
+    result = await db.execute(
+        select(CompanyMember)
+        .options(
+            selectinload(CompanyMember.user),
+            selectinload(CompanyMember.position),
+        )
+        .where(CompanyMember.id == specialist_id)
+        .where(CompanyMember.company_id == company_id)
+    )
+    member = result.scalar_one_or_none()
+
+    if not member:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Specialist not found",
         )
 
-    if not check_manager_access(current_user, profile):
+    # Check access (handle superadmin case)
+    if current_membership:
+        if not check_manager_access(current_membership, member, current_user.is_superadmin):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You can only update your own profile",
+            )
+    elif not current_user.is_superadmin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You can only update your own profile",
+            detail="Access denied",
         )
 
     # Update fields
     update_dict = update_data.model_dump(exclude_unset=True)
     for key, value in update_dict.items():
-        setattr(profile, key, value)
+        setattr(member, key, value)
 
     await db.commit()
-    await db.refresh(profile)
+    await db.refresh(member)
 
-    stats = await get_specialist_stats(db, profile.id)
+    stats = await get_specialist_stats(db, member.id)
 
     return SpecialistProfileResponse(
-        id=profile.id,
-        user_id=profile.user_id,
-        company_id=profile.company_id,
-        position=profile.position,
-        bio=profile.bio,
-        is_active=profile.is_active,
-        created_at=profile.created_at,
-        first_name=profile.user.first_name,
-        last_name=profile.user.last_name,
-        email=profile.user.email,
-        phone=profile.user.phone,
-        google_connected=profile.user.google_refresh_token is not None,
+        id=member.id,
+        user_id=member.user_id,
+        company_id=member.company_id,
+        position=member.position.name if member.position else None,
+        position_id=member.position_id,
+        bio=member.bio,
+        photo_url=member.photo_url,
+        is_active=member.is_active,
+        created_at=member.created_at,
+        first_name=member.user.first_name,
+        last_name=member.user.last_name,
+        email=member.user.email,
+        phone=member.user.phone,
+        google_connected=member.user.google_refresh_token is not None,
         **stats,
     )
 
@@ -265,45 +333,54 @@ async def get_specialist_services(
     specialist_id: int,
     current_user: CurrentUser,
     db: DbSession,
+    company_id: int,
 ):
     """Get all services assigned to a specialist."""
-    # Verify specialist exists and is in same company
-    result = await db.execute(
-        select(SpecialistProfile)
-        .where(SpecialistProfile.id == specialist_id)
-        .where(SpecialistProfile.company_id == current_user.company_id)
-    )
-    profile = result.scalar_one_or_none()
+    # Verify user has access
+    membership = await get_user_membership(db, current_user, company_id)
+    if not membership and not current_user.is_superadmin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not a member of this company",
+        )
 
-    if not profile:
+    # Verify specialist exists
+    result = await db.execute(
+        select(CompanyMember)
+        .where(CompanyMember.id == specialist_id)
+        .where(CompanyMember.company_id == company_id)
+    )
+    member = result.scalar_one_or_none()
+
+    if not member:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Specialist not found",
         )
 
-    # Get specialist services with service details
+    # Get member services with service details
     result = await db.execute(
-        select(SpecialistService)
-        .options(selectinload(SpecialistService.service))
-        .where(SpecialistService.specialist_profile_id == specialist_id)
-        .order_by(SpecialistService.created_at.desc())
+        select(MemberService)
+        .options(selectinload(MemberService.service))
+        .where(MemberService.member_id == specialist_id)
+        .order_by(MemberService.created_at.desc())
     )
-    specialist_services = result.scalars().all()
+    member_services = result.scalars().all()
 
     return [
         SpecialistServiceResponse(
-            id=ss.id,
-            specialist_profile_id=ss.specialist_profile_id,
-            service_id=ss.service_id,
-            service_name=ss.service.name,
-            service_price=ss.service.price,
-            service_duration_minutes=ss.service.duration_minutes,
-            custom_price=ss.custom_price,
-            custom_duration_minutes=ss.custom_duration_minutes,
-            is_active=ss.is_active,
-            created_at=ss.created_at,
+            id=ms.id,
+            member_id=ms.member_id,
+            service_id=ms.service_id,
+            service_name=ms.service.name,
+            service_price=ms.service.price,
+            service_duration_minutes=ms.service.duration_minutes,
+            custom_price=ms.custom_price,
+            custom_duration_minutes=ms.custom_duration_minutes,
+            is_active=ms.is_active,
+            created_at=ms.created_at,
         )
-        for ss in specialist_services
+        for ms in member_services
     ]
 
 
@@ -313,29 +390,37 @@ async def assign_services_to_specialist(
     request: AssignServicesRequest,
     current_user: CurrentUser,
     db: DbSession,
+    company_id: int,
 ):
     """
     Assign services to a specialist. Replaces all existing assignments.
     Only managers can do this.
     """
-    # Verify specialist exists and is in same company
-    result = await db.execute(
-        select(SpecialistProfile)
-        .where(SpecialistProfile.id == specialist_id)
-        .where(SpecialistProfile.company_id == current_user.company_id)
-    )
-    profile = result.scalar_one_or_none()
+    # Get current user's membership
+    current_membership = await get_user_membership(db, current_user, company_id)
+    if not current_membership and not current_user.is_superadmin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not a member of this company",
+        )
 
-    if not profile:
+    # Verify specialist exists
+    result = await db.execute(
+        select(CompanyMember)
+        .where(CompanyMember.id == specialist_id)
+        .where(CompanyMember.company_id == company_id)
+    )
+    member = result.scalar_one_or_none()
+
+    if not member:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Specialist not found",
         )
 
-    # Check manager access (specialists can't assign services to themselves)
-    if not current_user.has_role(UserRole.MANAGER) and not current_user.is_superadmin:
-        # Check if specialist is trying to assign to themselves
-        if profile.user_id != current_user.id:
+    # Check manager access
+    if current_membership and not (current_membership.is_owner or current_membership.is_manager):
+        if not current_user.is_superadmin:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Only managers can assign services",
@@ -345,7 +430,7 @@ async def assign_services_to_specialist(
     result = await db.execute(
         select(Service)
         .where(Service.id.in_(request.service_ids))
-        .where(Service.company_id == current_user.company_id)
+        .where(Service.company_id == company_id)
     )
     valid_services = result.scalars().all()
     valid_service_ids = {s.id for s in valid_services}
@@ -359,50 +444,42 @@ async def assign_services_to_specialist(
 
     # Remove existing assignments
     await db.execute(
-        select(SpecialistService)
-        .where(SpecialistService.specialist_profile_id == specialist_id)
-    )
-    # Actually delete them
-    from sqlalchemy import delete
-    await db.execute(
-        delete(SpecialistService)
-        .where(SpecialistService.specialist_profile_id == specialist_id)
+        delete(MemberService)
+        .where(MemberService.member_id == specialist_id)
     )
 
     # Create new assignments
-    new_assignments = []
     for service_id in request.service_ids:
-        ss = SpecialistService(
-            specialist_profile_id=specialist_id,
+        ms = MemberService(
+            member_id=specialist_id,
             service_id=service_id,
         )
-        db.add(ss)
-        new_assignments.append(ss)
+        db.add(ms)
 
     await db.commit()
 
     # Reload with service details
     result = await db.execute(
-        select(SpecialistService)
-        .options(selectinload(SpecialistService.service))
-        .where(SpecialistService.specialist_profile_id == specialist_id)
+        select(MemberService)
+        .options(selectinload(MemberService.service))
+        .where(MemberService.member_id == specialist_id)
     )
-    specialist_services = result.scalars().all()
+    member_services = result.scalars().all()
 
     return [
         SpecialistServiceResponse(
-            id=ss.id,
-            specialist_profile_id=ss.specialist_profile_id,
-            service_id=ss.service_id,
-            service_name=ss.service.name,
-            service_price=ss.service.price,
-            service_duration_minutes=ss.service.duration_minutes,
-            custom_price=ss.custom_price,
-            custom_duration_minutes=ss.custom_duration_minutes,
-            is_active=ss.is_active,
-            created_at=ss.created_at,
+            id=ms.id,
+            member_id=ms.member_id,
+            service_id=ms.service_id,
+            service_name=ms.service.name,
+            service_price=ms.service.price,
+            service_duration_minutes=ms.service.duration_minutes,
+            custom_price=ms.custom_price,
+            custom_duration_minutes=ms.custom_duration_minutes,
+            is_active=ms.is_active,
+            created_at=ms.created_at,
         )
-        for ss in specialist_services
+        for ms in member_services
     ]
 
 
@@ -412,24 +489,33 @@ async def remove_service_from_specialist(
     service_id: int,
     current_user: CurrentUser,
     db: DbSession,
+    company_id: int,
 ):
     """Remove a specific service from a specialist."""
-    # Verify specialist exists and is in same company
-    result = await db.execute(
-        select(SpecialistProfile)
-        .where(SpecialistProfile.id == specialist_id)
-        .where(SpecialistProfile.company_id == current_user.company_id)
-    )
-    profile = result.scalar_one_or_none()
+    # Get current user's membership
+    current_membership = await get_user_membership(db, current_user, company_id)
+    if not current_membership and not current_user.is_superadmin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not a member of this company",
+        )
 
-    if not profile:
+    # Verify specialist exists
+    result = await db.execute(
+        select(CompanyMember)
+        .where(CompanyMember.id == specialist_id)
+        .where(CompanyMember.company_id == company_id)
+    )
+    member = result.scalar_one_or_none()
+
+    if not member:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Specialist not found",
         )
 
     # Check access
-    if not check_manager_access(current_user, profile):
+    if current_membership and not check_manager_access(current_membership, member, current_user.is_superadmin):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only managers can remove services",
@@ -437,19 +523,19 @@ async def remove_service_from_specialist(
 
     # Find and delete the assignment
     result = await db.execute(
-        select(SpecialistService)
-        .where(SpecialistService.specialist_profile_id == specialist_id)
-        .where(SpecialistService.service_id == service_id)
+        select(MemberService)
+        .where(MemberService.member_id == specialist_id)
+        .where(MemberService.service_id == service_id)
     )
-    specialist_service = result.scalar_one_or_none()
+    member_service = result.scalar_one_or_none()
 
-    if not specialist_service:
+    if not member_service:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Service not assigned to this specialist",
         )
 
-    await db.delete(specialist_service)
+    await db.delete(member_service)
     await db.commit()
 
 
@@ -460,19 +546,28 @@ async def get_specialist_appointments(
     specialist_id: int,
     current_user: CurrentUser,
     db: DbSession,
+    company_id: int,
     date_from: date | None = None,
     date_to: date | None = None,
 ):
     """Get appointments for a specific specialist."""
-    # Verify specialist exists and is in same company
-    result = await db.execute(
-        select(SpecialistProfile)
-        .where(SpecialistProfile.id == specialist_id)
-        .where(SpecialistProfile.company_id == current_user.company_id)
-    )
-    profile = result.scalar_one_or_none()
+    # Verify user has access
+    membership = await get_user_membership(db, current_user, company_id)
+    if not membership and not current_user.is_superadmin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not a member of this company",
+        )
 
-    if not profile:
+    # Verify specialist exists
+    result = await db.execute(
+        select(CompanyMember)
+        .where(CompanyMember.id == specialist_id)
+        .where(CompanyMember.company_id == company_id)
+    )
+    member = result.scalar_one_or_none()
+
+    if not member:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Specialist not found",
@@ -485,7 +580,7 @@ async def get_specialist_appointments(
             selectinload(Appointment.service),
             selectinload(Appointment.client),
         )
-        .where(Appointment.specialist_profile_id == specialist_id)
+        .where(Appointment.member_id == specialist_id)
     )
 
     if date_from:
@@ -508,17 +603,26 @@ async def get_specialist_clients(
     specialist_id: int,
     current_user: CurrentUser,
     db: DbSession,
+    company_id: int,
 ):
     """Get unique clients who have had appointments with this specialist."""
-    # Verify specialist exists and is in same company
-    result = await db.execute(
-        select(SpecialistProfile)
-        .where(SpecialistProfile.id == specialist_id)
-        .where(SpecialistProfile.company_id == current_user.company_id)
-    )
-    profile = result.scalar_one_or_none()
+    # Verify user has access
+    membership = await get_user_membership(db, current_user, company_id)
+    if not membership and not current_user.is_superadmin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not a member of this company",
+        )
 
-    if not profile:
+    # Verify specialist exists
+    result = await db.execute(
+        select(CompanyMember)
+        .where(CompanyMember.id == specialist_id)
+        .where(CompanyMember.company_id == company_id)
+    )
+    member = result.scalar_one_or_none()
+
+    if not member:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Specialist not found",
@@ -528,7 +632,7 @@ async def get_specialist_clients(
     result = await db.execute(
         select(Client)
         .join(Appointment, Appointment.client_id == Client.id)
-        .where(Appointment.specialist_profile_id == specialist_id)
+        .where(Appointment.member_id == specialist_id)
         .distinct()
         .order_by(Client.last_name, Client.first_name)
     )

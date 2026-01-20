@@ -5,11 +5,13 @@ from aiogram.types import Message, CallbackQuery, ReplyKeyboardMarkup, KeyboardB
 from aiogram.fsm.context import FSMContext
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.models.client import Client, ClientCompany, Language
 from app.models.company import Company
 from app.models.service import Service
-from app.models.profiles import SpecialistProfile, SpecialistService
+from app.models.company_member import CompanyMember, MemberService
+from app.models.user import User
 from bots.i18n import t
 from bots.client_bot.keyboards import language_keyboard, main_menu_keyboard
 
@@ -17,7 +19,7 @@ from bots.client_bot.keyboards import language_keyboard, main_menu_keyboard
 def prefill_keyboard(value: str) -> ReplyKeyboardMarkup:
     """Keyboard with prefilled value"""
     return ReplyKeyboardMarkup(
-        keyboard=[[KeyboardButton(text=f"✓ {value}")]],
+        keyboard=[[KeyboardButton(text=f"{value}")]],
         resize_keyboard=True,
         one_time_keyboard=True,
     )
@@ -32,26 +34,26 @@ def parse_deep_link(args: str) -> dict:
     Formats:
     - {invite_code} - standard client invite
     - book_{invite_code}_s{service_id} - book specific service
-    - book_{invite_code}_s{service_id}_sp{specialist_id} - book service with specific specialist
+    - book_{invite_code}_s{service_id}_sp{member_id} - book service with specific specialist
     """
     result = {
         "type": "invite",
         "invite_code": None,
         "service_id": None,
-        "specialist_id": None,
+        "member_id": None,
     }
 
     if not args:
         return result
 
-    # Check for booking link: book_{invite_code}_s{service_id}[_sp{specialist_id}]
+    # Check for booking link: book_{invite_code}_s{service_id}[_sp{member_id}]
     book_match = re.match(r'^book_([^_]+)_s(\d+)(?:_sp(\d+))?$', args)
     if book_match:
         result["type"] = "book"
         result["invite_code"] = book_match.group(1)
         result["service_id"] = int(book_match.group(2))
         if book_match.group(3):
-            result["specialist_id"] = int(book_match.group(3))
+            result["member_id"] = int(book_match.group(3))
         return result
 
     # Default: just invite code
@@ -97,7 +99,7 @@ async def cmd_start_with_link(
     if parsed["type"] == "book":
         await handle_booking_link(
             message, session, state, client, company,
-            parsed["service_id"], parsed["specialist_id"]
+            parsed["service_id"], parsed["member_id"]
         )
         return
 
@@ -143,7 +145,7 @@ async def handle_booking_link(
     client: Client | None,
     company: Company,
     service_id: int,
-    specialist_id: int | None,
+    member_id: int | None,
 ):
     """Handle booking deep link - redirect to booking with pre-selected service/specialist"""
 
@@ -164,19 +166,22 @@ async def handle_booking_link(
         )
         return
 
-    # Validate specialist if provided
-    specialist_profile = None
-    if specialist_id:
+    # Validate specialist (member) if provided
+    member = None
+    if member_id:
         result = await session.execute(
-            select(SpecialistProfile).where(
-                SpecialistProfile.id == specialist_id,
-                SpecialistProfile.company_id == company.id,
-                SpecialistProfile.is_active == True,
+            select(CompanyMember)
+            .options(selectinload(CompanyMember.user))
+            .where(
+                CompanyMember.id == member_id,
+                CompanyMember.company_id == company.id,
+                CompanyMember.is_specialist == True,
+                CompanyMember.is_active == True,
             )
         )
-        specialist_profile = result.scalar_one_or_none()
+        member = result.scalar_one_or_none()
 
-        if not specialist_profile:
+        if not member:
             await message.answer(
                 "Спеціаліст не знайдений.\n"
                 "Зверніться до клініки."
@@ -185,10 +190,10 @@ async def handle_booking_link(
 
         # Check if specialist can perform this service
         result = await session.execute(
-            select(SpecialistService).where(
-                SpecialistService.specialist_profile_id == specialist_id,
-                SpecialistService.service_id == service_id,
-                SpecialistService.is_active == True,
+            select(MemberService).where(
+                MemberService.member_id == member_id,
+                MemberService.service_id == service_id,
+                MemberService.is_active == True,
             )
         )
         if not result.scalar_one_or_none():
@@ -205,13 +210,13 @@ async def handle_booking_link(
             company_name=company.name,
             booking_service_id=service_id,
             booking_service_name=service.name,
-            booking_specialist_id=specialist_id,
+            booking_member_id=member_id,
         )
         await message.answer(
             f"Вітаємо! Ви бажаєте записатися на:\n"
-            f"📋 {service.name}\n"
-            f"💰 {service.price} грн\n"
-            f"⏱ {service.duration_minutes} хв\n\n"
+            f"   {service.name}\n"
+            f"   {service.price} грн\n"
+            f"   {service.duration_minutes} хв\n\n"
             f"Для продовження оберіть мову:",
             reply_markup=language_keyboard(),
         )
@@ -235,7 +240,7 @@ async def handle_booking_link(
     await state.update_data(
         company_id=company.id,
         booking_service_id=service_id,
-        booking_specialist_id=specialist_id,
+        booking_member_id=member_id,
     )
 
     # Import booking states and start booking
@@ -244,20 +249,13 @@ async def handle_booking_link(
     await state.set_state(BookingStates.selecting_date)
 
     specialist_info = ""
-    if specialist_profile:
-        # Get user info for specialist
-        from app.models.user import User
-        result = await session.execute(
-            select(User).where(User.id == specialist_profile.user_id)
-        )
-        user = result.scalar_one_or_none()
-        if user:
-            specialist_info = f"👨‍⚕️ Спеціаліст: {user.first_name} {user.last_name}\n"
+    if member:
+        specialist_info = f"Спеціаліст: {member.user.first_name} {member.user.last_name}\n"
 
     await message.answer(
-        f"📋 Послуга: {service.name}\n"
-        f"💰 Ціна: {service.price} грн\n"
-        f"⏱ Тривалість: {service.duration_minutes} хв\n"
+        f"Послуга: {service.name}\n"
+        f"Ціна: {service.price} грн\n"
+        f"Тривалість: {service.duration_minutes} хв\n"
         f"{specialist_info}\n"
         f"Оберіть дату для запису:",
         # TODO: Add date selection keyboard

@@ -6,9 +6,9 @@ from aiogram.fsm.state import State, StatesGroup
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.user import User, UserRole
+from app.models.user import User
 from app.models.company import Company
-from app.models.profiles import SpecialistProfile
+from app.models.company_member import CompanyMember
 from bots.doctor_bot.keyboards import main_menu_keyboard, link_account_keyboard
 
 router = Router()
@@ -59,8 +59,16 @@ async def handle_team_invite(message: Message, team_code: str, session: AsyncSes
     user = result.scalar_one_or_none()
 
     if user:
-        # Check if already in this company
-        if user.company_id == company.id:
+        # Check if already a member of this company
+        result = await session.execute(
+            select(CompanyMember).where(
+                CompanyMember.user_id == user.id,
+                CompanyMember.company_id == company.id,
+            )
+        )
+        existing_member = result.scalar_one_or_none()
+
+        if existing_member:
             await message.answer(
                 f"Ви вже є в команді \"{company.name}\"! ✅\n\n"
                 "Оберіть дію:",
@@ -68,36 +76,14 @@ async def handle_team_invite(message: Message, team_code: str, session: AsyncSes
             )
             return
 
-        # Check if already has a specialist profile in this company
-        result = await session.execute(
-            select(SpecialistProfile).where(
-                SpecialistProfile.user_id == user.id,
-                SpecialistProfile.company_id == company.id,
-            )
-        )
-        existing_profile = result.scalar_one_or_none()
-
-        if existing_profile:
-            await message.answer(
-                f"Ви вже є спеціалістом в \"{company.name}\"! ✅\n\n"
-                "Оберіть дію:",
-                reply_markup=main_menu_keyboard(),
-            )
-            return
-
         # Add user to company as specialist
-        # Create specialist profile
-        specialist_profile = SpecialistProfile(
+        member = CompanyMember(
             user_id=user.id,
             company_id=company.id,
+            is_specialist=True,
             is_active=True,
         )
-        session.add(specialist_profile)
-
-        # If user doesn't have a company, set this as their primary
-        if user.company_id is None:
-            user.company_id = company.id
-
+        session.add(member)
         await session.commit()
 
         await message.answer(

@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from app.models.client import Client, ClientCompany
     from app.models.subscription import Subscription, Payment
     from app.models.specialty import Specialty
-    from app.models.profiles import SpecialistProfile, ManagerProfile, ClientProfile
+    from app.models.company_member import CompanyMember, MemberService
     from app.models.website_section import WebsiteSection
     from app.models.position import Position
 
@@ -126,16 +126,8 @@ class Company(Base):
         cascade="all, delete-orphan"
     )
 
-    # Profile relationships
-    specialist_profiles: Mapped[list["SpecialistProfile"]] = relationship(
-        back_populates="company",
-        cascade="all, delete-orphan"
-    )
-    manager_profiles: Mapped[list["ManagerProfile"]] = relationship(
-        back_populates="company",
-        cascade="all, delete-orphan"
-    )
-    client_profiles: Mapped[list["ClientProfile"]] = relationship(
+    # Company members (unified: owners, managers, specialists)
+    members: Mapped[list["CompanyMember"]] = relationship(
         back_populates="company",
         cascade="all, delete-orphan"
     )

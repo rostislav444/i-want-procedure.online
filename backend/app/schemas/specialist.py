@@ -4,7 +4,7 @@ from typing import Optional
 from pydantic import BaseModel
 
 
-# ===== Specialist Service Schemas =====
+# ===== Member Service Schemas =====
 
 class SpecialistServiceBase(BaseModel):
     service_id: int
@@ -25,7 +25,7 @@ class SpecialistServiceUpdate(BaseModel):
 
 class SpecialistServiceResponse(BaseModel):
     id: int
-    specialist_profile_id: int
+    member_id: int
     service_id: int
     service_name: str
     service_price: Decimal
@@ -44,11 +44,12 @@ class AssignServicesRequest(BaseModel):
     service_ids: list[int]
 
 
-# ===== Specialist Profile Schemas =====
+# ===== Specialist Profile Schemas (based on CompanyMember) =====
 
 class SpecialistProfileBase(BaseModel):
-    position: Optional[str] = None
+    position_id: Optional[int] = None
     bio: Optional[str] = None
+    photo_url: Optional[str] = None
 
 
 class SpecialistProfileCreate(SpecialistProfileBase):
@@ -63,8 +64,10 @@ class SpecialistProfileResponse(BaseModel):
     id: int
     user_id: int
     company_id: int
-    position: Optional[str] = None
+    position: Optional[str] = None  # Position name
+    position_id: Optional[int] = None
     bio: Optional[str] = None
+    photo_url: Optional[str] = None
     is_active: bool
     created_at: datetime
 
@@ -92,7 +95,8 @@ class SpecialistListItem(BaseModel):
     user_id: int
     first_name: str
     last_name: str
-    position: Optional[str] = None
+    position: Optional[str] = None  # Position name
+    position_id: Optional[int] = None
     is_active: bool
     services_count: int = 0
     google_connected: bool = False

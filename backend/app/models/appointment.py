@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from app.models.user import User
     from app.models.client import Client
     from app.models.service import Service
-    from app.models.profiles import SpecialistProfile, ClientProfile
+    from app.models.company_member import CompanyMember
 
 
 class AppointmentStatus(str, Enum):
@@ -36,13 +36,11 @@ class Appointment(Base):
     client_id: Mapped[int] = mapped_column(ForeignKey("clients.id"))
     service_id: Mapped[int] = mapped_column(ForeignKey("services.id"))
 
-    # Profile references (for future use after migration)
-    specialist_profile_id: Mapped[Optional[int]] = mapped_column(
-        ForeignKey("specialist_profiles.id", ondelete="SET NULL"), nullable=True
+    # New: member reference (for linking specialist via company_members)
+    member_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("company_members.id", ondelete="SET NULL"), nullable=True
     )
-    client_profile_id: Mapped[Optional[int]] = mapped_column(
-        ForeignKey("client_profiles.id", ondelete="SET NULL"), nullable=True
-    )
+
     date: Mapped[date] = mapped_column(Date)
     start_time: Mapped[time] = mapped_column(Time)
     end_time: Mapped[time] = mapped_column(Time)
@@ -67,13 +65,7 @@ class Appointment(Base):
     doctor: Mapped["User"] = relationship(back_populates="appointments")
     client: Mapped["Client"] = relationship(back_populates="appointments")
     service: Mapped["Service"] = relationship(back_populates="appointments")
-
-    # Profile relationships
-    specialist_profile: Mapped[Optional["SpecialistProfile"]] = relationship(
-        back_populates="appointments_as_specialist",
-        foreign_keys=[specialist_profile_id]
-    )
-    client_profile: Mapped[Optional["ClientProfile"]] = relationship(
-        back_populates="appointments_as_client",
-        foreign_keys=[client_profile_id]
+    member: Mapped[Optional["CompanyMember"]] = relationship(
+        back_populates="appointments",
+        foreign_keys=[member_id]
     )

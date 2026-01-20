@@ -5,7 +5,8 @@ from aiogram.fsm.state import State, StatesGroup
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.user import User, UserRole
+from app.models.user import User
+from app.models.company_member import CompanyMember
 from app.core.config import settings
 from bots.doctor_bot.keyboards import (
     main_menu_keyboard,
@@ -208,18 +209,18 @@ async def process_email(message: Message, state: FSMContext, session: AsyncSessi
     await state.set_state(RegistrationStates.confirm_registration)
 
     summary = (
-        "📋 Перевірте ваші дані:\n\n"
-        f"👤 Ім'я: {data['first_name']}\n"
-        f"👤 Прізвище: {data['last_name']}\n"
+        "Перевірте ваші дані:\n\n"
+        f"Ім'я: {data['first_name']}\n"
+        f"Прізвище: {data['last_name']}\n"
     )
     if data.get('patronymic'):
-        summary += f"👤 По-батькові: {data['patronymic']}\n"
-    summary += f"🏙 Місто: {data['city']}\n"
-    summary += f"📱 Телефон: {data['phone']}\n"
+        summary += f"По-батькові: {data['patronymic']}\n"
+    summary += f"Місто: {data['city']}\n"
+    summary += f"Телефон: {data['phone']}\n"
     if data.get('telegram_username'):
-        summary += f"📲 Telegram: @{data['telegram_username']}\n"
+        summary += f"Telegram: @{data['telegram_username']}\n"
     if email:
-        summary += f"📧 Email: {email}\n"
+        summary += f"Email: {email}\n"
 
     summary += "\nВсе вірно?"
 
@@ -228,12 +229,11 @@ async def process_email(message: Message, state: FSMContext, session: AsyncSessi
 
 @router.callback_query(F.data == "confirm_registration", RegistrationStates.confirm_registration)
 async def confirm_registration(callback: CallbackQuery, state: FSMContext, session: AsyncSession):
-    """Complete registration - create user without company"""
+    """Complete registration - create user"""
     data = await state.get_data()
 
-    # Create user WITHOUT company
+    # Create user
     user = User(
-        company_id=None,  # No company yet - will be created in admin panel
         first_name=data['first_name'],
         last_name=data['last_name'],
         patronymic=data.get('patronymic'),
@@ -243,27 +243,51 @@ async def confirm_registration(callback: CallbackQuery, state: FSMContext, sessi
         telegram_id=data['telegram_id'],
         telegram_username=data.get('telegram_username'),
         hashed_password=None,  # No password for Telegram-only users
-        role=UserRole.SPECIALIST,
     )
     session.add(user)
+    await session.flush()  # Get user.id
+
+    # If user was invited to a team, add them as a member
+    if data.get('team_company_id'):
+        member = CompanyMember(
+            user_id=user.id,
+            company_id=data['team_company_id'],
+            is_specialist=True,
+            is_active=True,
+        )
+        session.add(member)
+
     await session.commit()
 
     await state.clear()
 
     # Send success message with link to create company in admin
     admin_url = f"{settings.FRONTEND_URL}"
-    await callback.message.answer(
-        f"✅ Реєстрація успішна!\n\n"
-        f"Вітаємо, {user.first_name}! Ваш акаунт створено.\n\n"
-        f"Тепер перейдіть в адмін-панель для створення вашої компанії:\n"
-        f"👉 {admin_url}\n\n"
-        f"Там ви зможете:\n"
-        f"• Створити свою компанію\n"
-        f"• Додати послуги та ціни\n"
-        f"• Налаштувати розклад роботи\n"
-        f"• Отримувати записи від клієнтів",
-        reply_markup=remove_keyboard(),
-    )
+
+    if data.get('team_company_name'):
+        # Joined a team
+        await callback.message.answer(
+            f"Реєстрація успішна!\n\n"
+            f"Вітаємо, {user.first_name}! Ваш акаунт створено.\n"
+            f"Ви приєдналися до команди \"{data['team_company_name']}\".\n\n"
+            f"Перейдіть в адмін-панель для налаштувань:\n"
+            f"{admin_url}",
+            reply_markup=main_menu_keyboard(),
+        )
+    else:
+        # New user without team
+        await callback.message.answer(
+            f"Реєстрація успішна!\n\n"
+            f"Вітаємо, {user.first_name}! Ваш акаунт створено.\n\n"
+            f"Тепер перейдіть в адмін-панель для створення вашої компанії:\n"
+            f"{admin_url}\n\n"
+            f"Там ви зможете:\n"
+            f"- Створити свою компанію\n"
+            f"- Додати послуги та ціни\n"
+            f"- Налаштувати розклад роботи\n"
+            f"- Отримувати записи від клієнтів",
+            reply_markup=remove_keyboard(),
+        )
     await callback.answer()
 
 

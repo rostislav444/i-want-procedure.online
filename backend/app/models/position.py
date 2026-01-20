@@ -16,7 +16,7 @@ from app.core.database import Base
 if TYPE_CHECKING:
     from app.models.company import Company
     from app.models.service import Service
-    from app.models.profiles import SpecialistProfile
+    from app.models.company_member import CompanyMember
 
 
 class Position(Base):
@@ -36,4 +36,4 @@ class Position(Base):
     # Relationships
     company: Mapped["Company"] = relationship(back_populates="positions")
     services: Mapped[list["Service"]] = relationship(back_populates="position")
-    specialists: Mapped[list["SpecialistProfile"]] = relationship(back_populates="position_rel")
+    members: Mapped[list["CompanyMember"]] = relationship(back_populates="position")
