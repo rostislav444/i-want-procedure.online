@@ -143,24 +143,25 @@ def upgrade() -> None:
     op.drop_column('users', 'company_id')
     op.drop_column('users', 'role')
 
-    # 10. Drop old profile tables and related
+    # 10. Remove old constraints and columns from appointments BEFORE dropping tables
+    # Use actual constraint names from the database
+    try:
+        op.drop_constraint('fk_appointments_specialist_profile', 'appointments', type_='foreignkey')
+    except:
+        pass
+    try:
+        op.drop_constraint('fk_appointments_client_profile', 'appointments', type_='foreignkey')
+    except:
+        pass
+    op.drop_column('appointments', 'specialist_profile_id')
+    op.drop_column('appointments', 'client_profile_id')
+
+    # 11. Drop old profile tables and related
     op.drop_table('specialist_services')
     op.drop_table('specialist_profiles')
     op.drop_table('manager_profiles')
     op.drop_table('client_profiles')
     op.drop_table('user_roles')
-
-    # 11. Remove old columns from appointments
-    try:
-        op.drop_constraint('appointments_specialist_profile_id_fkey', 'appointments', type_='foreignkey')
-    except:
-        pass
-    try:
-        op.drop_constraint('appointments_client_profile_id_fkey', 'appointments', type_='foreignkey')
-    except:
-        pass
-    op.drop_column('appointments', 'specialist_profile_id')
-    op.drop_column('appointments', 'client_profile_id')
 
 
 def downgrade() -> None:
