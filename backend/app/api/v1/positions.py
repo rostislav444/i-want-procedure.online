@@ -74,13 +74,18 @@ async def get_user_membership(db: AsyncSession, user: User, company_id: int) -> 
 
 @router.get("", response_model=List[PositionResponse])
 async def get_positions(
-    company_id: int,
+    company_id: Optional[int] = None,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Get all positions for a company."""
+    # Use company_id from query or fall back to user's selected company
+    resolved_company_id = company_id or current_user.company_id
+    if not resolved_company_id:
+        raise HTTPException(status_code=400, detail="Company ID is required")
+
     # Verify user has access to company
-    membership = await get_user_membership(db, current_user, company_id)
+    membership = await get_user_membership(db, current_user, resolved_company_id)
     if not membership and not current_user.is_superadmin:
         raise HTTPException(status_code=403, detail="Not authorized to access this company")
 
@@ -91,7 +96,7 @@ async def get_positions(
             func.count(Service.id).label('services_count')
         )
         .outerjoin(Service, Service.position_id == Position.id)
-        .where(Position.company_id == company_id)
+        .where(Position.company_id == resolved_company_id)
         .group_by(Position.id)
         .order_by(Position.order, Position.name)
     )
@@ -119,13 +124,18 @@ async def get_positions(
 @router.get("/{position_id}", response_model=PositionDetailResponse)
 async def get_position(
     position_id: int,
-    company_id: int,
+    company_id: Optional[int] = None,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Get position details with services and specialists."""
+    # Use company_id from query or fall back to user's selected company
+    resolved_company_id = company_id or current_user.company_id
+    if not resolved_company_id:
+        raise HTTPException(status_code=400, detail="Company ID is required")
+
     # Verify user has access to company
-    membership = await get_user_membership(db, current_user, company_id)
+    membership = await get_user_membership(db, current_user, resolved_company_id)
     if not membership and not current_user.is_superadmin:
         raise HTTPException(status_code=403, detail="Not authorized to access this company")
 
@@ -133,7 +143,7 @@ async def get_position(
         select(Position)
         .where(
             Position.id == position_id,
-            Position.company_id == company_id
+            Position.company_id == resolved_company_id
         )
     )
     position = result.scalar_one_or_none()
@@ -153,7 +163,7 @@ async def get_position(
         .options(selectinload(CompanyMember.user))
         .where(
             CompanyMember.position_id == position_id,
-            CompanyMember.company_id == company_id,
+            CompanyMember.company_id == resolved_company_id,
             CompanyMember.is_specialist == True
         )
     )
@@ -195,19 +205,24 @@ async def get_position(
 @router.post("", response_model=PositionResponse, status_code=status.HTTP_201_CREATED)
 async def create_position(
     position_data: PositionCreate,
-    company_id: int,
+    company_id: Optional[int] = None,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Create a new position. Only for clinics."""
+    # Use company_id from query or fall back to user's selected company
+    resolved_company_id = company_id or current_user.company_id
+    if not resolved_company_id:
+        raise HTTPException(status_code=400, detail="Company ID is required")
+
     # Verify user has access to company
-    membership = await get_user_membership(db, current_user, company_id)
+    membership = await get_user_membership(db, current_user, resolved_company_id)
     if not membership and not current_user.is_superadmin:
         raise HTTPException(status_code=403, detail="Not authorized to access this company")
 
     # Check company type
     result = await db.execute(
-        select(Company).where(Company.id == company_id)
+        select(Company).where(Company.id == resolved_company_id)
     )
     company = result.scalar_one_or_none()
 
@@ -220,7 +235,7 @@ async def create_position(
             raise HTTPException(status_code=403, detail="Not authorized to create positions")
 
     position = Position(
-        company_id=company_id,
+        company_id=resolved_company_id,
         name=position_data.name,
         description=position_data.description,
         color=position_data.color,
@@ -246,20 +261,25 @@ async def create_position(
 async def update_position(
     position_id: int,
     position_data: PositionUpdate,
-    company_id: int,
+    company_id: Optional[int] = None,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Update a position."""
+    # Use company_id from query or fall back to user's selected company
+    resolved_company_id = company_id or current_user.company_id
+    if not resolved_company_id:
+        raise HTTPException(status_code=400, detail="Company ID is required")
+
     # Verify user has access to company
-    membership = await get_user_membership(db, current_user, company_id)
+    membership = await get_user_membership(db, current_user, resolved_company_id)
     if not membership and not current_user.is_superadmin:
         raise HTTPException(status_code=403, detail="Not authorized to access this company")
 
     result = await db.execute(
         select(Position).where(
             Position.id == position_id,
-            Position.company_id == company_id
+            Position.company_id == resolved_company_id
         )
     )
     position = result.scalar_one_or_none()
@@ -301,20 +321,25 @@ async def update_position(
 @router.delete("/{position_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_position(
     position_id: int,
-    company_id: int,
+    company_id: Optional[int] = None,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Delete a position."""
+    # Use company_id from query or fall back to user's selected company
+    resolved_company_id = company_id or current_user.company_id
+    if not resolved_company_id:
+        raise HTTPException(status_code=400, detail="Company ID is required")
+
     # Verify user has access to company
-    membership = await get_user_membership(db, current_user, company_id)
+    membership = await get_user_membership(db, current_user, resolved_company_id)
     if not membership and not current_user.is_superadmin:
         raise HTTPException(status_code=403, detail="Not authorized to access this company")
 
     result = await db.execute(
         select(Position).where(
             Position.id == position_id,
-            Position.company_id == company_id
+            Position.company_id == resolved_company_id
         )
     )
     position = result.scalar_one_or_none()

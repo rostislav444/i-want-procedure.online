@@ -58,6 +58,25 @@ class User(Base):
     )
 
     @property
+    def company_id(self) -> Optional[int]:
+        """Get the selected or primary company_id.
+
+        If user has selected a specific company via X-Company-Id header,
+        returns that company_id. Otherwise returns the first active
+        company membership's company_id.
+        """
+        # Check if a specific company was selected via header
+        selected = getattr(self, '_selected_company_id', None)
+        if selected is not None:
+            return selected
+
+        # Fall back to first active membership
+        for m in self.company_memberships:
+            if m.is_active:
+                return m.company_id
+        return None
+
+    @property
     def companies(self) -> list["Company"]:
         """Get all companies user is a member of."""
         return [m.company for m in self.company_memberships if m.is_active]

@@ -1,6 +1,6 @@
 from typing import Annotated, Callable, Optional
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Header
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -17,6 +17,7 @@ oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", aut
 async def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)],
     db: Annotated[AsyncSession, Depends(get_db)],
+    x_company_id: Annotated[Optional[str], Header(alias="X-Company-Id")] = None,
 ) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -47,6 +48,17 @@ async def get_current_user(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="User is inactive",
         )
+
+    # Set selected company ID from header (overrides default company_id property)
+    if x_company_id:
+        selected_id = int(x_company_id)
+        # Verify user has access to this company
+        if any(m.company_id == selected_id and m.is_active for m in user.company_memberships):
+            user._selected_company_id = selected_id
+        else:
+            user._selected_company_id = None
+    else:
+        user._selected_company_id = None
 
     return user
 
