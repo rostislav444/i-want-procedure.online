@@ -7,11 +7,19 @@ from sqlalchemy.orm import selectinload
 from app.api.deps import DbSession, CurrentUser
 from app.models.company import Company, generate_slug
 from app.models.user import User
+from app.models.company_member import CompanyMember
 from app.models.schedule import Schedule
 from app.schemas.company import CompanyResponse, CompanyUpdate, CompanyCreate
 from app.schemas.user import UserResponse
 
 router = APIRouter(prefix="/companies")
+
+
+def get_user_company_id(user: User) -> int | None:
+    """Get user's first company ID (for backwards compatibility)."""
+    if user.company_memberships:
+        return user.company_memberships[0].company_id
+    return None
 
 
 async def get_unique_slug(db: DbSession, base_slug: str) -> str:
@@ -29,7 +37,8 @@ async def get_unique_slug(db: DbSession, base_slug: str) -> str:
 @router.post("/me", response_model=CompanyResponse, status_code=status.HTTP_201_CREATED)
 async def create_my_company(company_data: CompanyCreate, current_user: CurrentUser, db: DbSession):
     """Create a company for the current user (if they don't have one)"""
-    if current_user.company_id is not None:
+    company_id = get_user_company_id(current_user)
+    if company_id is not None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="You already have a company",
@@ -48,8 +57,16 @@ async def create_my_company(company_data: CompanyCreate, current_user: CurrentUs
     db.add(company)
     await db.flush()
 
-    # Assign company to user
-    current_user.company_id = company.id
+    # Create company membership (owner + manager + specialist for FOP)
+    member = CompanyMember(
+        user_id=current_user.id,
+        company_id=company.id,
+        is_owner=True,
+        is_manager=True,
+        is_specialist=True,
+        is_active=True,
+    )
+    db.add(member)
 
     # Create default schedule for the user (Mon-Fri 9:00-18:00)
     default_schedules = []
@@ -73,13 +90,14 @@ async def create_my_company(company_data: CompanyCreate, current_user: CurrentUs
 
 @router.get("/me", response_model=CompanyResponse)
 async def get_my_company(current_user: CurrentUser, db: DbSession):
-    if current_user.company_id is None:
+    company_id = get_user_company_id(current_user)
+    if company_id is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="You don't have a company yet",
         )
     result = await db.execute(
-        select(Company).where(Company.id == current_user.company_id)
+        select(Company).where(Company.id == company_id)
     )
     return result.scalar_one()
 
@@ -90,8 +108,14 @@ async def update_my_company(
     current_user: CurrentUser,
     db: DbSession,
 ):
+    company_id = get_user_company_id(current_user)
+    if company_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="You don't have a company yet",
+        )
     result = await db.execute(
-        select(Company).where(Company.id == current_user.company_id)
+        select(Company).where(Company.id == company_id)
     )
     company = result.scalar_one()
 
@@ -106,7 +130,17 @@ async def update_my_company(
 
 @router.get("/me/doctors", response_model=list[UserResponse])
 async def get_company_doctors(current_user: CurrentUser, db: DbSession):
+    company_id = get_user_company_id(current_user)
+    if company_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="You don't have a company yet",
+        )
+    # Get users who are members of the company
     result = await db.execute(
-        select(User).where(User.company_id == current_user.company_id)
+        select(User)
+        .join(CompanyMember, CompanyMember.user_id == User.id)
+        .where(CompanyMember.company_id == company_id)
+        .where(CompanyMember.is_active == True)
     )
     return result.scalars().all()

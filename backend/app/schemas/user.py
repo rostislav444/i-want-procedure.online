@@ -2,12 +2,9 @@ from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, EmailStr
 
-from app.models.user import UserRole
-
 
 class UserResponse(BaseModel):
     id: int
-    company_id: Optional[int] = None
     email: Optional[EmailStr] = None
     first_name: str
     last_name: str
@@ -16,8 +13,6 @@ class UserResponse(BaseModel):
     city: Optional[str] = None
     telegram_id: Optional[int] = None
     telegram_username: Optional[str] = None
-    role: UserRole
-    roles: list[str] = []  # List of all user roles from user_roles table
     is_active: bool
     is_superadmin: bool = False
     created_at: datetime

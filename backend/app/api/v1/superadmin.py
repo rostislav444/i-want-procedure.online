@@ -12,7 +12,8 @@ from sqlalchemy.orm import selectinload
 
 from app.api.deps import DbSession, SuperadminUser
 from app.models.company import Company
-from app.models.user import User, UserRoleAssignment
+from app.models.user import User
+from app.models.company_member import CompanyMember
 from app.models.client import Client, ClientCompany
 from app.models.appointment import Appointment, AppointmentStatus
 from app.models.subscription import (
@@ -284,7 +285,7 @@ async def list_companies(
     for company in companies:
         # Get counts
         users_count = await db.scalar(
-            select(func.count(User.id)).where(User.company_id == company.id)
+            select(func.count(CompanyMember.id)).where(CompanyMember.company_id == company.id)
         )
         clients_count = await db.scalar(
             select(func.count(ClientCompany.id)).where(ClientCompany.company_id == company.id)
@@ -338,7 +339,7 @@ async def get_company_detail(
 
     # Get counts
     users_count = await db.scalar(
-        select(func.count(User.id)).where(User.company_id == company.id)
+        select(func.count(CompanyMember.id)).where(CompanyMember.company_id == company.id)
     )
     clients_count = await db.scalar(
         select(func.count(ClientCompany.id)).where(ClientCompany.company_id == company.id)
@@ -348,27 +349,35 @@ async def get_company_detail(
     )
 
     # Get employees with roles
-    employees_result = await db.execute(
-        select(User)
-        .where(User.company_id == company.id)
-        .options(selectinload(User.role_assignments))
-        .order_by(User.created_at.desc())
+    members_result = await db.execute(
+        select(CompanyMember)
+        .where(CompanyMember.company_id == company.id)
+        .options(selectinload(CompanyMember.user))
+        .order_by(CompanyMember.created_at.desc())
     )
-    employees = employees_result.scalars().all()
+    members = members_result.scalars().all()
 
-    employees_list = [
-        EmployeeListItem(
-            id=emp.id,
-            first_name=emp.first_name,
-            last_name=emp.last_name,
-            email=emp.email,
-            phone=emp.phone,
-            roles=[ra.role for ra in emp.role_assignments],
-            is_active=emp.is_active,
-            created_at=emp.created_at,
+    employees_list = []
+    for member in members:
+        roles = []
+        if member.is_owner:
+            roles.append("owner")
+        if member.is_manager:
+            roles.append("manager")
+        if member.is_specialist:
+            roles.append("specialist")
+        employees_list.append(
+            EmployeeListItem(
+                id=member.user.id,
+                first_name=member.user.first_name,
+                last_name=member.user.last_name,
+                email=member.user.email,
+                phone=member.user.phone,
+                roles=roles,
+                is_active=member.is_active,
+                created_at=member.created_at,
+            )
         )
-        for emp in employees
-    ]
 
     # Get clients
     clients_result = await db.execute(
