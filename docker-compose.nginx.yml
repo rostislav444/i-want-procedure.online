@@ -2,19 +2,28 @@ services:
   nginx:
     image: nginx:alpine
     container_name: procedure_nginx
+    restart: unless-stopped
     ports:
-      - '80:80'
-      - '443:443'
+      - "80:80"
+      - "443:443"
     volumes:
       - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./certbot:/app/certbot:ro
       - ./certbot/letsencrypt:/etc/letsencrypt:ro
-    networks:
-      - procedure_network
+      - ./certbot:/app/certbot:ro
+      - ./backend/media:/app/media:ro
+      - static_data:/app/static:ro
     depends_on:
       - api
       - frontend
-    restart: unless-stopped
+      - dozzle
+    networks:
+      - procedure_network
+      - default
+
+volumes:
+  static_data:
+    external: true
+    name: procedure_static_data
 
 networks:
   procedure_network:

@@ -2,76 +2,121 @@ services:
   db:
     image: postgres:15-alpine
     container_name: procedure_db
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: procedure
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-procedure}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    networks:
-      - procedure_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - procedure_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: procedure_redis
     restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - procedure_network
 
   api:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: procedure_api
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    restart: unless-stopped
+    command: gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000 --timeout 300
     expose:
       - "8000"
+    volumes:
+      - ./backend/media:/app/media
+      - static_data:/app/static
     environment:
-      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/procedure
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-procedure}
+      - REDIS_URL=redis://redis:6379/0
+      - DEBUG=False
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     env_file:
       - ./backend/.env
     networks:
       - procedure_network
-    restart: unless-stopped
 
   client-bot:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: procedure_client_bot
+    restart: unless-stopped
     command: python -m bots.client_bot.main
+    volumes:
+      - ./backend/media:/app/media
     environment:
-      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/procedure
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-procedure}
+      - REDIS_URL=redis://redis:6379/0
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     env_file:
       - ./backend/.env
     networks:
       - procedure_network
-    restart: unless-stopped
 
   doctor-bot:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: procedure_doctor_bot
+    restart: unless-stopped
     command: python -m bots.doctor_bot.main
+    volumes:
+      - ./backend/media:/app/media
     environment:
-      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/procedure
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-procedure}
+      - REDIS_URL=redis://redis:6379/0
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     env_file:
       - ./backend/.env
     networks:
       - procedure_network
+
+  dozzle:
+    image: amir20/dozzle:latest
+    container_name: procedure_dozzle
     restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - DOZZLE_BASE=/dozzle
+      - DOZZLE_NO_ANALYTICS=true
+    networks:
+      - procedure_network
 
 volumes:
   postgres_data:
+  redis_data:
+  static_data:
 
 networks:
   procedure_network:
