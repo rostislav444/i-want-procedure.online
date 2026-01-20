@@ -7,8 +7,8 @@ import Image from 'next/image'
 import { Calendar, Clock, Users, LogOut, Menu, X, LinkIcon, Copy, Check, Home, Scissors, ChevronLeft, ChevronRight, Globe, UsersRound, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ThemeSettings } from '@/components/theme-settings'
-import { authApi, companyApi } from '@/lib/api'
-import { CompanyProvider } from '@/contexts/CompanyContext'
+import { CompanyProvider, useCompany } from '@/contexts/CompanyContext'
+import { CompanySelector } from '@/components/company-selector'
 
 // Base navigation items
 const baseNavigation = [
@@ -30,9 +30,8 @@ const clinicNavigation = [
 // Get navigation based on company type
 function getNavigation(companyType: 'solo' | 'clinic' | null) {
   if (companyType === 'clinic') {
-    // Insert "Команда" after "Головна"
     return [
-      baseNavigation[0], // Головна
+      baseNavigation[0],
       ...clinicNavigation,
       ...baseNavigation.slice(1),
     ]
@@ -40,15 +39,10 @@ function getNavigation(companyType: 'solo' | 'clinic' | null) {
   return baseNavigation
 }
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+function DashboardContent({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
-  const [user, setUser] = useState<any>(null)
-  const [company, setCompany] = useState<any>(null)
+  const { user, company, isLoading, needsCompanySelection } = useCompany()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -76,26 +70,9 @@ export default function DashboardLayout({
     setTimeout(() => setCopied(false), 2000)
   }
 
-  useEffect(() => {
-    const token = localStorage.getItem('token')
-    if (!token) {
-      router.push('/auth/login')
-      return
-    }
-
-    Promise.all([authApi.getMe(), companyApi.getMyCompany()])
-      .then(([userData, companyData]) => {
-        setUser(userData)
-        setCompany(companyData)
-      })
-      .catch(() => {
-        localStorage.removeItem('token')
-        router.push('/auth/login')
-      })
-  }, [router])
-
   const handleLogout = () => {
     localStorage.removeItem('token')
+    localStorage.removeItem('selected_company_id')
     router.push('/auth/login')
   }
 
@@ -104,6 +81,21 @@ export default function DashboardLayout({
     return getNavigation(company?.type || null)
   }, [company?.type])
 
+  // Show loading spinner
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
+
+  // Show company selection if needed
+  if (needsCompanySelection) {
+    return <CompanySelector />
+  }
+
+  // If no user (shouldn't happen, context redirects)
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -333,11 +325,21 @@ export default function DashboardLayout({
           </div>
         </div>
         <main className="p-4 lg:p-8">
-          <CompanyProvider>
-            {children}
-          </CompanyProvider>
+          {children}
         </main>
       </div>
     </div>
+  )
+}
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <CompanyProvider>
+      <DashboardContent>{children}</DashboardContent>
+    </CompanyProvider>
   )
 }

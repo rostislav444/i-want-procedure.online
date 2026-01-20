@@ -15,7 +15,7 @@ export default function SpecialistClientsPage() {
   const params = useParams()
   const router = useRouter()
   const specialistId = Number(params.id)
-  const { companyType } = useCompany()
+  const { companyType, selectedCompanyId } = useCompany()
 
   const [specialist, setSpecialist] = useState<SpecialistProfile | null>(null)
   const [clients, setClients] = useState<Client[]>([])
@@ -26,14 +26,17 @@ export default function SpecialistClientsPage() {
       router.push('/admin')
       return
     }
-    loadData()
-  }, [specialistId, companyType])
+    if (selectedCompanyId) {
+      loadData()
+    }
+  }, [specialistId, companyType, selectedCompanyId])
 
   const loadData = async () => {
+    if (!selectedCompanyId) return
     try {
       const [specialistData, clientsData] = await Promise.all([
-        specialistsApi.getById(specialistId),
-        specialistsApi.getClients(specialistId),
+        specialistsApi.getById(specialistId, selectedCompanyId),
+        specialistsApi.getClients(specialistId, selectedCompanyId),
       ])
       setSpecialist(specialistData)
       setClients(clientsData)

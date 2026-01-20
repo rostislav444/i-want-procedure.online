@@ -9,7 +9,7 @@ from app.models.company import Company, generate_slug
 from app.models.user import User
 from app.models.company_member import CompanyMember
 from app.models.schedule import Schedule
-from app.schemas.company import CompanyResponse, CompanyUpdate, CompanyCreate
+from app.schemas.company import CompanyResponse, CompanyUpdate, CompanyCreate, CompanyMembershipResponse
 from app.schemas.user import UserResponse
 
 router = APIRouter(prefix="/companies")
@@ -32,6 +32,32 @@ async def get_unique_slug(db: DbSession, base_slug: str) -> str:
             return slug
         slug = f"{base_slug}-{counter}"
         counter += 1
+
+
+@router.get("/my-memberships", response_model=list[CompanyMembershipResponse])
+async def get_my_company_memberships(current_user: CurrentUser, db: DbSession):
+    """Get all companies the user is a member of, with role info."""
+    result = await db.execute(
+        select(CompanyMember)
+        .options(selectinload(CompanyMember.company))
+        .where(CompanyMember.user_id == current_user.id)
+        .where(CompanyMember.is_active == True)
+    )
+    memberships = result.scalars().all()
+
+    return [
+        CompanyMembershipResponse(
+            id=m.company.id,
+            name=m.company.name,
+            slug=m.company.slug,
+            type=m.company.type,
+            logo_url=m.company.logo_url,
+            is_owner=m.is_owner,
+            is_manager=m.is_manager,
+            is_specialist=m.is_specialist,
+        )
+        for m in memberships
+    ]
 
 
 @router.post("/me", response_model=CompanyResponse, status_code=status.HTTP_201_CREATED)

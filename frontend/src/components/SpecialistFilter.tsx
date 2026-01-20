@@ -12,23 +12,24 @@ interface SpecialistFilterProps {
 }
 
 export function SpecialistFilter({ value, onChange, className = '' }: SpecialistFilterProps) {
-  const { companyType, canViewAllAppointments } = useCompany()
+  const { companyType, canViewAllAppointments, selectedCompanyId } = useCompany()
   const [specialists, setSpecialists] = useState<SpecialistListItem[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     // Only load for clinics with proper permissions
-    if (companyType !== 'clinic' || !canViewAllAppointments) {
+    if (companyType !== 'clinic' || !canViewAllAppointments || !selectedCompanyId) {
       setLoading(false)
       return
     }
 
     loadSpecialists()
-  }, [companyType, canViewAllAppointments])
+  }, [companyType, canViewAllAppointments, selectedCompanyId])
 
   const loadSpecialists = async () => {
+    if (!selectedCompanyId) return
     try {
-      const data = await specialistsApi.getAll()
+      const data = await specialistsApi.getAll(selectedCompanyId)
       setSpecialists(data)
     } catch (error) {
       console.error('Failed to load specialists:', error)

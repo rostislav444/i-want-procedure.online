@@ -27,7 +27,7 @@ import {
 } from 'lucide-react'
 
 export default function LinksPage() {
-  const { companyType } = useCompany()
+  const { companyType, selectedCompanyId } = useCompany()
   const [company, setCompany] = useState<Company | null>(null)
   const [services, setServices] = useState<Service[]>([])
   const [specialists, setSpecialists] = useState<SpecialistListItem[]>([])
@@ -55,8 +55,8 @@ export default function LinksPage() {
       setCompany(companyData)
       setServices(servicesData.filter(s => s.is_active))
 
-      if (companyData.type === 'clinic') {
-        const specialistsData = await specialistsApi.getAll(false)
+      if (companyData.type === 'clinic' && selectedCompanyId) {
+        const specialistsData = await specialistsApi.getAll(selectedCompanyId, false)
         setSpecialists(specialistsData)
       }
     } catch (error) {

@@ -78,6 +78,22 @@ class CompanyResponse(BaseModel):
         from_attributes = True
 
 
+class CompanyMembershipResponse(BaseModel):
+    """Company with user's membership info for company selection."""
+    id: int
+    name: str
+    slug: str
+    type: CompanyType
+    logo_url: str | None = None
+    # User's role in this company
+    is_owner: bool
+    is_manager: bool
+    is_specialist: bool
+
+    class Config:
+        from_attributes = True
+
+
 class CompanyPublicResponse(BaseModel):
     """Public response without sensitive data like invite_code"""
     id: int

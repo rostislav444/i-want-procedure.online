@@ -9,12 +9,17 @@ export const api = axios.create({
   },
 })
 
-// Add token to requests
+// Add token and company ID to requests
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
+    }
+    // Add selected company ID header
+    const companyId = localStorage.getItem('selected_company_id')
+    if (companyId) {
+      config.headers['X-Company-Id'] = companyId
     }
   }
   return config
@@ -361,6 +366,18 @@ export const clientsApi = {
   },
 }
 
+// Company Membership (for company selection)
+export interface CompanyMembership {
+  id: number
+  name: string
+  slug: string
+  type: 'solo' | 'clinic'
+  logo_url: string | null
+  is_owner: boolean
+  is_manager: boolean
+  is_specialist: boolean
+}
+
 // Company Types
 export interface Company {
   id: number
@@ -402,6 +419,10 @@ export interface Company {
 
 // Company API
 export const companyApi = {
+  getMyMemberships: async (): Promise<CompanyMembership[]> => {
+    const response = await api.get('/companies/my-memberships')
+    return response.data
+  },
   getMyCompany: async (): Promise<Company> => {
     const response = await api.get('/companies/me')
     return response.data
@@ -576,6 +597,7 @@ export interface SpecialistListItem {
   first_name: string
   last_name: string
   position: string | null
+  position_id: number | null
   is_active: boolean
   services_count: number
   google_connected: boolean
@@ -586,6 +608,8 @@ export interface SpecialistProfile {
   user_id: number
   company_id: number
   position: string | null
+  position_id: number | null
+  photo_url: string | null
   bio: string | null
   is_active: boolean
   created_at: string
@@ -601,7 +625,7 @@ export interface SpecialistProfile {
 
 export interface SpecialistService {
   id: number
-  specialist_profile_id: number
+  member_id: number
   service_id: number
   service_name: string
   service_price: number
@@ -614,46 +638,46 @@ export interface SpecialistService {
 
 // Specialists API
 export const specialistsApi = {
-  getAll: async (includeInactive = false): Promise<SpecialistListItem[]> => {
-    const response = await api.get('/specialists', { params: { include_inactive: includeInactive } })
+  getAll: async (companyId: number, includeInactive = false): Promise<SpecialistListItem[]> => {
+    const response = await api.get('/specialists', { params: { company_id: companyId, include_inactive: includeInactive } })
     return response.data
   },
-  getMe: async (): Promise<SpecialistProfile> => {
-    const response = await api.get('/specialists/me')
+  getMe: async (companyId?: number): Promise<SpecialistProfile> => {
+    const response = await api.get('/specialists/me', { params: companyId ? { company_id: companyId } : {} })
     return response.data
   },
-  getById: async (id: number): Promise<SpecialistProfile> => {
-    const response = await api.get(`/specialists/${id}`)
+  getById: async (id: number, companyId: number): Promise<SpecialistProfile> => {
+    const response = await api.get(`/specialists/${id}`, { params: { company_id: companyId } })
     return response.data
   },
-  update: async (id: number, data: {
-    position?: string
+  update: async (id: number, companyId: number, data: {
+    position_id?: number | null
     bio?: string
     is_active?: boolean
   }): Promise<SpecialistProfile> => {
-    const response = await api.patch(`/specialists/${id}`, data)
+    const response = await api.patch(`/specialists/${id}`, data, { params: { company_id: companyId } })
     return response.data
   },
   // Services
-  getServices: async (specialistId: number): Promise<SpecialistService[]> => {
-    const response = await api.get(`/specialists/${specialistId}/services`)
+  getServices: async (specialistId: number, companyId: number): Promise<SpecialistService[]> => {
+    const response = await api.get(`/specialists/${specialistId}/services`, { params: { company_id: companyId } })
     return response.data
   },
-  assignServices: async (specialistId: number, serviceIds: number[]): Promise<SpecialistService[]> => {
-    const response = await api.post(`/specialists/${specialistId}/services`, { service_ids: serviceIds })
+  assignServices: async (specialistId: number, companyId: number, serviceIds: number[]): Promise<SpecialistService[]> => {
+    const response = await api.post(`/specialists/${specialistId}/services`, { service_ids: serviceIds }, { params: { company_id: companyId } })
     return response.data
   },
-  removeService: async (specialistId: number, serviceId: number): Promise<void> => {
-    await api.delete(`/specialists/${specialistId}/services/${serviceId}`)
+  removeService: async (specialistId: number, companyId: number, serviceId: number): Promise<void> => {
+    await api.delete(`/specialists/${specialistId}/services/${serviceId}`, { params: { company_id: companyId } })
   },
   // Appointments
-  getAppointments: async (specialistId: number, params?: { date_from?: string; date_to?: string }): Promise<Appointment[]> => {
-    const response = await api.get(`/specialists/${specialistId}/appointments`, { params })
+  getAppointments: async (specialistId: number, companyId: number, params?: { date_from?: string; date_to?: string }): Promise<Appointment[]> => {
+    const response = await api.get(`/specialists/${specialistId}/appointments`, { params: { company_id: companyId, ...params } })
     return response.data
   },
   // Clients
-  getClients: async (specialistId: number): Promise<Client[]> => {
-    const response = await api.get(`/specialists/${specialistId}/clients`)
+  getClients: async (specialistId: number, companyId: number): Promise<Client[]> => {
+    const response = await api.get(`/specialists/${specialistId}/clients`, { params: { company_id: companyId } })
     return response.data
   },
 }

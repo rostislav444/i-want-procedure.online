@@ -46,7 +46,7 @@ export default function NewServicePage() {
         ...formData,
         category_id: formData.category_id || undefined,
       })
-      router.push(`/services/${service.id}`)
+      router.push(`/admin/services/${service.id}`)
     } catch (error) {
       console.error('Error creating service:', error)
     } finally {
@@ -57,7 +57,7 @@ export default function NewServicePage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Link href="/services">
+        <Link href="/admin/services">
           <Button variant="ghost" size="icon">
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -141,7 +141,7 @@ export default function NewServicePage() {
               <Button type="submit" disabled={saving}>
                 {saving ? 'Збереження...' : 'Створити послугу'}
               </Button>
-              <Link href="/services">
+              <Link href="/admin/services">
                 <Button type="button" variant="outline">
                   Скасувати
                 </Button>

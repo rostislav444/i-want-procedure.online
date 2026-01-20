@@ -148,9 +148,17 @@ async def get_specialists(
 async def get_my_specialist_profile(
     current_user: CurrentUser,
     db: DbSession,
-    company_id: int,
+    company_id: int | None = None,
 ):
     """Get current user's specialist profile in a company."""
+    # Use user's primary company if not specified
+    effective_company_id = company_id or current_user.company_id
+    if not effective_company_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No company found",
+        )
+
     result = await db.execute(
         select(CompanyMember)
         .options(
@@ -158,7 +166,7 @@ async def get_my_specialist_profile(
             selectinload(CompanyMember.position),
         )
         .where(CompanyMember.user_id == current_user.id)
-        .where(CompanyMember.company_id == company_id)
+        .where(CompanyMember.company_id == effective_company_id)
         .where(CompanyMember.is_specialist == True)
     )
     member = result.scalar_one_or_none()

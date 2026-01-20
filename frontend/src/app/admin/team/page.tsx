@@ -12,7 +12,7 @@ import { UserPlus, Calendar, Scissors, ChevronRight, Check, X } from 'lucide-rea
 
 export default function TeamPage() {
   const router = useRouter()
-  const { companyType, canManageTeam } = useCompany()
+  const { companyType, canManageTeam, selectedCompanyId } = useCompany()
   const [specialists, setSpecialists] = useState<SpecialistListItem[]>([])
   const [loading, setLoading] = useState(true)
   const [showInactive, setShowInactive] = useState(false)
@@ -24,13 +24,16 @@ export default function TeamPage() {
       return
     }
 
-    loadSpecialists()
-  }, [companyType, showInactive])
+    if (selectedCompanyId) {
+      loadSpecialists()
+    }
+  }, [companyType, showInactive, selectedCompanyId])
 
   const loadSpecialists = async () => {
+    if (!selectedCompanyId) return
     try {
       setLoading(true)
-      const data = await specialistsApi.getAll(showInactive)
+      const data = await specialistsApi.getAll(selectedCompanyId, showInactive)
       setSpecialists(data)
     } catch (error) {
       console.error('Failed to load specialists:', error)

@@ -37,7 +37,7 @@ export default function SpecialistAppointmentsPage() {
   const params = useParams()
   const router = useRouter()
   const specialistId = Number(params.id)
-  const { companyType } = useCompany()
+  const { companyType, selectedCompanyId } = useCompany()
 
   const [specialist, setSpecialist] = useState<SpecialistProfile | null>(null)
   const [appointments, setAppointments] = useState<Appointment[]>([])
@@ -57,18 +57,21 @@ export default function SpecialistAppointmentsPage() {
       router.push('/admin')
       return
     }
-    loadSpecialist()
-  }, [specialistId, companyType])
+    if (selectedCompanyId) {
+      loadSpecialist()
+    }
+  }, [specialistId, companyType, selectedCompanyId])
 
   useEffect(() => {
-    if (specialist) {
+    if (specialist && selectedCompanyId) {
       loadAppointments()
     }
-  }, [specialist, selectedDate, viewMode])
+  }, [specialist, selectedDate, viewMode, selectedCompanyId])
 
   const loadSpecialist = async () => {
+    if (!selectedCompanyId) return
     try {
-      const data = await specialistsApi.getById(specialistId)
+      const data = await specialistsApi.getById(specialistId, selectedCompanyId)
       setSpecialist(data)
     } catch (error) {
       console.error('Failed to load specialist:', error)
@@ -79,6 +82,7 @@ export default function SpecialistAppointmentsPage() {
   }
 
   const loadAppointments = async () => {
+    if (!selectedCompanyId) return
     try {
       let dateFrom: string, dateTo: string
 
@@ -93,7 +97,7 @@ export default function SpecialistAppointmentsPage() {
         dateTo = format(monthEnd, 'yyyy-MM-dd')
       }
 
-      const data = await specialistsApi.getAppointments(specialistId, {
+      const data = await specialistsApi.getAppointments(specialistId, selectedCompanyId, {
         date_from: dateFrom,
         date_to: dateTo,
       })

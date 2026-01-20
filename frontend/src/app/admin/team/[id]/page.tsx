@@ -28,7 +28,7 @@ export default function SpecialistDetailPage() {
   const params = useParams()
   const router = useRouter()
   const specialistId = Number(params.id)
-  const { canManageTeam, companyType } = useCompany()
+  const { canManageTeam, companyType, selectedCompanyId } = useCompany()
 
   const [specialist, setSpecialist] = useState<SpecialistProfile | null>(null)
   const [loading, setLoading] = useState(true)
@@ -37,7 +37,7 @@ export default function SpecialistDetailPage() {
   // Edit form
   const [editMode, setEditMode] = useState(false)
   const [editForm, setEditForm] = useState({
-    position: '',
+    position_id: null as number | null,
     bio: '',
   })
 
@@ -46,16 +46,19 @@ export default function SpecialistDetailPage() {
       router.push('/admin')
       return
     }
-    loadData()
-  }, [specialistId, companyType])
+    if (selectedCompanyId) {
+      loadData()
+    }
+  }, [specialistId, companyType, selectedCompanyId])
 
   const loadData = async () => {
+    if (!selectedCompanyId) return
     try {
       setLoading(true)
-      const specialistData = await specialistsApi.getById(specialistId)
+      const specialistData = await specialistsApi.getById(specialistId, selectedCompanyId)
       setSpecialist(specialistData)
       setEditForm({
-        position: specialistData.position || '',
+        position_id: specialistData.position_id || null,
         bio: specialistData.bio || '',
       })
     } catch (error) {
@@ -67,11 +70,11 @@ export default function SpecialistDetailPage() {
   }
 
   const handleSaveProfile = async () => {
-    if (!specialist) return
+    if (!specialist || !selectedCompanyId) return
 
     try {
       setSaving(true)
-      await specialistsApi.update(specialistId, editForm)
+      await specialistsApi.update(specialistId, selectedCompanyId, editForm)
       setSpecialist({ ...specialist, ...editForm })
       setEditMode(false)
     } catch (error) {
@@ -189,14 +192,6 @@ export default function SpecialistDetailPage() {
         <CardContent className="space-y-4">
           {editMode ? (
             <>
-              <div className="space-y-2">
-                <Label>Посада</Label>
-                <Input
-                  value={editForm.position}
-                  onChange={(e) => setEditForm({ ...editForm, position: e.target.value })}
-                  placeholder="Наприклад: Косметолог"
-                />
-              </div>
               <div className="space-y-2">
                 <Label>Про себе</Label>
                 <Textarea

@@ -81,7 +81,7 @@ const STATUS_LABELS = {
 }
 
 export default function AppointmentsPage() {
-  const { companyType, canViewAllAppointments } = useCompany()
+  const { companyType, canViewAllAppointments, selectedCompanyId } = useCompany()
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [specialists, setSpecialists] = useState<SpecialistListItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -98,18 +98,19 @@ export default function AppointmentsPage() {
 
   // Load specialists for clinic managers
   useEffect(() => {
-    if (companyType === 'clinic' && canViewAllAppointments) {
+    if (companyType === 'clinic' && canViewAllAppointments && selectedCompanyId) {
       loadSpecialists()
     }
-  }, [companyType, canViewAllAppointments])
+  }, [companyType, canViewAllAppointments, selectedCompanyId])
 
   useEffect(() => {
     loadAppointments()
   }, [selectedDate, viewMode, selectedSpecialist])
 
   const loadSpecialists = async () => {
+    if (!selectedCompanyId) return
     try {
-      const data = await specialistsApi.getAll()
+      const data = await specialistsApi.getAll(selectedCompanyId)
       setSpecialists(data)
     } catch (error) {
       console.error('Failed to load specialists:', error)

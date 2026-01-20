@@ -20,7 +20,7 @@ export default function SpecialistServicesPage() {
   const params = useParams()
   const router = useRouter()
   const specialistId = Number(params.id)
-  const { companyType, canManageTeam } = useCompany()
+  const { companyType, canManageTeam, selectedCompanyId } = useCompany()
 
   const [specialist, setSpecialist] = useState<SpecialistProfile | null>(null)
   const [specialistServices, setSpecialistServices] = useState<SpecialistService[]>([])
@@ -36,14 +36,17 @@ export default function SpecialistServicesPage() {
       router.push('/admin')
       return
     }
-    loadData()
-  }, [specialistId, companyType])
+    if (selectedCompanyId) {
+      loadData()
+    }
+  }, [specialistId, companyType, selectedCompanyId])
 
   const loadData = async () => {
+    if (!selectedCompanyId) return
     try {
       const [specialistData, servicesData, allServicesData] = await Promise.all([
-        specialistsApi.getById(specialistId),
-        specialistsApi.getServices(specialistId),
+        specialistsApi.getById(specialistId, selectedCompanyId),
+        specialistsApi.getServices(specialistId, selectedCompanyId),
         servicesApi.getAll(),
       ])
 
@@ -70,10 +73,12 @@ export default function SpecialistServicesPage() {
   }
 
   const handleSaveServices = async () => {
+    if (!selectedCompanyId) return
     try {
       setSaving(true)
       const updatedServices = await specialistsApi.assignServices(
         specialistId,
+        selectedCompanyId,
         Array.from(selectedServices)
       )
       setSpecialistServices(updatedServices)
