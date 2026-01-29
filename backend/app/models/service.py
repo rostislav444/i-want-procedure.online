@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from app.models.specialty import Specialty
     from app.models.company_member import MemberService
     from app.models.position import Position
+    from app.models.inventory import ServiceInventoryItem
 
 
 class ServiceCategory(Base):
@@ -81,6 +82,9 @@ class Service(Base):
         back_populates="service", cascade="all, delete-orphan"
     )
     member_services: Mapped[list["MemberService"]] = relationship(
+        back_populates="service", cascade="all, delete-orphan"
+    )
+    inventory_items: Mapped[list["ServiceInventoryItem"]] = relationship(
         back_populates="service", cascade="all, delete-orphan"
     )
 

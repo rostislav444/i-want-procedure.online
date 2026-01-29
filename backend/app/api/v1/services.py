@@ -37,6 +37,7 @@ async def create_service(
         company_id=current_user.company_id,
         category_id=service_data.category_id,
         specialty_id=service_data.specialty_id,
+        position_id=service_data.position_id,
         doctor_id=service_data.doctor_id or current_user.id,
         name=service_data.name,
         description=service_data.description,
@@ -496,3 +497,153 @@ async def delete_category(category_id: int, current_user: CurrentUser, db: DbSes
 
     await db.delete(category)
     await db.commit()
+
+
+# ===== AI Service Generation =====
+
+from pydantic import BaseModel
+from typing import Optional
+from app.core.config import settings
+
+
+class GeneratedService(BaseModel):
+    """A single generated service."""
+    name: str
+    description: str
+    duration_minutes: int
+    price: int
+    category_name: str
+
+
+class GenerateServicesRequest(BaseModel):
+    """Request to generate services using AI."""
+    position_name: str
+    source_type: str  # "text", "url", "pdf"
+    content: str  # Text content, URL, or base64 PDF
+    city: str = "Київ"
+    additional_instructions: Optional[str] = None
+
+
+class GenerateServicesResponse(BaseModel):
+    """Response with generated services."""
+    services: list[GeneratedService]
+    categories: list[str]
+    estimated_tokens: int
+
+
+SERVICES_GENERATION_PROMPT = """Ти експерт з бьюті-індустрії та косметології в Україні. Твоє завдання - створити список послуг для спеціаліста.
+
+ПРАВИЛА:
+1. Аналізуй вхідні дані (текст, опис з сайту, PDF) та створи релевантні послуги
+2. Групуй послуги по категоріях (наприклад: "Чистки", "Пілінги", "Ін'єкції", "Догляд")
+3. Вказуй реалістичну тривалість процедури в хвилинах (30, 45, 60, 90, 120)
+4. Вказуй орієнтовну ціну для українського ринку (місто: {city})
+5. Опис має бути коротким (1-2 речення) та інформативним
+6. Якщо інформації недостатньо - використовуй типові послуги для цієї спеціальності
+
+ФОРМАТ ВІДПОВІДІ (тільки JSON, без пояснень):
+{{
+  "categories": ["Категорія 1", "Категорія 2"],
+  "services": [
+    {{
+      "name": "Назва послуги",
+      "description": "Короткий опис",
+      "duration_minutes": 60,
+      "price": 1500,
+      "category_name": "Категорія 1"
+    }}
+  ]
+}}
+
+Створи 10-20 найбільш популярних послуг."""
+
+
+@router.post("/generate-from-ai", response_model=GenerateServicesResponse)
+async def generate_services_from_ai(
+    request: GenerateServicesRequest,
+    current_user: CurrentUser,
+):
+    """Generate services using AI based on text, URL, or PDF."""
+    if not settings.ANTHROPIC_API_KEY:
+        raise HTTPException(
+            status_code=503,
+            detail="AI generation not configured. Please set ANTHROPIC_API_KEY."
+        )
+
+    # Build the prompt based on source type
+    source_description = ""
+    if request.source_type == "text":
+        source_description = f"Текстовий опис послуг:\n{request.content}"
+    elif request.source_type == "url":
+        source_description = f"URL сайту з послугами: {request.content}\n\nПроаналізуй цей URL та створи список послуг на основі інформації з сайту."
+    elif request.source_type == "pdf":
+        source_description = f"PDF документ (base64):\n{request.content[:1000]}...\n\nПроаналізуй цей документ та створи список послуг."
+
+    user_prompt = f"""Спеціальність/посада: {request.position_name}
+Місто: {request.city}
+
+{source_description}
+
+{f'Додаткові вимоги: {request.additional_instructions}' if request.additional_instructions else ''}
+
+Створи список послуг у форматі JSON."""
+
+    try:
+        import anthropic
+        import json
+
+        client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
+
+        system_prompt = SERVICES_GENERATION_PROMPT.format(city=request.city)
+
+        message = client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=4096,
+            system=system_prompt,
+            messages=[
+                {
+                    "role": "user",
+                    "content": user_prompt,
+                }
+            ],
+        )
+
+        # Parse the JSON response
+        response_text = message.content[0].text
+
+        # Try to extract JSON from the response
+        try:
+            # Remove markdown code blocks if present
+            if "```json" in response_text:
+                response_text = response_text.split("```json")[1].split("```")[0]
+            elif "```" in response_text:
+                response_text = response_text.split("```")[1].split("```")[0]
+
+            data = json.loads(response_text.strip())
+        except json.JSONDecodeError:
+            # Try to find JSON object in the text
+            import re
+            json_match = re.search(r'\{[\s\S]*\}', response_text)
+            if json_match:
+                data = json.loads(json_match.group())
+            else:
+                raise HTTPException(
+                    status_code=500,
+                    detail="Failed to parse AI response as JSON"
+                )
+
+        services = [GeneratedService(**s) for s in data.get("services", [])]
+        categories = data.get("categories", [])
+        estimated_tokens = message.usage.input_tokens + message.usage.output_tokens
+
+        return GenerateServicesResponse(
+            services=services,
+            categories=categories,
+            estimated_tokens=estimated_tokens,
+        )
+
+    except anthropic.APIError as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"AI API error: {str(e)}"
+        )

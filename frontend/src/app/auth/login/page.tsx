@@ -103,8 +103,8 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 py-12 px-4 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-md bg-white dark:bg-gray-900 dark:border-gray-800">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl text-center">Вхід</CardTitle>
           <CardDescription className="text-center">
@@ -113,7 +113,7 @@ function LoginForm() {
         </CardHeader>
         <CardContent className="space-y-4">
           {error && (
-            <div className="bg-red-50 text-red-500 p-3 rounded-md text-sm">
+            <div className="bg-red-50 dark:bg-red-950/50 text-red-500 dark:text-red-400 p-3 rounded-md text-sm">
               {error}
             </div>
           )}
@@ -130,6 +130,7 @@ function LoginForm() {
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={loading}
                 required
+                className="bg-white dark:bg-gray-800 dark:border-gray-700"
               />
             </div>
             <div className="space-y-2">
@@ -142,6 +143,7 @@ function LoginForm() {
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={loading}
                 required
+                className="bg-white dark:bg-gray-800 dark:border-gray-700"
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
@@ -151,10 +153,10 @@ function LoginForm() {
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
+              <span className="w-full border-t dark:border-gray-700" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-muted-foreground">або</span>
+              <span className="bg-white dark:bg-gray-900 px-2 text-muted-foreground">або</span>
             </div>
           </div>
 
@@ -162,7 +164,7 @@ function LoginForm() {
           <Button
             type="button"
             variant="outline"
-            className="w-full"
+            className="w-full bg-white dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
             onClick={handleGoogleLogin}
             disabled={googleLoading || loading}
           >
@@ -201,7 +203,7 @@ function LoginForm() {
             </>
           )}
 
-          <p className="text-sm text-center text-gray-500 mt-4">
+          <p className="text-sm text-center text-muted-foreground mt-4">
             Немає акаунту?{' '}
             <a href="/auth/register" className="text-primary hover:underline">
               Зареєструватися
@@ -229,8 +231,8 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-gray-100"></div>
       </div>
     }>
       <LoginForm />

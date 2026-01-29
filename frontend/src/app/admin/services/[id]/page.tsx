@@ -3,32 +3,36 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Pencil, Trash2, Clock, Plus, GripVertical, X, Package, ListOrdered, Folder } from 'lucide-react'
+import { ArrowLeft, Pencil, Trash2, Clock, Plus, X, Package, ListOrdered, Folder, Briefcase, Banknote } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { servicesApi, categoriesApi, Service, ServiceStep, ServiceProduct, ServiceCategory } from '@/lib/api'
+import { ProtocolTemplateEditor } from '@/components/protocols/ProtocolTemplateEditor'
+import { servicesApi, positionsApi, inventoryApi, Service, ServiceStep, ServiceProduct, Position, ServiceInventoryItem, InventoryItemListItem } from '@/lib/api'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { useCompany } from '@/contexts/CompanyContext'
 
 export default function ServiceDetailPage() {
   const params = useParams()
   const router = useRouter()
   const serviceId = Number(params.id)
+  const { companyType } = useCompany()
 
   const [service, setService] = useState<Service | null>(null)
-  const [categories, setCategories] = useState<ServiceCategory[]>([])
+  const [positions, setPositions] = useState<Position[]>([])
   const [loading, setLoading] = useState(true)
-  const [isEditing, setIsEditing] = useState(false)
-  const [saving, setSaving] = useState(false)
 
-  // Edit form state
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    duration_minutes: 60,
-    price: 0,
-    category_id: null as number | null,
-  })
+  // Inventory items for auto-deduction
+  const [serviceInventoryItems, setServiceInventoryItems] = useState<ServiceInventoryItem[]>([])
+  const [availableInventoryItems, setAvailableInventoryItems] = useState<InventoryItemListItem[]>([])
+  const [showNewInventoryItem, setShowNewInventoryItem] = useState(false)
+  const [newInventoryItem, setNewInventoryItem] = useState({ item_id: 0, quantity: 1 })
 
   // New step/product forms
   const [showNewStep, setShowNewStep] = useState(false)
@@ -38,23 +42,32 @@ export default function ServiceDetailPage() {
 
   useEffect(() => {
     loadData()
-  }, [serviceId])
+  }, [serviceId, companyType])
 
   const loadData = async () => {
     try {
-      const [serviceData, categoriesData] = await Promise.all([
+      const promises: Promise<any>[] = [
         servicesApi.getById(serviceId),
-        categoriesApi.getTree(),
-      ])
+        inventoryApi.getServiceItems(serviceId),
+        inventoryApi.getItems({ page_size: 200 }),
+      ]
+      // Only load positions for clinics
+      if (companyType === 'clinic') {
+        promises.push(positionsApi.getAll())
+      }
+
+      const results = await Promise.all(promises)
+      const serviceData = results[0] as Service
+      const inventoryItemsData = results[1] as ServiceInventoryItem[]
+      const availableItemsResponse = results[2] as { items: InventoryItemListItem[] }
+      const positionsData = results[3] as Position[] | undefined
+
       setService(serviceData)
-      setCategories(categoriesData)
-      setFormData({
-        name: serviceData.name,
-        description: serviceData.description || '',
-        duration_minutes: serviceData.duration_minutes,
-        price: serviceData.price,
-        category_id: serviceData.category_id || null,
-      })
+      setServiceInventoryItems(inventoryItemsData)
+      setAvailableInventoryItems(availableItemsResponse.items)
+      if (positionsData) {
+        setPositions(positionsData)
+      }
     } catch (error) {
       console.error('Error loading service:', error)
       router.push('/admin/services')
@@ -63,39 +76,10 @@ export default function ServiceDetailPage() {
     }
   }
 
-  // Flatten categories tree for dropdown with indentation levels
-  const getFlatCategories = (cats: ServiceCategory[], level = 0): { id: number; name: string; level: number }[] => {
-    const result: { id: number; name: string; level: number }[] = []
-    cats.forEach(c => {
-      result.push({ id: c.id, name: c.name, level })
-      if (c.children && c.children.length > 0) {
-        result.push(...getFlatCategories(c.children, level + 1))
-      }
-    })
-    return result
-  }
-
-  // Get category name by id
-  const getCategoryName = (id: number | null): string => {
-    if (!id) return ''
-    const flat = getFlatCategories(categories)
-    return flat.find(c => c.id === id)?.name || ''
-  }
-
-  const handleSave = async () => {
-    setSaving(true)
-    try {
-      await servicesApi.update(serviceId, {
-        ...formData,
-        category_id: formData.category_id || undefined,
-      })
-      await loadData()
-      setIsEditing(false)
-    } catch (error) {
-      console.error('Error saving service:', error)
-    } finally {
-      setSaving(false)
-    }
+  // Get position name by id
+  const getPositionName = (id: number | null): string | null => {
+    if (!id) return null
+    return positions.find(p => p.id === id)?.name || null
   }
 
   const handleDelete = async () => {
@@ -152,6 +136,27 @@ export default function ServiceDetailPage() {
     }
   }
 
+  const handleAddInventoryItem = async () => {
+    if (!newInventoryItem.item_id) return
+    try {
+      await inventoryApi.addServiceItem(serviceId, newInventoryItem)
+      await loadData()
+      setNewInventoryItem({ item_id: 0, quantity: 1 })
+      setShowNewInventoryItem(false)
+    } catch (error) {
+      console.error('Error adding inventory item:', error)
+    }
+  }
+
+  const handleRemoveInventoryItem = async (itemId: number) => {
+    try {
+      await inventoryApi.removeServiceItem(serviceId, itemId)
+      await loadData()
+    } catch (error) {
+      console.error('Error removing inventory item:', error)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -164,142 +169,60 @@ export default function ServiceDetailPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/admin/services">
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold">{service.name}</h1>
-            <p className="text-muted-foreground">
-              {service.duration_minutes} хв • {service.price} грн
-            </p>
+      {/* Service Header Card */}
+      <Card className="overflow-hidden">
+        <div className="p-6 pb-0">
+          {/* Top row: back button + actions */}
+          <div className="flex items-center justify-between mb-4">
+            <Link href="/admin/services">
+              <Button variant="ghost" size="sm" className="gap-2 -ml-2">
+                <ArrowLeft className="h-4 w-4" />
+                Послуги
+              </Button>
+            </Link>
+            <div className="flex gap-2">
+              <Link href={`/admin/services/${serviceId}/edit`}>
+                <Button variant="outline" size="sm">
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Редагувати
+                </Button>
+              </Link>
+              <Button variant="destructive" size="sm" onClick={handleDelete}>
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Service title and description */}
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold">{service.name}</h1>
+            {service.description ? (
+              <p className="text-sm text-muted-foreground mt-1">{service.description}</p>
+            ) : (
+              <p className="text-sm text-muted-foreground/60 italic mt-1">Опис не вказано</p>
+            )}
           </div>
         </div>
-        <div className="flex gap-2">
-          {isEditing ? (
-            <>
-              <Button variant="outline" onClick={() => setIsEditing(false)}>
-                Скасувати
-              </Button>
-              <Button onClick={handleSave} disabled={saving}>
-                {saving ? 'Збереження...' : 'Зберегти'}
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button variant="outline" onClick={() => setIsEditing(true)}>
-                <Pencil className="mr-2 h-4 w-4" />
-                Редагувати
-              </Button>
-              <Button variant="destructive" onClick={handleDelete}>
-                <Trash2 className="mr-2 h-4 w-4" />
-                Видалити
-              </Button>
-            </>
-          )}
-        </div>
-      </div>
 
-      {/* Main Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Основна інформація</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isEditing ? (
-            <div className="grid gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="category">Категорія</Label>
-                <select
-                  id="category"
-                  value={formData.category_id || ''}
-                  onChange={(e) => setFormData({ ...formData, category_id: e.target.value ? Number(e.target.value) : null })}
-                  className="w-full h-10 px-3 border rounded-md bg-background text-sm"
-                >
-                  <option value="">Без категорії</option>
-                  {getFlatCategories(categories).map(c => (
-                    <option key={c.id} value={c.id}>
-                      {'—'.repeat(c.level)} {c.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="name">Назва</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="description">Опис</Label>
-                <textarea
-                  id="description"
-                  className="w-full min-h-[100px] px-3 py-2 border rounded-md text-sm bg-background"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Детальний опис процедури..."
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="duration">Тривалість (хв)</Label>
-                  <Input
-                    id="duration"
-                    type="number"
-                    value={formData.duration_minutes}
-                    onChange={(e) => setFormData({ ...formData, duration_minutes: parseInt(e.target.value) })}
-                    min={15}
-                    step={15}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="price">Ціна (грн)</Label>
-                  <Input
-                    id="price"
-                    type="number"
-                    value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) })}
-                    min={0}
-                  />
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {service.description ? (
-                <p className="text-foreground whitespace-pre-wrap">{service.description}</p>
-              ) : (
-                <p className="text-muted-foreground italic">Опис не вказано</p>
-              )}
-              <div className="flex flex-wrap gap-6 pt-4 border-t">
-                <div>
-                  <p className="text-sm text-muted-foreground">Категорія</p>
-                  <p className="font-medium flex items-center gap-1">
-                    <Folder className="h-4 w-4" />
-                    {service.category?.name || <span className="text-muted-foreground italic">Без категорії</span>}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Тривалість</p>
-                  <p className="font-medium flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
-                    {service.duration_minutes} хв
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Ціна</p>
-                  <p className="font-semibold text-lg text-primary">{service.price} грн</p>
-                </div>
-              </div>
-            </div>
-          )}
-        </CardContent>
+        {/* Info grid */}
+        <div className="grid grid-cols-4 border-t border-border">
+          <div className="flex items-center gap-2.5 px-6 py-3 border-r border-border">
+            <Folder className="h-5 w-5 text-amber-500" />
+            <span>{service.category?.name || 'Без категорії'}</span>
+          </div>
+          <div className="flex items-center gap-2.5 px-6 py-3 border-r border-border">
+            <Briefcase className="h-5 w-5 text-blue-500" />
+            <span>{getPositionName(service.position_id || null) || 'Без посади'}</span>
+          </div>
+          <div className="flex items-center gap-2.5 px-6 py-3 border-r border-border">
+            <Clock className="h-5 w-5 text-emerald-500" />
+            <span>{service.duration_minutes} хв</span>
+          </div>
+          <div className="flex items-center gap-2.5 px-6 py-3">
+            <Banknote className="h-5 w-5 text-pink-500" />
+            <span>{service.price} грн</span>
+          </div>
+        </div>
       </Card>
 
       {/* Steps */}
@@ -452,6 +375,104 @@ export default function ServiceDetailPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Inventory Items for Auto-Deduction */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Package className="h-5 w-5 text-lime-500" />
+            Товари зі складу
+            <span className="text-xs font-normal text-muted-foreground">(автосписання)</span>
+          </CardTitle>
+          <Button variant="outline" size="sm" onClick={() => setShowNewInventoryItem(true)}>
+            <Plus className="mr-1 h-4 w-4" />
+            Додати товар
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {showNewInventoryItem && (
+            <div className="mb-4 p-4 border rounded-lg bg-muted/50">
+              <div className="grid gap-3">
+                <Select
+                  value={newInventoryItem.item_id ? newInventoryItem.item_id.toString() : ''}
+                  onValueChange={(v) => setNewInventoryItem({ ...newInventoryItem, item_id: parseInt(v) })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Оберіть товар зі складу" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableInventoryItems
+                      .filter(item => !serviceInventoryItems.some(si => si.item_id === item.id))
+                      .map(item => (
+                        <SelectItem key={item.id} value={item.id.toString()}>
+                          {item.name} ({item.current_stock} {item.unit})
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    min="1"
+                    placeholder="Кількість"
+                    className="w-24"
+                    value={newInventoryItem.quantity}
+                    onChange={(e) => setNewInventoryItem({ ...newInventoryItem, quantity: parseInt(e.target.value) || 1 })}
+                  />
+                  <span className="text-sm text-muted-foreground">на процедуру</span>
+                </div>
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={handleAddInventoryItem}>Додати</Button>
+                  <Button size="sm" variant="ghost" onClick={() => setShowNewInventoryItem(false)}>Скасувати</Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {serviceInventoryItems.length > 0 ? (
+            <div className="grid gap-3">
+              {serviceInventoryItems.map((item) => (
+                <div key={item.id} className="flex items-start gap-3 p-3 border rounded-lg">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-lime-500/10 text-lime-500 dark:bg-lime-400/20 dark:text-lime-400">
+                    <Package className="h-4 w-4" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-medium">{item.item_name}</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {item.quantity} {item.unit} на процедуру
+                    </p>
+                    <p className="text-xs text-muted-foreground/70">
+                      На складі: {item.current_stock} {item.unit}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-foreground hover:text-red-500"
+                    onClick={() => handleRemoveInventoryItem(item.item_id)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-4">
+              <p className="text-muted-foreground">Товари не прив'язані</p>
+              <p className="text-xs text-muted-foreground/70 mt-1">
+                Додайте товари зі складу, які будуть автоматично списуватися при завершенні процедури
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Protocol Template */}
+      <ProtocolTemplateEditor
+        serviceId={serviceId}
+        serviceName={service.name}
+        categoryName={service.category?.name}
+      />
     </div>
   )
 }

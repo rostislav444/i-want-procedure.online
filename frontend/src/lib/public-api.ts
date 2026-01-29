@@ -43,6 +43,7 @@ export interface PublicCompany {
   specialization?: string
   working_hours?: string
   social_links?: string
+  landing_html?: string
 }
 
 export interface PublicWebsiteSection {

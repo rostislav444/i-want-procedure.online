@@ -118,6 +118,8 @@ class CompanyPublicResponse(BaseModel):
     specialization: str | None = None
     working_hours: str | None = None
     social_links: str | None = None
+    # AI-generated landing
+    landing_html: str | None = None
 
     class Config:
         from_attributes = True

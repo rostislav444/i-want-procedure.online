@@ -29,6 +29,9 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_SECRET: Optional[str] = None
     GOOGLE_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/google/callback"
 
+    # AI (Anthropic)
+    ANTHROPIC_API_KEY: Optional[str] = None
+
     # API
     API_URL: str = "http://localhost:8000"
     API_V1_PREFIX: str = "/api/v1"

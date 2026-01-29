@@ -4,27 +4,27 @@ import { useEffect, useState, useMemo } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Calendar, Clock, Users, LogOut, Menu, X, LinkIcon, Copy, Check, Home, Scissors, ChevronLeft, ChevronRight, Globe, UsersRound, Settings } from 'lucide-react'
+import { Calendar, Clock, Users, LogOut, Menu, X, LinkIcon, Copy, Check, Home, Scissors, ChevronLeft, ChevronRight, UsersRound, Settings, Package } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ThemeSettings } from '@/components/theme-settings'
 import { CompanyProvider, useCompany } from '@/contexts/CompanyContext'
 import { CompanySelector } from '@/components/company-selector'
 
-// Base navigation items
+// Base navigation items with icon colors
 const baseNavigation = [
-  { name: 'Головна', href: '/admin', icon: Home },
-  { name: 'Записи', href: '/admin/appointments', icon: Calendar },
-  { name: 'Послуги', href: '/admin/services', icon: Scissors },
-  { name: 'Розклад', href: '/admin/schedule', icon: Clock },
-  { name: 'Клієнти', href: '/admin/clients', icon: Users },
-  { name: 'Мій сайт', href: '/admin/website', icon: Globe },
-  { name: 'Посилання', href: '/admin/links', icon: LinkIcon },
+  { name: 'Головна', href: '/admin', icon: Home, iconColor: 'text-pink-500' },
+  { name: 'Записи', href: '/admin/appointments', icon: Calendar, iconColor: 'text-blue-500' },
+  { name: 'Послуги', href: '/admin/services', icon: Scissors, iconColor: 'text-violet-500' },
+  { name: 'Розклад', href: '/admin/schedule', icon: Clock, iconColor: 'text-amber-500' },
+  { name: 'Клієнти', href: '/admin/clients', icon: Users, iconColor: 'text-emerald-500' },
+  { name: 'Склад', href: '/admin/inventory', icon: Package, iconColor: 'text-lime-500' },
+  { name: 'Посилання', href: '/admin/links', icon: LinkIcon, iconColor: 'text-cyan-500' },
 ]
 
 // Additional navigation for clinics
 const clinicNavigation = [
-  { name: 'Команда', href: '/admin/team', icon: UsersRound },
-  { name: 'Налаштування', href: '/admin/settings', icon: Settings },
+  { name: 'Команда', href: '/admin/team', icon: UsersRound, iconColor: 'text-orange-500' },
+  { name: 'Налаштування', href: '/admin/settings', icon: Settings, iconColor: 'text-slate-500' },
 ]
 
 // Get navigation based on company type
@@ -131,22 +131,25 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
               <X className="h-5 w-5" />
             </Button>
           </div>
-          <nav className="flex-1 px-2 py-4 space-y-1">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`flex items-center px-4 py-2 text-sm font-medium rounded-md ${
-                  pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href))
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:bg-muted'
-                }`}
-                onClick={() => setSidebarOpen(false)}
-              >
-                <item.icon className="mr-3 h-5 w-5" />
-                {item.name}
-              </Link>
-            ))}
+          <nav className="flex-1 py-2">
+            {navigation.map((item) => {
+              const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href))
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`flex items-center px-4 py-3 text-sm font-medium border-b border-border/50 transition-colors ${
+                    isActive
+                      ? 'bg-primary/10 text-primary border-l-2 border-l-primary'
+                      : 'text-foreground hover:bg-muted/50'
+                  }`}
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  <item.icon className={`mr-3 h-5 w-5 ${item.iconColor}`} />
+                  {item.name}
+                </Link>
+              )
+            })}
           </nav>
           {/* Mobile Invite Link */}
           {company && (
@@ -215,24 +218,27 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
               </>
             )}
           </div>
-          <nav className="flex-1 px-2 py-4 space-y-1">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`flex items-center py-2 text-sm font-medium rounded-md transition-all ${
-                  sidebarCollapsed ? 'justify-center px-2' : 'px-4'
-                } ${
-                  pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href))
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:bg-muted'
-                }`}
-                title={sidebarCollapsed ? item.name : undefined}
-              >
-                <item.icon className={`h-5 w-5 ${sidebarCollapsed ? '' : 'mr-3'}`} />
-                {!sidebarCollapsed && item.name}
-              </Link>
-            ))}
+          <nav className="flex-1">
+            {navigation.map((item) => {
+              const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href))
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`flex items-center py-3 text-sm font-medium border-b border-border/50 transition-colors ${
+                    sidebarCollapsed ? 'justify-center px-2' : 'px-4'
+                  } ${
+                    isActive
+                      ? 'bg-primary/10 text-primary border-l-2 border-l-primary'
+                      : 'text-foreground hover:bg-muted/50'
+                  }`}
+                  title={sidebarCollapsed ? item.name : undefined}
+                >
+                  <item.icon className={`h-5 w-5 ${sidebarCollapsed ? '' : 'mr-3'} ${item.iconColor}`} />
+                  {!sidebarCollapsed && item.name}
+                </Link>
+              )
+            })}
           </nav>
 
           {/* Invite Link Section */}

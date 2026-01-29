@@ -2,11 +2,13 @@
 
 import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
-import { Plus, Clock, ChevronRight, ChevronDown, FolderPlus, Pencil, Trash2, Folder, FolderOpen, PanelLeftClose, PanelLeft, X, Settings, ChevronsUpDown, ChevronsDownUp } from 'lucide-react'
+import { Plus, Clock, ChevronRight, ChevronDown, FolderPlus, Pencil, Trash2, Folder, FolderOpen, PanelLeftClose, PanelLeft, X, Settings, ChevronsUpDown, ChevronsDownUp, Sparkles, FileText, Link2, Loader2, Check, LayoutGrid, List } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
   DialogContent,
@@ -39,6 +41,7 @@ export default function ServicesPage() {
   const [expandedCategories, setExpandedCategories] = useState<Set<number>>(new Set())
   const [categoryPanelOpen, setCategoryPanelOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
   // Refs for scrolling
   const categoryRefs = useRef<Map<number, HTMLDivElement>>(new Map())
@@ -50,6 +53,26 @@ export default function ServicesPage() {
   const [categoryDescription, setCategoryDescription] = useState('')
   const [categoryParentId, setCategoryParentId] = useState<number | null>(null)
   const [savingCategory, setSavingCategory] = useState(false)
+
+  // AI Generation modal
+  const [aiModalOpen, setAiModalOpen] = useState(false)
+  const [aiSourceType, setAiSourceType] = useState<'text' | 'url'>('text')
+  const [aiContent, setAiContent] = useState('')
+  const [aiInstructions, setAiInstructions] = useState('')
+  const [aiPositionName, setAiPositionName] = useState('')
+  const [aiGenerating, setAiGenerating] = useState(false)
+  const [aiResult, setAiResult] = useState<{
+    services: Array<{
+      name: string
+      description: string
+      duration_minutes: number
+      price: number
+      category_name: string
+      selected: boolean
+    }>
+    categories: string[]
+  } | null>(null)
+  const [aiSaving, setAiSaving] = useState(false)
 
   // Sync sidebar state from localStorage
   useEffect(() => {
@@ -94,8 +117,9 @@ export default function ServicesPage() {
       setServices(servicesData)
       setCategories(categoriesData)
       setPositions(positionsData)
-      // Expand all categories by default
+      // Expand all categories by default (including uncategorized)
       const allIds = getAllCategoryIds(categoriesData)
+      allIds.push(-1) // Include uncategorized section
       setExpandedCategories(new Set(allIds))
     } catch (error) {
       console.error('Error loading data:', error)
@@ -212,6 +236,109 @@ export default function ServicesPage() {
     }
   }
 
+  // AI Generation handlers
+  const handleAiGenerate = async () => {
+    if (!aiContent.trim() || !aiPositionName.trim()) return
+
+    try {
+      setAiGenerating(true)
+      setAiResult(null)
+
+      const result = await servicesApi.generateFromAI({
+        position_name: aiPositionName,
+        source_type: aiSourceType,
+        content: aiContent,
+        city: 'Київ',
+        additional_instructions: aiInstructions || undefined,
+      })
+
+      setAiResult({
+        services: result.services.map(s => ({ ...s, selected: true })),
+        categories: result.categories,
+      })
+    } catch (error) {
+      console.error('Failed to generate services:', error)
+      alert('Помилка генерації послуг. Спробуйте ще раз.')
+    } finally {
+      setAiGenerating(false)
+    }
+  }
+
+  const handleAiSaveSelected = async () => {
+    if (!aiResult) return
+
+    const selectedServices = aiResult.services.filter(s => s.selected)
+    if (selectedServices.length === 0) {
+      alert('Оберіть хоча б одну послугу')
+      return
+    }
+
+    try {
+      setAiSaving(true)
+
+      // First, create categories that don't exist
+      const existingCategoryNames = new Set(
+        categories.flatMap(c => [c.name, ...(c.children?.map(ch => ch.name) || [])])
+      )
+      const newCategoryNames = new Set(
+        selectedServices.map(s => s.category_name).filter(name => !existingCategoryNames.has(name))
+      )
+
+      const categoryMap: Record<string, number> = {}
+
+      // Map existing categories
+      for (const cat of categories) {
+        categoryMap[cat.name] = cat.id
+        for (const child of cat.children || []) {
+          categoryMap[child.name] = child.id
+        }
+      }
+
+      // Create new categories
+      for (const name of Array.from(newCategoryNames)) {
+        const newCat = await categoriesApi.create({ name })
+        categoryMap[name] = newCat.id
+      }
+
+      // Get position ID if selected
+      const selectedPosition = positions.find(p => p.name === aiPositionName)
+
+      // Create services
+      for (const service of selectedServices) {
+        await servicesApi.create({
+          name: service.name,
+          description: service.description,
+          duration_minutes: service.duration_minutes,
+          price: service.price,
+          category_id: categoryMap[service.category_name],
+          position_id: selectedPosition?.id,
+        })
+      }
+
+      // Reload data
+      await loadData()
+
+      // Close modal and reset
+      setAiModalOpen(false)
+      setAiResult(null)
+      setAiContent('')
+      setAiInstructions('')
+      setAiPositionName('')
+    } catch (error) {
+      console.error('Failed to save services:', error)
+      alert('Помилка збереження послуг')
+    } finally {
+      setAiSaving(false)
+    }
+  }
+
+  const toggleServiceSelection = (index: number) => {
+    if (!aiResult) return
+    const updated = [...aiResult.services]
+    updated[index] = { ...updated[index], selected: !updated[index].selected }
+    setAiResult({ ...aiResult, services: updated })
+  }
+
   // Filter services by selected position
   const filteredServices = selectedPositionId === null
     ? services
@@ -258,7 +385,7 @@ export default function ServicesPage() {
   // Count services without position
   const servicesWithoutPosition = services.filter(s => !s.position_id).length
 
-  // Render service card
+  // Render service card (grid view)
   const renderServiceCard = (service: Service) => (
     <Link key={service.id} href={`/admin/services/${service.id}`}>
       <Card className="h-full hover:shadow-md transition-shadow cursor-pointer group">
@@ -294,6 +421,49 @@ export default function ServicesPage() {
     </Link>
   )
 
+  // Render service list item (list view)
+  const renderServiceListItem = (service: Service) => (
+    <Link key={service.id} href={`/admin/services/${service.id}`}>
+      <div className="flex items-center gap-4 py-2 px-3 hover:bg-muted/50 rounded-md cursor-pointer group">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="font-medium group-hover:text-primary transition-colors truncate">
+              {service.name}
+            </span>
+            {!service.is_active && (
+              <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded flex-shrink-0">
+                Неактивна
+              </span>
+            )}
+          </div>
+        </div>
+        <span className="flex items-center gap-1 text-sm text-muted-foreground flex-shrink-0">
+          <Clock className="h-3.5 w-3.5" />
+          {service.duration_minutes} хв
+        </span>
+        <span className="font-semibold text-primary flex-shrink-0 w-24 text-right">
+          {service.price} грн
+        </span>
+      </div>
+    </Link>
+  )
+
+  // Render services based on view mode
+  const renderServices = (servicesList: Service[]) => {
+    if (viewMode === 'list') {
+      return (
+        <div className="space-y-1">
+          {servicesList.map(renderServiceListItem)}
+        </div>
+      )
+    }
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
+        {servicesList.map(renderServiceCard)}
+      </div>
+    )
+  }
+
   // Render category with its services (accordion style)
   const renderCategorySection = (category: ServiceCategory, level = 0) => {
     const categoryServices = getServicesByCategory(category.id)
@@ -313,12 +483,23 @@ export default function ServicesPage() {
         }}
       >
         <div
-          className={`
-            flex items-center gap-2 py-3 px-4 rounded-lg cursor-pointer group
-            ${level === 0 ? 'bg-card border shadow-sm' : 'hover:bg-muted/50'}
-          `}
+          className="flex items-center gap-2 py-2 px-1 cursor-pointer group hover:bg-muted/30 rounded-md"
           onClick={() => toggleCategory(category.id)}
         >
+          {isExpanded ? (
+            <FolderOpen className="h-5 w-5 text-primary" />
+          ) : (
+            <Folder className="h-5 w-5 text-muted-foreground" />
+          )}
+
+          <span className="flex-1 font-medium">
+            {category.name}
+          </span>
+
+          <span className="text-sm text-muted-foreground">
+            {getTotalServicesInCategory(category)} послуг
+          </span>
+
           <button className="p-0.5">
             {isExpanded ? (
               <ChevronDown className="h-5 w-5 text-muted-foreground" />
@@ -326,20 +507,6 @@ export default function ServicesPage() {
               <ChevronRight className="h-5 w-5 text-muted-foreground" />
             )}
           </button>
-
-          {isExpanded ? (
-            <FolderOpen className="h-5 w-5 text-primary" />
-          ) : (
-            <Folder className="h-5 w-5 text-muted-foreground" />
-          )}
-
-          <span className={`flex-1 font-medium ${level === 0 ? 'text-lg' : ''}`}>
-            {category.name}
-          </span>
-
-          <span className="text-sm text-muted-foreground">
-            {getTotalServicesInCategory(category)} послуг
-          </span>
 
           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
             <button
@@ -368,10 +535,10 @@ export default function ServicesPage() {
 
         {isExpanded && (
           <div className="mt-2 space-y-2">
-            {/* Services grid - no side padding for top level */}
+            {/* Services */}
             {hasServices && (
-              <div className={`grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3 ${level > 0 ? 'px-4' : ''}`}>
-                {categoryServices.map(renderServiceCard)}
+              <div className={level > 0 ? 'px-4' : ''}>
+                {renderServices(categoryServices)}
               </div>
             )}
 
@@ -482,6 +649,27 @@ export default function ServicesPage() {
             </div>
 
             <div className="flex items-center gap-2">
+              {/* View mode toggle */}
+              <div className="flex border rounded-md">
+                <Button
+                  variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+                  size="icon"
+                  className="rounded-r-none"
+                  onClick={() => setViewMode('grid')}
+                  title="Сітка"
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                  size="icon"
+                  className="rounded-l-none"
+                  onClick={() => setViewMode('list')}
+                  title="Список"
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+              </div>
               <Button
                 variant="outline"
                 size="icon"
@@ -503,6 +691,10 @@ export default function ServicesPage() {
                   <Settings className="h-5 w-5" />
                 </Button>
               </Link>
+              <Button variant="outline" onClick={() => setAiModalOpen(true)}>
+                <Sparkles className="mr-2 h-4 w-4" />
+                AI
+              </Button>
               <Link href="/admin/services/new">
                 <Button>
                   <Plus className="mr-2 h-4 w-4" />
@@ -570,9 +762,19 @@ export default function ServicesPage() {
                 }}
               >
                 <div
-                  className="flex items-center gap-2 py-3 px-4 rounded-lg cursor-pointer group bg-card border shadow-sm"
+                  className="flex items-center gap-2 py-2 px-1 cursor-pointer group hover:bg-muted/30 rounded-md"
                   onClick={() => toggleCategory(-1)}
                 >
+                  <Folder className="h-5 w-5 text-muted-foreground" />
+
+                  <span className="flex-1 font-medium text-muted-foreground">
+                    Без категорії
+                  </span>
+
+                  <span className="text-sm text-muted-foreground">
+                    {uncategorizedServices.length} послуг
+                  </span>
+
                   <button className="p-0.5">
                     {expandedCategories.has(-1) ? (
                       <ChevronDown className="h-5 w-5 text-muted-foreground" />
@@ -580,21 +782,11 @@ export default function ServicesPage() {
                       <ChevronRight className="h-5 w-5 text-muted-foreground" />
                     )}
                   </button>
-
-                  <Folder className="h-5 w-5 text-muted-foreground" />
-
-                  <span className="flex-1 font-medium text-lg text-muted-foreground">
-                    Без категорії
-                  </span>
-
-                  <span className="text-sm text-muted-foreground">
-                    {uncategorizedServices.length} послуг
-                  </span>
                 </div>
 
                 {expandedCategories.has(-1) && (
-                  <div className="mt-2 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
-                    {uncategorizedServices.map(renderServiceCard)}
+                  <div className="mt-2">
+                    {renderServices(uncategorizedServices)}
                   </div>
                 )}
               </div>
@@ -675,6 +867,224 @@ export default function ServicesPage() {
             <Button onClick={handleSaveCategory} disabled={savingCategory || !categoryName.trim()}>
               {savingCategory ? '...' : 'Зберегти'}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* AI Generation Modal */}
+      <Dialog open={aiModalOpen} onOpenChange={(open) => {
+        setAiModalOpen(open)
+        if (!open) {
+          setAiResult(null)
+          setAiContent('')
+          setAiInstructions('')
+          setAiPositionName('')
+        }
+      }}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-purple-500" />
+              Генерація послуг з AI
+            </DialogTitle>
+          </DialogHeader>
+
+          {!aiResult ? (
+            <div className="space-y-4 py-4">
+              {/* Position Name */}
+              <div className="space-y-2">
+                <Label>Спеціальність / Посада *</Label>
+                {companyType === 'clinic' && positions.length > 0 ? (
+                  <select
+                    value={aiPositionName}
+                    onChange={(e) => setAiPositionName(e.target.value)}
+                    className="w-full h-10 px-3 border rounded-md bg-background text-sm"
+                  >
+                    <option value="">Оберіть посаду</option>
+                    {positions.map(pos => (
+                      <option key={pos.id} value={pos.name}>{pos.name}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <Input
+                    value={aiPositionName}
+                    onChange={(e) => setAiPositionName(e.target.value)}
+                    placeholder="Наприклад: Косметолог, Масажист, Перукар..."
+                  />
+                )}
+              </div>
+
+              {/* Source Type Selector */}
+              <div className="flex gap-2">
+                <Button
+                  variant={aiSourceType === 'text' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setAiSourceType('text')}
+                >
+                  <FileText className="h-4 w-4 mr-1" />
+                  Текст
+                </Button>
+                <Button
+                  variant={aiSourceType === 'url' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setAiSourceType('url')}
+                >
+                  <Link2 className="h-4 w-4 mr-1" />
+                  Посилання
+                </Button>
+              </div>
+
+              {/* Content Input */}
+              <div className="space-y-2">
+                <Label>
+                  {aiSourceType === 'text' ? 'Опис послуг' : 'URL сайту'}
+                </Label>
+                {aiSourceType === 'text' ? (
+                  <Textarea
+                    value={aiContent}
+                    onChange={(e) => setAiContent(e.target.value)}
+                    placeholder="Опишіть послуги, які надає спеціаліст. Наприклад: чистки обличчя, пілінги, масажі, ін'єкційні процедури..."
+                    rows={6}
+                  />
+                ) : (
+                  <Input
+                    value={aiContent}
+                    onChange={(e) => setAiContent(e.target.value)}
+                    placeholder="https://example.com/services"
+                  />
+                )}
+              </div>
+
+              {/* Additional Instructions */}
+              <div className="space-y-2">
+                <Label>Додаткові вимоги (опціонально)</Label>
+                <Input
+                  value={aiInstructions}
+                  onChange={(e) => setAiInstructions(e.target.value)}
+                  placeholder="Наприклад: ціни вище середнього, тільки апаратні процедури..."
+                />
+              </div>
+
+              <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
+                <p><strong>Місто:</strong> Київ (для орієнтовних цін)</p>
+                <p className="mt-1">AI створить категорії та послуги автоматично. Ви зможете переглянути та обрати потрібні перед збереженням.</p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4 py-4">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">
+                  Знайдено {aiResult.services.length} послуг. Оберіть ті, які хочете додати:
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setAiResult({
+                      ...aiResult,
+                      services: aiResult.services.map(s => ({ ...s, selected: true }))
+                    })}
+                  >
+                    Вибрати всі
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setAiResult({
+                      ...aiResult,
+                      services: aiResult.services.map(s => ({ ...s, selected: false }))
+                    })}
+                  >
+                    Зняти всі
+                  </Button>
+                </div>
+              </div>
+
+              <div className="max-h-[400px] overflow-y-auto space-y-2">
+                {aiResult.services.map((service, index) => (
+                  <div
+                    key={index}
+                    className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+                      service.selected ? 'bg-primary/5 border-primary/30' : 'hover:bg-muted/50'
+                    }`}
+                    onClick={() => toggleServiceSelection(index)}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={`w-5 h-5 rounded border flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                        service.selected ? 'bg-primary border-primary' : 'border-gray-300'
+                      }`}>
+                        {service.selected && <Check className="h-3 w-3 text-white" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <h4 className="font-medium">{service.name}</h4>
+                          <Badge variant="secondary">{service.category_name}</Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-1">{service.description}</p>
+                        <div className="flex gap-4 mt-2 text-sm">
+                          <span className="flex items-center gap-1 text-muted-foreground">
+                            <Clock className="h-3 w-3" />
+                            {service.duration_minutes} хв
+                          </span>
+                          <span className="font-medium text-primary">
+                            {service.price} грн
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setAiResult(null)}
+              >
+                Згенерувати знову
+              </Button>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAiModalOpen(false)}>
+              Скасувати
+            </Button>
+            {!aiResult ? (
+              <Button
+                onClick={handleAiGenerate}
+                disabled={!aiContent.trim() || !aiPositionName.trim() || aiGenerating}
+              >
+                {aiGenerating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Генерація...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Згенерувати
+                  </>
+                )}
+              </Button>
+            ) : (
+              <Button
+                onClick={handleAiSaveSelected}
+                disabled={aiSaving || aiResult.services.filter(s => s.selected).length === 0}
+              >
+                {aiSaving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Збереження...
+                  </>
+                ) : (
+                  <>
+                    <Check className="h-4 w-4 mr-2" />
+                    Додати {aiResult.services.filter(s => s.selected).length} послуг
+                  </>
+                )}
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -1,0 +1,30 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Orange/pink sphere (top) -->
+  <circle cx="16" cy="8" r="7" fill="url(#orangeGradient)"/>
+  <ellipse cx="13.5" cy="5.5" rx="2" ry="1.5" fill="white" opacity="0.35"/>
+
+  <!-- Blue cylinder (bottom left) -->
+  <ellipse cx="9" cy="26" rx="5" ry="2.5" fill="#3B82F6"/>
+  <rect x="4" y="18" width="10" height="8" fill="url(#blueGradient)"/>
+  <ellipse cx="9" cy="18" rx="5" ry="2.5" fill="#60A5FA"/>
+
+  <!-- Yellow/orange cube (bottom right) -->
+  <rect x="19" y="17" width="9" height="9" rx="1" fill="url(#yellowGradient)"/>
+  <path d="M19 17 L22 14 L31 14 L28 17 Z" fill="#FBBF24"/>
+  <path d="M28 17 L31 14 L31 23 L28 26 Z" fill="#F59E0B"/>
+
+  <defs>
+    <linearGradient id="orangeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FB923C"/>
+      <stop offset="100%" stop-color="#EC4899"/>
+    </linearGradient>
+    <linearGradient id="blueGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#60A5FA"/>
+      <stop offset="100%" stop-color="#3B82F6"/>
+    </linearGradient>
+    <linearGradient id="yellowGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FBBF24"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </linearGradient>
+  </defs>
+</svg>

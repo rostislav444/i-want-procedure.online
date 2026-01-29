@@ -63,18 +63,32 @@ async def start_registration(callback: CallbackQuery, state: FSMContext, session
         await callback.answer()
         return
 
+    # Get existing state data (may contain team_company_id from invite link)
+    data = await state.get_data()
+
     # Pre-fill with Telegram data
     await state.update_data(
         telegram_id=callback.from_user.id,
         telegram_username=callback.from_user.username,
     )
-    await state.set_state(RegistrationStates.waiting_for_company_type)
 
-    await callback.message.answer(
-        "Чудово! Давайте створимо ваш акаунт.\n\n"
-        "Оберіть тип вашої діяльності:",
-        reply_markup=company_type_keyboard(),
-    )
+    # If user was invited to a team, skip company type selection
+    if data.get('team_company_id'):
+        await state.set_state(RegistrationStates.waiting_for_first_name)
+        team_name = data.get('team_company_name', 'команду')
+        telegram_first_name = callback.from_user.first_name or ""
+        text = f"Чудово! Ви приєднаєтесь до \"{team_name}\".\n\nВведіть ваше ім'я:"
+        if telegram_first_name:
+            await callback.message.answer(text, reply_markup=skip_keyboard(telegram_first_name))
+        else:
+            await callback.message.answer(text, reply_markup=remove_keyboard())
+    else:
+        await state.set_state(RegistrationStates.waiting_for_company_type)
+        await callback.message.answer(
+            "Чудово! Давайте створимо ваш акаунт.\n\n"
+            "Оберіть тип вашої діяльності:",
+            reply_markup=company_type_keyboard(),
+        )
     await callback.answer()
 
 

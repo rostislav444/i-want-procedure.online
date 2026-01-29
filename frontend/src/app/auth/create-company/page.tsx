@@ -68,15 +68,15 @@ export default function CreateCompanyPage() {
 
   if (checkingAuth) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-gray-500">Завантаження...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
+        <div className="text-muted-foreground">Завантаження...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 py-12 px-4 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-md bg-white dark:bg-gray-900 dark:border-gray-800">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl text-center">Створення компанії</CardTitle>
           <CardDescription className="text-center">
@@ -86,7 +86,7 @@ export default function CreateCompanyPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="bg-red-50 text-red-500 p-3 rounded-md text-sm">
+              <div className="bg-red-50 dark:bg-red-950/50 text-red-500 dark:text-red-400 p-3 rounded-md text-sm">
                 {error}
               </div>
             )}
@@ -100,8 +100,9 @@ export default function CreateCompanyPage() {
                 onChange={(e) => setCompanyName(e.target.value)}
                 placeholder="Введіть назву компанії"
                 required
+                className="bg-white dark:bg-gray-800 dark:border-gray-700"
               />
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 Наприклад: ваше ім&apos;я або назва салону
               </p>
             </div>
@@ -115,14 +116,14 @@ export default function CreateCompanyPage() {
                   className={`p-4 rounded-lg border-2 transition-all ${
                     companyType === 'solo'
                       ? 'border-primary bg-primary/5'
-                      : 'border-gray-200 hover:border-gray-300'
+                      : 'border-border hover:border-muted-foreground/50'
                   }`}
                 >
-                  <User className={`w-8 h-8 mx-auto mb-2 ${companyType === 'solo' ? 'text-primary' : 'text-gray-400'}`} />
-                  <div className={`font-medium ${companyType === 'solo' ? 'text-primary' : 'text-gray-700'}`}>
+                  <User className={`w-8 h-8 mx-auto mb-2 ${companyType === 'solo' ? 'text-primary' : 'text-muted-foreground'}`} />
+                  <div className={`font-medium ${companyType === 'solo' ? 'text-primary' : 'text-foreground'}`}>
                     Особистий
                   </div>
-                  <div className="text-xs text-gray-500 mt-1">
+                  <div className="text-xs text-muted-foreground mt-1">
                     Працюю сам
                   </div>
                 </button>
@@ -132,14 +133,14 @@ export default function CreateCompanyPage() {
                   className={`p-4 rounded-lg border-2 transition-all ${
                     companyType === 'clinic'
                       ? 'border-primary bg-primary/5'
-                      : 'border-gray-200 hover:border-gray-300'
+                      : 'border-border hover:border-muted-foreground/50'
                   }`}
                 >
-                  <Building2 className={`w-8 h-8 mx-auto mb-2 ${companyType === 'clinic' ? 'text-primary' : 'text-gray-400'}`} />
-                  <div className={`font-medium ${companyType === 'clinic' ? 'text-primary' : 'text-gray-700'}`}>
+                  <Building2 className={`w-8 h-8 mx-auto mb-2 ${companyType === 'clinic' ? 'text-primary' : 'text-muted-foreground'}`} />
+                  <div className={`font-medium ${companyType === 'clinic' ? 'text-primary' : 'text-foreground'}`}>
                     Клініка
                   </div>
-                  <div className="text-xs text-gray-500 mt-1">
+                  <div className="text-xs text-muted-foreground mt-1">
                     Команда спеціалістів
                   </div>
                 </button>

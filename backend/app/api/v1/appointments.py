@@ -4,6 +4,7 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException, Query, status
 from sqlalchemy import select, and_
 from sqlalchemy.orm import selectinload
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import DbSession, CurrentUser
 from app.models.appointment import Appointment, AppointmentStatus
@@ -11,6 +12,7 @@ from app.models.schedule import Schedule, ScheduleException, ScheduleExceptionTy
 from app.models.service import Service
 from app.models.client import Client
 from app.models.user import User
+from app.models.inventory import ServiceInventoryItem, StockMovement, MovementType
 from app.schemas.appointment import (
     AppointmentCreate,
     AppointmentUpdate,
@@ -21,6 +23,42 @@ from bots.notifications import notify_client_appointment_confirmed, notify_clien
 from app.services.google_calendar import update_appointment_in_calendar
 
 router = APIRouter(prefix="/appointments")
+
+
+async def auto_deduct_inventory(
+    db: AsyncSession,
+    appointment: Appointment,
+    performed_by_id: int,
+) -> None:
+    """
+    Автоматическое списание товаров со склада при завершении записи.
+    Списывает товары, привязанные к услуге через ServiceInventoryItem.
+    """
+    if not appointment.service_id:
+        return
+
+    # Получаем товары, привязанные к услуге
+    result = await db.execute(
+        select(ServiceInventoryItem)
+        .where(ServiceInventoryItem.service_id == appointment.service_id)
+    )
+    service_items = result.scalars().all()
+
+    if not service_items:
+        return
+
+    # Создаём движения для каждого товара
+    for service_item in service_items:
+        movement = StockMovement(
+            company_id=appointment.company_id,
+            item_id=service_item.item_id,
+            movement_type=MovementType.OUTGOING,
+            quantity=-service_item.quantity,  # Отрицательное для расхода
+            appointment_id=appointment.id,
+            performed_by=performed_by_id,
+            notes=f"Автосписание: {appointment.service.name if appointment.service else 'Послуга'}",
+        )
+        db.add(movement)
 
 
 @router.get("", response_model=list[AppointmentResponse])
@@ -249,6 +287,11 @@ async def update_appointment_status(
     old_status = appointment.status
     new_status = appointment_data.status
     appointment.status = new_status
+
+    # Автосписание товаров при завершении записи
+    if new_status == AppointmentStatus.COMPLETED and old_status != AppointmentStatus.COMPLETED:
+        await auto_deduct_inventory(db, appointment, current_user.id)
+
     await db.commit()
     await db.refresh(appointment)
 

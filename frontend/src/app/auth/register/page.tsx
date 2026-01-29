@@ -46,8 +46,8 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 py-12 px-4 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-md bg-white dark:bg-gray-900 dark:border-gray-800">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl text-center">Реєстрація</CardTitle>
           <CardDescription className="text-center">
@@ -57,7 +57,7 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             {error && (
-              <div className="bg-red-50 text-red-500 p-3 rounded-md text-sm">
+              <div className="bg-red-50 dark:bg-red-950/50 text-red-500 dark:text-red-400 p-3 rounded-md text-sm">
                 {error}
               </div>
             )}
@@ -70,6 +70,7 @@ export default function RegisterPage() {
                   value={formData.first_name}
                   onChange={handleChange}
                   required
+                  className="bg-white dark:bg-gray-800 dark:border-gray-700"
                 />
               </div>
               <div className="space-y-2">
@@ -80,6 +81,7 @@ export default function RegisterPage() {
                   value={formData.last_name}
                   onChange={handleChange}
                   required
+                  className="bg-white dark:bg-gray-800 dark:border-gray-700"
                 />
               </div>
             </div>
@@ -92,6 +94,7 @@ export default function RegisterPage() {
                 value={formData.email}
                 onChange={handleChange}
                 required
+                className="bg-white dark:bg-gray-800 dark:border-gray-700"
               />
             </div>
             <div className="space-y-2">
@@ -103,6 +106,7 @@ export default function RegisterPage() {
                 value={formData.password}
                 onChange={handleChange}
                 required
+                className="bg-white dark:bg-gray-800 dark:border-gray-700"
               />
             </div>
             <div className="space-y-2">
@@ -112,7 +116,7 @@ export default function RegisterPage() {
                 name="company_type"
                 value={formData.company_type}
                 onChange={handleChange}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                className="flex h-10 w-full rounded-md border border-input bg-white dark:bg-gray-800 dark:border-gray-700 px-3 py-2 text-sm"
               >
                 <option value="solo">Індивідуальний спеціаліст</option>
                 <option value="clinic">Клініка</option>
@@ -129,6 +133,7 @@ export default function RegisterPage() {
                 onChange={handleChange}
                 placeholder={formData.company_type === 'solo' ? 'Наприклад: Др. Іванов' : 'Назва клініки'}
                 required
+                className="bg-white dark:bg-gray-800 dark:border-gray-700"
               />
             </div>
           </CardContent>
@@ -136,7 +141,7 @@ export default function RegisterPage() {
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Реєстрація...' : 'Зареєструватися'}
             </Button>
-            <p className="text-sm text-center text-gray-600">
+            <p className="text-sm text-center text-muted-foreground">
               Вже є акаунт?{' '}
               <Link href="/auth/login" className="text-primary hover:underline">
                 Увійти

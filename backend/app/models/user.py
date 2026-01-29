@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from app.models.appointment import Appointment
     from app.models.specialty import Specialty
     from app.models.company_member import CompanyMember
+    from app.models.inventory import StockMovement
 
 
 class User(Base):
@@ -55,6 +56,9 @@ class User(Base):
     specialties: Mapped[list["Specialty"]] = relationship(
         secondary="user_specialties",
         back_populates="users"
+    )
+    stock_movements: Mapped[list["StockMovement"]] = relationship(
+        back_populates="performed_by_user"
     )
 
     @property

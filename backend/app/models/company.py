@@ -17,6 +17,8 @@ if TYPE_CHECKING:
     from app.models.company_member import CompanyMember, MemberService
     from app.models.website_section import WebsiteSection
     from app.models.position import Position
+    from app.models.landing_version import LandingVersion
+    from app.models.inventory import InventoryCategory, AttributeGroup, InventoryItem, StockMovement
 
 
 def generate_invite_code() -> str:
@@ -101,6 +103,9 @@ class Company(Base):
     payment_card_number: Mapped[str | None] = mapped_column(String(19), nullable=True)  # 16-19 digits with spaces
     payment_monobank_jar: Mapped[str | None] = mapped_column(String(200), nullable=True)  # Monobank jar link
 
+    # AI-generated landing page HTML (full page)
+    landing_html: Mapped[str | None] = mapped_column(Text, nullable=True)
+
     # Relationships
     services: Mapped[list["Service"]] = relationship(back_populates="company")
     service_categories: Mapped[list["ServiceCategory"]] = relationship(back_populates="company")
@@ -142,4 +147,33 @@ class Company(Base):
         back_populates="company",
         cascade="all, delete-orphan",
         order_by="Position.order"
+    )
+
+    # AI-generated landing page versions
+    landing_versions: Mapped[list["LandingVersion"]] = relationship(
+        back_populates="company",
+        cascade="all, delete-orphan",
+        order_by="LandingVersion.created_at.desc()"
+    )
+
+    # Inventory management
+    inventory_categories: Mapped[list["InventoryCategory"]] = relationship(
+        back_populates="company",
+        cascade="all, delete-orphan"
+    )
+    attribute_groups: Mapped[list["AttributeGroup"]] = relationship(
+        back_populates="company",
+        cascade="all, delete-orphan"
+    )
+    brands: Mapped[list["Brand"]] = relationship(
+        back_populates="company",
+        cascade="all, delete-orphan"
+    )
+    inventory_items: Mapped[list["InventoryItem"]] = relationship(
+        back_populates="company",
+        cascade="all, delete-orphan"
+    )
+    stock_movements: Mapped[list["StockMovement"]] = relationship(
+        back_populates="company",
+        cascade="all, delete-orphan"
     )

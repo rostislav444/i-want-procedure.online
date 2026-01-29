@@ -16,10 +16,13 @@ import {
   MessageCircle,
   History,
   CalendarCheck,
+  FileText,
+  ChevronRight,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { clientsApi, Client, Appointment } from '@/lib/api'
+import { AppointmentModal } from '@/components/appointments/AppointmentModal'
+import { clientsApi, protocolsApi, Client, Appointment, ProcedureProtocol } from '@/lib/api'
 
 const statusConfig = {
   pending: { label: 'Очікує', color: 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800', Icon: AlertCircle },
@@ -39,8 +42,13 @@ export default function ClientDetailPage() {
   const router = useRouter()
   const [client, setClient] = useState<Client | null>(null)
   const [appointments, setAppointments] = useState<Appointment[]>([])
+  const [protocols, setProtocols] = useState<Map<number, ProcedureProtocol>>(new Map())
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // Appointment modal state
+  const [appointmentModalOpen, setAppointmentModalOpen] = useState(false)
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null)
 
   const clientId = Number(params.id)
 
@@ -58,6 +66,16 @@ export default function ClientDetailPage() {
         ])
         setClient(clientData)
         setAppointments(appointmentsData)
+
+        // Load protocols for this client
+        try {
+          const protocolsData = await protocolsApi.getByClient(clientId)
+          const protocolsMap = new Map<number, ProcedureProtocol>()
+          protocolsData.forEach(p => protocolsMap.set(p.appointment_id, p))
+          setProtocols(protocolsMap)
+        } catch {
+          // No protocols yet, that's fine
+        }
       } catch (err) {
         console.error('Error loading client:', err)
         setError('Не вдалося завантажити дані клієнта')
@@ -68,6 +86,25 @@ export default function ClientDetailPage() {
 
     loadData()
   }, [clientId, router])
+
+  const openAppointmentModal = (appointment: Appointment) => {
+    setSelectedAppointment(appointment)
+    setAppointmentModalOpen(true)
+  }
+
+  const handleAppointmentUpdated = (updatedAppointment: Appointment) => {
+    setAppointments(appointments.map(a =>
+      a.id === updatedAppointment.id ? updatedAppointment : a
+    ))
+    setSelectedAppointment(updatedAppointment)
+  }
+
+  const handleProtocolSaved = (protocol: ProcedureProtocol) => {
+    if (!selectedAppointment) return
+    const newProtocols = new Map(protocols)
+    newProtocols.set(selectedAppointment.id, protocol)
+    setProtocols(newProtocols)
+  }
 
   if (loading) {
     return (
@@ -257,7 +294,8 @@ export default function ClientDetailPage() {
                     return (
                       <div
                         key={appointment.id}
-                        className="flex items-center gap-4 p-4 bg-muted/50 rounded-xl hover:bg-muted transition-colors border border-border/50"
+                        onClick={() => openAppointmentModal(appointment)}
+                        className="flex items-center gap-4 p-4 bg-muted/50 rounded-xl hover:bg-muted transition-colors border border-border/50 cursor-pointer"
                       >
                         <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-primary/10 flex flex-col items-center justify-center">
                           <span className="text-lg font-bold text-primary">
@@ -274,14 +312,17 @@ export default function ClientDetailPage() {
                             <span>{appointment.start_time.slice(0, 5)} - {appointment.end_time.slice(0, 5)}</span>
                           </div>
                         </div>
-                        <div className="flex flex-col items-end gap-2">
-                          <span className="font-semibold">
-                            {Number(appointment.service?.price || 0).toLocaleString('uk-UA')} грн
-                          </span>
-                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${status.color}`}>
-                            <StatusIcon className="h-3 w-3" />
-                            {status.label}
-                          </span>
+                        <div className="flex items-center gap-3">
+                          <div className="flex flex-col items-end gap-2">
+                            <span className="font-semibold">
+                              {Number(appointment.service?.price || 0).toLocaleString('uk-UA')} грн
+                            </span>
+                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${status.color}`}>
+                              <StatusIcon className="h-3 w-3" />
+                              {status.label}
+                            </span>
+                          </div>
+                          <ChevronRight className="h-5 w-5 text-muted-foreground" />
                         </div>
                       </div>
                     )
@@ -313,12 +354,12 @@ export default function ClientDetailPage() {
                     const status = statusConfig[appointment.status]
                     const StatusIcon = status.Icon
                     const isCompleted = appointment.status === 'completed'
+                    const hasProtocol = protocols.has(appointment.id)
                     return (
                       <div
                         key={appointment.id}
-                        className={`flex items-center gap-4 p-4 rounded-xl border ${
-                          isCompleted ? 'bg-muted/50' : 'bg-muted/30'
-                        }`}
+                        onClick={() => openAppointmentModal(appointment)}
+                        className="flex items-center gap-4 p-4 rounded-xl border bg-muted/50 cursor-pointer hover:bg-muted transition-colors"
                       >
                         <div className={`flex-shrink-0 w-14 h-14 rounded-xl flex flex-col items-center justify-center ${
                           isCompleted ? 'bg-emerald-50 dark:bg-emerald-900/30' : 'bg-muted/50'
@@ -331,9 +372,21 @@ export default function ClientDetailPage() {
                           </span>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className={`font-medium truncate ${!isCompleted && 'text-muted-foreground'}`}>
-                            {appointment.service?.name || 'Послуга'}
-                          </p>
+                          <div className="flex items-center gap-2">
+                            <p className={`font-medium truncate ${!isCompleted && 'text-muted-foreground'}`}>
+                              {appointment.service?.name || 'Послуга'}
+                            </p>
+                            {isCompleted && (
+                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs ${
+                                hasProtocol
+                                  ? 'bg-primary/10 text-primary'
+                                  : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
+                              }`}>
+                                <FileText className="h-3 w-3" />
+                                {hasProtocol ? 'Протокол' : 'Без протоколу'}
+                              </span>
+                            )}
+                          </div>
                           <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                             <Clock className="h-3.5 w-3.5" />
                             <span>{appointment.start_time.slice(0, 5)} - {appointment.end_time.slice(0, 5)}</span>
@@ -342,14 +395,17 @@ export default function ClientDetailPage() {
                             </span>
                           </div>
                         </div>
-                        <div className="flex flex-col items-end gap-2">
-                          <span className={`font-semibold ${!isCompleted && 'text-muted-foreground line-through'}`}>
-                            {Number(appointment.service?.price || 0).toLocaleString('uk-UA')} грн
-                          </span>
-                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${status.color}`}>
-                            <StatusIcon className="h-3 w-3" />
-                            {status.label}
-                          </span>
+                        <div className="flex items-center gap-3">
+                          <div className="flex flex-col items-end gap-2">
+                            <span className={`font-semibold ${!isCompleted && 'text-muted-foreground line-through'}`}>
+                              {Number(appointment.service?.price || 0).toLocaleString('uk-UA')} грн
+                            </span>
+                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${status.color}`}>
+                              <StatusIcon className="h-3 w-3" />
+                              {status.label}
+                            </span>
+                          </div>
+                          <ChevronRight className="h-5 w-5 text-muted-foreground" />
                         </div>
                       </div>
                     )
@@ -360,6 +416,16 @@ export default function ClientDetailPage() {
           </Card>
         </div>
       </div>
+
+      {/* Appointment Modal */}
+      <AppointmentModal
+        open={appointmentModalOpen}
+        onOpenChange={setAppointmentModalOpen}
+        appointment={selectedAppointment}
+        existingProtocol={selectedAppointment ? protocols.get(selectedAppointment.id) || null : null}
+        onAppointmentUpdated={handleAppointmentUpdated}
+        onProtocolSaved={handleProtocolSaved}
+      />
     </div>
   )
 }

@@ -13,6 +13,8 @@ if TYPE_CHECKING:
     from app.models.client import Client
     from app.models.service import Service
     from app.models.company_member import CompanyMember
+    from app.models.procedure_protocol import ProcedureProtocol
+    from app.models.inventory import StockMovement
 
 
 class AppointmentStatus(str, Enum):
@@ -68,4 +70,12 @@ class Appointment(Base):
     member: Mapped[Optional["CompanyMember"]] = relationship(
         back_populates="appointments",
         foreign_keys=[member_id]
+    )
+    protocol: Mapped[Optional["ProcedureProtocol"]] = relationship(
+        back_populates="appointment",
+        uselist=False,
+        cascade="all, delete-orphan"
+    )
+    stock_movements: Mapped[list["StockMovement"]] = relationship(
+        back_populates="appointment"
     )

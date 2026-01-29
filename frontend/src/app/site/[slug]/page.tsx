@@ -106,6 +106,14 @@ export default async function CompanyPage({ params }: Props) {
     notFound()
   }
 
+  // If company has AI-generated landing, render it directly
+  if (company.landing_html) {
+    return (
+      <div dangerouslySetInnerHTML={{ __html: company.landing_html }} />
+    )
+  }
+
+  // Otherwise, use section-based rendering
   // Generate CSS variables from company colors
   const colorVars = generateCssVariables({
     primary: company.accent_color || company.primary_color || defaultColors.primary,

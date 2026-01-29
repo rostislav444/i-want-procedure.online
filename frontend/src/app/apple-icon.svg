@@ -1,0 +1,33 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="180" height="180" rx="40" fill="white"/>
+
+  <!-- Orange/pink sphere (top) -->
+  <circle cx="90" cy="50" r="35" fill="url(#orangeGradient)"/>
+  <ellipse cx="80" cy="40" rx="10" ry="7" fill="white" opacity="0.35"/>
+
+  <!-- Blue cylinder (bottom left) -->
+  <ellipse cx="55" cy="145" rx="28" ry="14" fill="#3B82F6"/>
+  <rect x="27" y="100" width="56" height="45" fill="url(#blueGradient)"/>
+  <ellipse cx="55" cy="100" rx="28" ry="14" fill="#60A5FA"/>
+
+  <!-- Yellow/orange cube (bottom right) -->
+  <rect x="105" y="95" width="50" height="50" rx="5" fill="url(#yellowGradient)"/>
+  <path d="M105 95 L120 80 L170 80 L155 95 Z" fill="#FBBF24"/>
+  <path d="M155 95 L170 80 L170 130 L155 145 Z" fill="#F59E0B"/>
+
+  <defs>
+    <linearGradient id="orangeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FB923C"/>
+      <stop offset="100%" stop-color="#EC4899"/>
+    </linearGradient>
+    <linearGradient id="blueGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#60A5FA"/>
+      <stop offset="100%" stop-color="#3B82F6"/>
+    </linearGradient>
+    <linearGradient id="yellowGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FBBF24"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </linearGradient>
+  </defs>
+</svg>

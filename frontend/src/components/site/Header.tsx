@@ -12,7 +12,14 @@ const DOCTOR_BOT_NAME = process.env.NEXT_PUBLIC_DOCTOR_BOT_NAME || 'doctor_i_wan
 
 export default function Header() {
   const [isLoginOpen, setIsLoginOpen] = useState(false)
+  const [isSpecialistLoggedIn, setIsSpecialistLoggedIn] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+
+  // Check if specialist is already logged in
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    setIsSpecialistLoggedIn(!!token)
+  }, [])
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -69,7 +76,7 @@ export default function Header() {
                     </div>
                   </Link>
                   <Link
-                    href="/auth/login"
+                    href={isSpecialistLoggedIn ? '/admin' : '/auth/login'}
                     onClick={() => setIsLoginOpen(false)}
                     className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-yellow-50 dark:hover:bg-yellow-900/20 transition-colors group"
                   >
