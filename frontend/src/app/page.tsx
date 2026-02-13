@@ -61,7 +61,7 @@ export default function HomePage() {
                 </Link>
                 <Link
                   href="#screenshots"
-                  className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-card border-2 border-pink-200 dark:border-pink-800 text-foreground rounded-full font-medium hover:border-pink-400 hover:bg-pink-50 dark:hover:bg-pink-900/30 transition-all"
+                  className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-card border-2 border-pink-200 text-foreground rounded-full font-medium hover:border-pink-400 hover:bg-pink-50 transition-all"
                 >
                   Переглянути демо
                 </Link>
@@ -80,17 +80,17 @@ export default function HomePage() {
                 />
               </div>
               {/* Floating badges */}
-              <div className="absolute -top-4 -right-4 px-4 py-2 bg-card rounded-2xl shadow-lg border border-pink-100 dark:border-pink-900/30 animate-float" style={{ animationDelay: '-1s' }}>
+              <div className="absolute -top-4 -right-4 px-4 py-2 bg-card rounded-2xl shadow-lg border border-pink-100 animate-float" style={{ animationDelay: '-1s' }}>
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
                     <CheckCircle2 className="w-4 h-4 text-green-500" />
                   </div>
                   <span className="font-medium text-sm">Новий запис!</span>
                 </div>
               </div>
-              <div className="absolute -bottom-4 -left-4 px-4 py-2 bg-card rounded-2xl shadow-lg border border-pink-100 dark:border-pink-900/30 animate-float" style={{ animationDelay: '-2s' }}>
+              <div className="absolute -bottom-4 -left-4 px-4 py-2 bg-card rounded-2xl shadow-lg border border-pink-100 animate-float" style={{ animationDelay: '-2s' }}>
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center">
                     <Star className="w-4 h-4 text-yellow-500" />
                   </div>
                   <span className="font-medium text-sm">+45 послуг</span>
@@ -146,8 +146,8 @@ export default function HomePage() {
           {/* Feature Cards */}
           <div className="grid md:grid-cols-2 gap-8">
             {/* Client Bot */}
-            <div className="group relative p-8 rounded-3xl bg-card border border-pink-100 dark:border-pink-900/30 shadow-soft hover:shadow-xl hover:shadow-pink-500/10 transition-all hover:-translate-y-2">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-pink-100 dark:from-pink-900/30 to-transparent rounded-bl-full opacity-50" />
+            <div className="group relative p-8 rounded-3xl bg-card border border-pink-100 shadow-soft hover:shadow-xl hover:shadow-pink-500/10 transition-all hover:-translate-y-2">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-pink-100 to-transparent rounded-bl-full opacity-50" />
               <div className="relative">
                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center mb-6 shadow-lg shadow-pink-500/30 group-hover:scale-110 transition-transform">
                   <UserCircle className="w-8 h-8 text-white" />
@@ -176,8 +176,8 @@ export default function HomePage() {
             </div>
 
             {/* Doctor Bot */}
-            <div className="group relative p-8 rounded-3xl bg-card border border-yellow-100 dark:border-yellow-900/30 shadow-soft hover:shadow-xl hover:shadow-yellow-500/10 transition-all hover:-translate-y-2">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-yellow-100 dark:from-yellow-900/30 to-transparent rounded-bl-full opacity-50" />
+            <div className="group relative p-8 rounded-3xl bg-card border border-yellow-100 shadow-soft hover:shadow-xl hover:shadow-yellow-500/10 transition-all hover:-translate-y-2">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-yellow-100 to-transparent rounded-bl-full opacity-50" />
               <div className="relative">
                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center mb-6 shadow-lg shadow-yellow-500/30 group-hover:scale-110 transition-transform">
                   <Stethoscope className="w-8 h-8 text-white" />
@@ -260,7 +260,7 @@ export default function HomePage() {
               { icon: Palette, title: 'Кастомізація', desc: 'Обирайте кольори, логотип та стиль вашого сайту', color: 'indigo' },
               { icon: Bell, title: 'Сповіщення', desc: 'Миттєві повідомлення про нові записи в Telegram', color: 'rose' },
             ].map((feature, i) => (
-              <div key={i} className="group p-6 rounded-2xl bg-card border border-pink-100 dark:border-pink-900/30 shadow-soft hover:shadow-xl transition-all hover:-translate-y-2">
+              <div key={i} className="group p-6 rounded-2xl bg-card border border-pink-100 shadow-soft hover:shadow-xl transition-all hover:-translate-y-2">
                 <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br from-${feature.color}-400 to-${feature.color}-500 flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}
                   style={{
                     background: feature.color === 'pink' ? 'linear-gradient(to bottom right, #ec4899, #f43f5e)' :
@@ -349,7 +349,7 @@ export default function HomePage() {
 
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             {/* Individual */}
-            <div className="relative p-8 rounded-3xl bg-card border-2 border-pink-200 dark:border-pink-800 shadow-soft hover:shadow-xl transition-all">
+            <div className="relative p-8 rounded-3xl bg-card border-2 border-pink-200 shadow-soft hover:shadow-xl transition-all">
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-pink-500 to-rose-500 text-white text-xs font-medium rounded-full">
                 Популярний
               </div>
@@ -370,7 +370,7 @@ export default function HomePage() {
             </div>
 
             {/* Company Small */}
-            <div className="relative p-8 rounded-3xl bg-card border border-gray-200 dark:border-gray-700 shadow-soft hover:shadow-xl transition-all">
+            <div className="relative p-8 rounded-3xl bg-card border border-gray-200 shadow-soft hover:shadow-xl transition-all">
               <h3 className="text-xl font-bold mb-2">Компанія</h3>
               <p className="text-muted-foreground text-sm mb-4">3-9 спеціалістів</p>
               <div className="mb-6">
@@ -388,7 +388,7 @@ export default function HomePage() {
             </div>
 
             {/* Company Large */}
-            <div className="relative p-8 rounded-3xl bg-card border border-gray-200 dark:border-gray-700 shadow-soft hover:shadow-xl transition-all">
+            <div className="relative p-8 rounded-3xl bg-card border border-gray-200 shadow-soft hover:shadow-xl transition-all">
               <h3 className="text-xl font-bold mb-2">Велика компанія</h3>
               <p className="text-muted-foreground text-sm mb-4">10+ спеціалістів</p>
               <div className="mb-6">

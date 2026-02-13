@@ -24,9 +24,9 @@ function TelegramChat({ botName, botAvatar, messages, accentColor, notification 
     <div className="relative">
       {/* Notification popup */}
       {notification && (
-        <div className="absolute -top-2 -right-2 z-10 px-4 py-2 bg-card rounded-2xl shadow-lg border border-green-200 dark:border-green-800 animate-float" style={{ animationDelay: '-1s' }}>
+        <div className="absolute -top-2 -right-2 z-10 px-4 py-2 bg-card rounded-2xl shadow-lg border border-green-200 animate-float" style={{ animationDelay: '-1s' }}>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
               <Check className="w-4 h-4 text-green-500" />
             </div>
             <div>
@@ -38,7 +38,7 @@ function TelegramChat({ botName, botAvatar, messages, accentColor, notification 
       )}
 
       {/* Chat window */}
-      <div className="w-full max-w-sm bg-card rounded-2xl shadow-2xl border border-pink-100 dark:border-pink-900/30 overflow-hidden">
+      <div className="w-full max-w-sm bg-card rounded-2xl shadow-2xl border border-pink-100 overflow-hidden">
         {/* Header */}
         <div className={`${accentColor} px-4 py-3 flex items-center gap-3`}>
           <div className="w-10 h-10 rounded-full overflow-hidden bg-white flex-shrink-0">
@@ -57,12 +57,12 @@ function TelegramChat({ botName, botAvatar, messages, accentColor, notification 
         </div>
 
         {/* Messages */}
-        <div className="p-3 space-y-3 bg-[#e5ddd5] dark:bg-slate-900 min-h-[320px] max-h-[400px] overflow-y-auto">
+        <div className="p-3 space-y-3 bg-[#e5ddd5] min-h-[320px] max-h-[400px] overflow-y-auto">
           {messages.map((msg) => (
             <div key={msg.id} className={`flex ${msg.from === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div className={`max-w-[85%] ${msg.from === 'user'
-                ? 'bg-[#dcf8c6] dark:bg-green-900/50 rounded-2xl rounded-br-md'
-                : 'bg-white dark:bg-slate-800 rounded-2xl rounded-bl-md'
+                ? 'bg-[#dcf8c6] rounded-2xl rounded-br-md'
+                : 'bg-white rounded-2xl rounded-bl-md'
                 } shadow-sm`}>
                 <div className="px-3 py-2">
                   <p className="text-sm whitespace-pre-line">{msg.text}</p>
@@ -73,7 +73,7 @@ function TelegramChat({ botName, botAvatar, messages, accentColor, notification 
                           key={i}
                           className={`w-full px-3 py-2 text-sm rounded-lg transition-colors ${btn.selected
                             ? `${accentColor} text-white`
-                            : 'bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-foreground'
+                            : 'bg-gray-100 hover:bg-gray-200 text-foreground'
                             }`}
                         >
                           {btn.text}
@@ -92,12 +92,12 @@ function TelegramChat({ botName, botAvatar, messages, accentColor, notification 
         </div>
 
         {/* Input */}
-        <div className="px-3 py-2 bg-[#f0f0f0] dark:bg-slate-800 border-t border-gray-200 dark:border-slate-700">
+        <div className="px-3 py-2 bg-[#f0f0f0] border-t border-gray-200">
           <div className="flex items-center gap-2">
             <input
               type="text"
               placeholder="Написати повідомлення..."
-              className="flex-1 px-4 py-2 bg-white dark:bg-slate-700 rounded-full text-sm border-0 focus:outline-none focus:ring-2 focus:ring-pink-500/30"
+              className="flex-1 px-4 py-2 bg-white rounded-full text-sm border-0 focus:outline-none focus:ring-2 focus:ring-pink-500/30"
               readOnly
             />
             <button className={`w-10 h-10 ${accentColor} rounded-full flex items-center justify-center text-white`}>
@@ -203,7 +203,7 @@ export default function TelegramDemo() {
       {/* Client Bot Demo */}
       <div>
         <div className="mb-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-pink-100 dark:bg-pink-900/30 text-pink-600 text-xs font-medium mb-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-pink-100 text-pink-600 text-xs font-medium mb-3">
             👤 Бот для клієнтів
           </div>
           <h3 className="text-xl font-bold mb-2">Простий запис на процедуру</h3>
@@ -223,7 +223,7 @@ export default function TelegramDemo() {
       {/* Doctor Bot Demo */}
       <div>
         <div className="mb-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 text-xs font-medium mb-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-100 text-amber-600 text-xs font-medium mb-3">
             👩‍⚕️ Бот для косметолога
           </div>
           <h3 className="text-xl font-bold mb-2">Миттєві сповіщення</h3>

@@ -55,7 +55,7 @@ export default function ScreenshotGallery() {
           <button
             key={i}
             onClick={() => openModal(i)}
-            className="group relative rounded-2xl overflow-hidden bg-card border border-pink-100 dark:border-pink-900/30 shadow-soft hover:shadow-xl transition-all hover:-translate-y-2 text-left cursor-pointer"
+            className="group relative rounded-2xl overflow-hidden bg-card border border-pink-100 shadow-soft hover:shadow-xl transition-all hover:-translate-y-2 text-left cursor-pointer"
           >
             <div className="aspect-video overflow-hidden">
               <Image
