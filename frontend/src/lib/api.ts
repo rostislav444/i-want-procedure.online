@@ -492,21 +492,7 @@ export interface ProcedureProtocol {
   template?: {
     id: number
     name: string
-    sections: Array<{
-      id: string
-      title: string
-      icon?: string
-      color?: string
-      fields: Array<{
-        id: string
-        type: string
-        label: string
-        options?: string[]
-        max?: number
-        min?: number
-        step?: number
-      }>
-    }>
+    sections: ProtocolTemplateSection[]
   }
   // Legacy fields
   skin_condition?: string
