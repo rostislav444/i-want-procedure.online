@@ -42,6 +42,12 @@ class Settings(BaseSettings):
     # CORS
     CORS_ORIGINS: list[str] = ["http://localhost:3000"]
 
+    # Redis
+    REDIS_URL: Optional[str] = None
+
+    # Debug
+    DEBUG: bool = False
+
     class Config:
         env_file = ".env"
         case_sensitive = True
