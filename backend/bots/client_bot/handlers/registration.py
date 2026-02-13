@@ -2,6 +2,7 @@ from aiogram import Router, F
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.client import Client, ClientCompany, Language
@@ -26,6 +27,71 @@ def skip_keyboard(prefill_value: str = None) -> ReplyKeyboardMarkup:
             one_time_keyboard=True,
         )
     return ReplyKeyboardRemove()
+
+
+async def create_or_merge_client(
+    session: AsyncSession,
+    telegram_id: int,
+    telegram_username: str | None,
+    first_name: str,
+    last_name: str,
+    phone: str | None,
+    language: Language,
+    company_id: int,
+) -> Client:
+    """
+    Create a new client or merge with existing phone-matched client.
+
+    If a client with the same phone exists and has no telegram_id (admin-created),
+    update that client with the telegram information (merge accounts).
+    """
+    # Check for existing client by phone (admin-created, no telegram_id)
+    if phone:
+        result = await session.execute(
+            select(Client).where(
+                Client.phone == phone,
+                Client.telegram_id.is_(None),
+            )
+        )
+        existing = result.scalar_one_or_none()
+
+        if existing:
+            # Merge: update existing client with telegram info
+            existing.telegram_id = telegram_id
+            existing.telegram_username = telegram_username
+            existing.language = language
+            if not existing.last_name and last_name:
+                existing.last_name = last_name
+
+            # Ensure company association exists
+            assoc = await session.execute(
+                select(ClientCompany).where(
+                    ClientCompany.client_id == existing.id,
+                    ClientCompany.company_id == company_id,
+                )
+            )
+            if not assoc.scalar_one_or_none():
+                session.add(ClientCompany(client_id=existing.id, company_id=company_id))
+
+            await session.commit()
+            return existing
+
+    # No merge candidate: create new client
+    client = Client(
+        telegram_id=telegram_id,
+        telegram_username=telegram_username,
+        first_name=first_name,
+        last_name=last_name,
+        phone=phone,
+        language=language,
+        company_id=company_id,
+    )
+    session.add(client)
+    await session.flush()
+
+    session.add(ClientCompany(client_id=client.id, company_id=company_id))
+    await session.commit()
+    return client
 
 
 @router.message(RegistrationStates.waiting_for_name)
@@ -83,8 +149,8 @@ async def process_contact(message: Message, state: FSMContext, session: AsyncSes
     lang = data.get("language", "uk")
     company_id = data["company_id"]
 
-    # Create client with company_id from deep link
-    client = Client(
+    await create_or_merge_client(
+        session=session,
         telegram_id=message.from_user.id,
         telegram_username=message.from_user.username,
         first_name=data["first_name"],
@@ -93,13 +159,6 @@ async def process_contact(message: Message, state: FSMContext, session: AsyncSes
         language=Language(lang),
         company_id=company_id,
     )
-    session.add(client)
-    await session.flush()  # Get client.id
-
-    # Also create client_companies entry for multi-specialist support
-    client_company = ClientCompany(client_id=client.id, company_id=company_id)
-    session.add(client_company)
-    await session.commit()
 
     await state.clear()
     await message.answer(
@@ -120,8 +179,8 @@ async def process_phone_text(message: Message, state: FSMContext, session: Async
     else:
         phone = message.text
 
-    # Create client with company_id from deep link
-    client = Client(
+    await create_or_merge_client(
+        session=session,
         telegram_id=message.from_user.id,
         telegram_username=message.from_user.username,
         first_name=data["first_name"],
@@ -130,13 +189,6 @@ async def process_phone_text(message: Message, state: FSMContext, session: Async
         language=Language(lang),
         company_id=company_id,
     )
-    session.add(client)
-    await session.flush()  # Get client.id
-
-    # Also create client_companies entry for multi-specialist support
-    client_company = ClientCompany(client_id=client.id, company_id=company_id)
-    session.add(client_company)
-    await session.commit()
 
     await state.clear()
     await message.answer(

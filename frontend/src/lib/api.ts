@@ -326,6 +326,12 @@ export const scheduleApi = {
 }
 
 // Appointments API
+export interface AvailableSlot {
+  date: string
+  start_time: string
+  end_time: string
+}
+
 export const appointmentsApi = {
   getAll: async (params?: {
     date_from?: string
@@ -334,6 +340,33 @@ export const appointmentsApi = {
     specialist_id?: number  // Filter by specialist (for clinics)
   }) => {
     const response = await api.get('/appointments', { params })
+    return response.data
+  },
+  create: async (data: {
+    client_id?: number
+    new_client?: {
+      first_name: string
+      last_name?: string
+      phone?: string
+      email?: string
+    }
+    service_id: number
+    member_id?: number
+    date: string
+    start_time: string
+    end_time?: string
+    status?: string
+  }): Promise<Appointment> => {
+    const response = await api.post('/appointments', data)
+    return response.data
+  },
+  getAvailableSlots: async (params: {
+    doctor_id: number
+    service_id: number
+    date_from: string
+    date_to: string
+  }): Promise<AvailableSlot[]> => {
+    const response = await api.get('/appointments/available-slots', { params })
     return response.data
   },
   updateStatus: async (id: number, status: string) => {
@@ -345,11 +378,12 @@ export const appointmentsApi = {
 // Client Types
 export interface Client {
   id: number
-  telegram_id: number
+  telegram_id?: number | null
   telegram_username: string | null
   first_name: string
   last_name: string | null
   phone: string | null
+  email: string | null
   language: string
   created_at: string
   // Appointment stats
@@ -365,12 +399,22 @@ export interface Client {
   last_visit_service: string | null
 }
 
+export interface ClientSearchResult {
+  id: number
+  first_name: string
+  last_name: string | null
+  phone: string | null
+  email: string | null
+  telegram_username: string | null
+}
+
 export interface Appointment {
   id: number
   company_id: number
   doctor_id: number
   client_id: number
   service_id: number
+  specialist_profile_id?: number
   date: string
   start_time: string
   end_time: string
@@ -381,6 +425,7 @@ export interface Appointment {
     first_name: string
     last_name?: string
     phone?: string
+    email?: string
     telegram_username?: string
   }
   service?: {
@@ -406,6 +451,19 @@ export const clientsApi = {
   },
   getAppointments: async (id: number): Promise<Appointment[]> => {
     const response = await api.get(`/clients/${id}/appointments`)
+    return response.data
+  },
+  search: async (q: string): Promise<ClientSearchResult[]> => {
+    const response = await api.get('/clients/search', { params: { q } })
+    return response.data
+  },
+  create: async (data: {
+    first_name: string
+    last_name?: string
+    phone?: string
+    email?: string
+  }): Promise<Client> => {
+    const response = await api.post('/clients', data)
     return response.data
   },
   generateTest: async (count: number = 10): Promise<Client[]> => {

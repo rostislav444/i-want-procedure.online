@@ -3,13 +3,13 @@ from datetime import date
 from typing import Optional
 from fastapi import APIRouter, HTTPException, status, Query
 from pydantic import BaseModel
-from sqlalchemy import select, func, case, and_
+from sqlalchemy import select, func, case, and_, or_
 from sqlalchemy.orm import selectinload
 
 from app.api.deps import DbSession, CurrentUser
 from app.models.client import Client, ClientCompany
 from app.models.appointment import Appointment
-from app.schemas.client import ClientResponse, ClientCreate, ClientListResponse
+from app.schemas.client import ClientResponse, ClientCreate, ClientListResponse, ClientSearchResponse
 from app.schemas.appointment import AppointmentResponse
 
 router = APIRouter(prefix="/clients")
@@ -233,9 +233,37 @@ async def get_clients(
     return response
 
 
+@router.get("/search", response_model=list[ClientSearchResponse])
+async def search_clients(
+    current_user: CurrentUser,
+    db: DbSession,
+    q: str = Query(..., min_length=1, description="Search by name, phone, or email"),
+):
+    """Search clients by name, phone or email for autocomplete."""
+    search_term = f"%{q.strip()}%"
+
+    query = (
+        select(Client)
+        .join(ClientCompany, ClientCompany.client_id == Client.id)
+        .where(
+            ClientCompany.company_id == current_user.company_id,
+            or_(
+                Client.first_name.ilike(search_term),
+                Client.last_name.ilike(search_term),
+                Client.phone.ilike(search_term),
+                Client.email.ilike(search_term),
+                func.concat(Client.first_name, ' ', Client.last_name).ilike(search_term),
+            ),
+        )
+        .limit(10)
+    )
+    result = await db.execute(query)
+    return result.scalars().all()
+
+
 @router.get("/{client_id}", response_model=ClientResponse)
 async def get_client(client_id: int, current_user: CurrentUser, db: DbSession):
-    from sqlalchemy import or_, exists
+    from sqlalchemy import exists
 
     # Check if client has appointments with this company
     has_appointment = exists(
@@ -297,26 +325,27 @@ async def create_client(
 ):
     """Create a new client and associate with current company"""
     # Check if client with this telegram_id already exists
-    result = await db.execute(
-        select(Client).where(Client.telegram_id == client_data.telegram_id)
-    )
-    existing_client = result.scalar_one_or_none()
-
-    if existing_client:
-        # Just associate with company if not already
-        assoc_result = await db.execute(
-            select(ClientCompany).where(
-                ClientCompany.client_id == existing_client.id,
-                ClientCompany.company_id == current_user.company_id,
-            )
+    if client_data.telegram_id:
+        result = await db.execute(
+            select(Client).where(Client.telegram_id == client_data.telegram_id)
         )
-        if not assoc_result.scalar_one_or_none():
-            db.add(ClientCompany(
-                client_id=existing_client.id,
-                company_id=current_user.company_id,
-            ))
-            await db.commit()
-        return existing_client
+        existing_client = result.scalar_one_or_none()
+
+        if existing_client:
+            # Just associate with company if not already
+            assoc_result = await db.execute(
+                select(ClientCompany).where(
+                    ClientCompany.client_id == existing_client.id,
+                    ClientCompany.company_id == current_user.company_id,
+                )
+            )
+            if not assoc_result.scalar_one_or_none():
+                db.add(ClientCompany(
+                    client_id=existing_client.id,
+                    company_id=current_user.company_id,
+                ))
+                await db.commit()
+            return existing_client
 
     # Create new client
     client = Client(
@@ -326,6 +355,7 @@ async def create_client(
         first_name=client_data.first_name,
         last_name=client_data.last_name,
         phone=client_data.phone,
+        email=client_data.email,
         language=client_data.language,
     )
     db.add(client)

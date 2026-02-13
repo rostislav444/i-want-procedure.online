@@ -46,11 +46,12 @@ class Client(Base):
     # Keep company_id for backwards compatibility, but it's now optional
     # This represents the "primary" or first company the client registered with
     company_id: Mapped[Optional[int]] = mapped_column(ForeignKey("companies.id"), nullable=True)
-    telegram_id: Mapped[int] = mapped_column(BigInteger, unique=True, index=True)
+    telegram_id: Mapped[Optional[int]] = mapped_column(BigInteger, unique=True, index=True, nullable=True)
     telegram_username: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     first_name: Mapped[str] = mapped_column(String(100))
     last_name: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     phone: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, index=True)
     language: Mapped[Language] = mapped_column(String(5), default=Language.UK)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()

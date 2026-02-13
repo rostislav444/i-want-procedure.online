@@ -1,51 +1,17 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, parseISO, addMonths, subMonths, isSameDay, isSameMonth, addDays, } from 'date-fns'
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addMonths, subMonths, isSameDay, isSameMonth, addDays } from 'date-fns'
 import { uk } from 'date-fns/locale'
-import { ChevronLeft, ChevronRight, User, Phone, Users } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { CalendarView, CalendarEvent, ViewMode } from '@/components/calendar'
-import { SpecialistFilter } from '@/components/SpecialistFilter'
-import { appointmentsApi, specialistsApi, SpecialistListItem } from '@/lib/api'
+
+import { appointmentsApi, specialistsApi, SpecialistListItem, Appointment } from '@/lib/api'
 import { useCompany } from '@/contexts/CompanyContext'
-
-interface Client {
-  id: number
-  first_name: string
-  last_name: string | null
-  phone: string | null
-  telegram_username: string | null
-}
-
-interface Service {
-  id: number
-  name: string
-  duration_minutes: number
-  price: number
-}
-
-interface Specialist {
-  id: number
-  user_id: number
-  first_name: string
-  last_name: string
-  position?: string
-}
-
-interface Appointment {
-  id: number
-  doctor_id: number
-  specialist_profile_id?: number
-  date: string
-  start_time: string
-  end_time: string
-  status: 'pending' | 'confirmed' | 'cancelled' | 'completed'
-  client: Client | null
-  service: Service | null
-  specialist?: Specialist
-}
+import CreateAppointmentModal from '@/components/appointments/CreateAppointmentModal'
+import AppointmentDetailModal from '@/components/appointments/AppointmentDetailModal'
 
 // Specialist color palette
 const SPECIALIST_COLORS = [
@@ -81,7 +47,7 @@ const STATUS_LABELS = {
 }
 
 export default function AppointmentsPage() {
-  const { companyType, canViewAllAppointments, selectedCompanyId } = useCompany()
+  const { companyType, canViewAllAppointments, selectedCompanyId, specialistProfile } = useCompany()
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [specialists, setSpecialists] = useState<SpecialistListItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -89,12 +55,25 @@ export default function AppointmentsPage() {
   const [calendarMonth, setCalendarMonth] = useState(new Date())
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null)
   const [viewMode, setViewMode] = useState<ViewMode>('day')
-  const [selectedSpecialist, setSelectedSpecialist] = useState<number | null>(null)
+  const [selectedSpecialist, setSelectedSpecialist] = useState<number | null>(
+    specialistProfile?.id ?? null
+  )
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showDetailModal, setShowDetailModal] = useState(false)
+  const [preselectedDate, setPreselectedDate] = useState<Date | null>(null)
+  const [preselectedTime, setPreselectedTime] = useState<string | null>(null)
 
   const weekStart = startOfWeek(selectedDate, { weekStartsOn: 1 })
   const weekEnd = endOfWeek(selectedDate, { weekStartsOn: 1 })
   const monthStart = startOfMonth(selectedDate)
   const monthEnd = endOfMonth(selectedDate)
+
+  // Set default specialist filter to current user's profile
+  useEffect(() => {
+    if (specialistProfile?.id && selectedSpecialist === null) {
+      setSelectedSpecialist(specialistProfile.id)
+    }
+  }, [specialistProfile])
 
   // Load specialists for clinic managers
   useEffect(() => {
@@ -159,10 +138,29 @@ export default function AppointmentsPage() {
     try {
       await appointmentsApi.updateStatus(id, status)
       await loadAppointments()
-      setSelectedAppointment(null)
+      // Update selected appointment status if it's the one being changed
+      if (selectedAppointment?.id === id) {
+        setSelectedAppointment(prev => prev ? { ...prev, status: status as Appointment['status'] } : null)
+      }
     } catch (error) {
       console.error('Error updating status:', error)
     }
+  }
+
+  const handleEmptySlotClick = (date: Date, time: string) => {
+    setPreselectedDate(date)
+    setPreselectedTime(time)
+    setShowCreateModal(true)
+  }
+
+  const handleAppointmentCreated = () => {
+    loadAppointments()
+    setShowCreateModal(false)
+  }
+
+  const handleAppointmentClick = (appt: Appointment) => {
+    setSelectedAppointment(appt)
+    setShowDetailModal(true)
   }
 
   // Get specialist info by profile ID
@@ -197,7 +195,7 @@ export default function AppointmentsPage() {
             : `${appt.client?.first_name || ''} ${appt.client?.last_name || ''}`.trim(),
           color: useSpecialistColors ? specialistColor.bg : STATUS_COLORS[appt.status],
           borderColor: useSpecialistColors ? specialistColor.border : STATUS_BG[appt.status],
-          onClick: () => setSelectedAppointment(appt),
+          onClick: () => handleAppointmentClick(appt),
         }
       })
   }, [appointments, specialists, selectedSpecialist, companyType, canViewAllAppointments, specialistColorMap])
@@ -235,29 +233,51 @@ export default function AppointmentsPage() {
       <div className="flex-1 flex flex-col min-w-0">
         <div className="flex items-center justify-between gap-2 mb-4">
           <h1 className="text-2xl font-bold">Записи</h1>
-          {companyType === 'clinic' && (
-            <SpecialistFilter
-              value={selectedSpecialist}
-              onChange={setSelectedSpecialist}
-            />
-          )}
+          <Button
+            size="sm"
+            className="gap-1.5"
+            onClick={() => {
+              setPreselectedDate(selectedDate)
+              setPreselectedTime(null)
+              setShowCreateModal(true)
+            }}
+          >
+            <Plus className="h-4 w-4" />
+            Новий запис
+          </Button>
         </div>
 
-        {/* Specialist legend when showing all */}
-        {showingAllSpecialists && specialists.length > 0 && (
-          <div className="flex flex-wrap gap-3 mb-4">
+        {/* Specialist filter chips */}
+        {companyType === 'clinic' && canViewAllAppointments && specialists.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-4">
+            <button
+              onClick={() => setSelectedSpecialist(null)}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors text-sm ${
+                !selectedSpecialist
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'hover:bg-muted/50'
+              }`}
+            >
+              <Users className="h-3.5 w-3.5" />
+              <span>Всі</span>
+            </button>
             {specialists.map((sp) => {
               const color = specialistColorMap.get(sp.id)
+              const isActive = selectedSpecialist === sp.id
               return (
                 <button
                   key={sp.id}
-                  onClick={() => setSelectedSpecialist(sp.id)}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-full border hover:bg-muted/50 transition-colors text-sm"
+                  onClick={() => setSelectedSpecialist(isActive ? null : sp.id)}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors text-sm ${
+                    isActive
+                      ? `${color?.bg || 'bg-primary/10'} ${color?.text || ''} border-current font-medium`
+                      : 'hover:bg-muted/50'
+                  }`}
                 >
                   <div className={`w-3 h-3 rounded-full ${color?.border}`} />
                   <span>{sp.first_name} {sp.last_name}</span>
                   {sp.position && (
-                    <span className="text-muted-foreground text-xs">({sp.position})</span>
+                    <span className={`text-xs ${isActive ? 'opacity-70' : 'text-muted-foreground'}`}>({sp.position})</span>
                   )}
                 </button>
               )
@@ -277,6 +297,7 @@ export default function AppointmentsPage() {
             viewMode={viewMode}
             onViewModeChange={setViewMode}
             onDateClick={handleDateClick}
+            onEmptySlotClick={handleEmptySlotClick}
             className="flex-1"
           />
         )}
@@ -328,145 +349,70 @@ export default function AppointmentsPage() {
           </CardContent>
         </Card>
 
-        {/* Appointment details */}
+        {/* Day's appointments list */}
         <Card className="flex-1">
           <CardContent className="p-4">
-            {selectedAppointment ? (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold">Деталі запису</h3>
-                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => setSelectedAppointment(null)}>
-                    ×
-                  </Button>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <div className={`w-2.5 h-2.5 rounded-full ${STATUS_BG[selectedAppointment.status]}`} />
-                    <span className="text-sm">{STATUS_LABELS[selectedAppointment.status]}</span>
-                  </div>
-                  <div>
-                    <div className="text-xs text-muted-foreground">Дата та час</div>
-                    <div className="font-medium text-sm">
-                      {format(parseISO(selectedAppointment.date), 'd MMMM yyyy', { locale: uk })}
-                    </div>
-                    <div className="text-sm">
-                      {selectedAppointment.start_time.slice(0, 5)} - {selectedAppointment.end_time.slice(0, 5)}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-muted-foreground">Послуга</div>
-                    <div className="font-medium text-sm">{selectedAppointment.service?.name}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {selectedAppointment.service?.duration_minutes} хв • {selectedAppointment.service?.price} грн
-                    </div>
-                  </div>
-                  {/* Specialist info (for clinics) */}
-                  {companyType === 'clinic' && selectedAppointment.specialist_profile_id && (
-                    <div>
-                      <div className="text-xs text-muted-foreground">Спеціаліст</div>
-                      {(() => {
-                        const specialist = getSpecialistInfo(selectedAppointment.specialist_profile_id)
-                        const color = specialistColorMap.get(selectedAppointment.specialist_profile_id!)
-                        return specialist ? (
-                          <div className="flex items-center gap-1.5 text-sm">
-                            <div className={`w-2.5 h-2.5 rounded-full ${color?.border}`} />
-                            <span className="font-medium">
-                              {specialist.first_name} {specialist.last_name}
-                            </span>
-                            {specialist.position && (
-                              <span className="text-xs text-muted-foreground">({specialist.position})</span>
-                            )}
-                          </div>
-                        ) : null
-                      })()}
-                    </div>
-                  )}
-                  <div>
-                    <div className="text-xs text-muted-foreground">Клієнт</div>
-                    <div className="flex items-center gap-1.5 text-sm">
-                      <User className="h-3.5 w-3.5 text-muted-foreground" />
-                      <span className="font-medium">
-                        {selectedAppointment.client?.first_name} {selectedAppointment.client?.last_name || ''}
-                      </span>
-                    </div>
-                    {selectedAppointment.client?.phone && (
-                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <Phone className="h-3 w-3" />
-                        {selectedAppointment.client.phone}
-                      </div>
-                    )}
-                    {selectedAppointment.client?.telegram_username && (
-                      <div className="text-xs text-muted-foreground">
-                        @{selectedAppointment.client.telegram_username}
-                      </div>
-                    )}
-                  </div>
-                  {selectedAppointment.status === 'pending' && (
-                    <div className="flex gap-2 pt-2">
-                      <Button size="sm" className="flex-1 h-8 text-xs" onClick={() => handleStatusChange(selectedAppointment.id, 'confirmed')}>
-                        Підтвердити
-                      </Button>
-                      <Button size="sm" variant="outline" className="flex-1 h-8 text-xs" onClick={() => handleStatusChange(selectedAppointment.id, 'cancelled')}>
-                        Скасувати
-                      </Button>
-                    </div>
-                  )}
-                  {selectedAppointment.status === 'confirmed' && (
-                    <div className="flex gap-2 pt-2">
-                      <Button size="sm" className="flex-1 h-8 text-xs" onClick={() => handleStatusChange(selectedAppointment.id, 'completed')}>
-                        Завершити
-                      </Button>
-                      <Button size="sm" variant="outline" className="flex-1 h-8 text-xs" onClick={() => handleStatusChange(selectedAppointment.id, 'cancelled')}>
-                        Скасувати
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <h3 className="font-semibold text-sm">Записи на день</h3>
-                {getAppointmentsForDate(selectedDate).length === 0 ? (
-                  <p className="text-xs text-muted-foreground">Немає записів</p>
-                ) : (
-                  <div className="space-y-1.5">
-                    {getAppointmentsForDate(selectedDate).map((appt) => {
-                      const specialist = getSpecialistInfo(appt.specialist_profile_id)
-                      const specialistColor = appt.specialist_profile_id
-                        ? specialistColorMap.get(appt.specialist_profile_id)
-                        : null
-                      const useSpecialistColors = showingAllSpecialists && specialistColor
+            <div className="space-y-2">
+              <h3 className="font-semibold text-sm">Записи на день</h3>
+              {getAppointmentsForDate(selectedDate).length === 0 ? (
+                <p className="text-xs text-muted-foreground">Немає записів</p>
+              ) : (
+                <div className="space-y-1.5">
+                  {getAppointmentsForDate(selectedDate).map((appt) => {
+                    const specialist = getSpecialistInfo(appt.specialist_profile_id)
+                    const specialistColor = appt.specialist_profile_id
+                      ? specialistColorMap.get(appt.specialist_profile_id)
+                      : null
+                    const useSpecialistColors = showingAllSpecialists && specialistColor
 
-                      return (
-                        <div
-                          key={appt.id}
-                          className="flex cursor-pointer"
-                          onClick={() => setSelectedAppointment(appt)}
-                        >
-                          <div className={`w-1 rounded-l ${useSpecialistColors ? specialistColor.border : STATUS_BG[appt.status]}`} />
-                          <div className={`flex-1 p-2 rounded-r ${useSpecialistColors ? specialistColor.bg : STATUS_COLORS[appt.status]}`}>
-                            <div className="text-xs font-medium">{appt.start_time.slice(0, 5)} - {appt.end_time.slice(0, 5)}</div>
-                            <div className="text-xs truncate">{appt.service?.name}</div>
-                            {showingAllSpecialists && specialist ? (
-                              <div className="text-xs font-medium truncate">
-                                {specialist.first_name} {specialist.last_name}
-                              </div>
-                            ) : (
-                              <div className="text-xs text-muted-foreground truncate">
-                                {appt.client?.first_name} {appt.client?.last_name || ''}
-                              </div>
-                            )}
-                          </div>
+                    return (
+                      <div
+                        key={appt.id}
+                        className="flex cursor-pointer"
+                        onClick={() => handleAppointmentClick(appt)}
+                      >
+                        <div className={`w-1 rounded-l ${useSpecialistColors ? specialistColor.border : STATUS_BG[appt.status]}`} />
+                        <div className={`flex-1 p-2 rounded-r ${useSpecialistColors ? specialistColor.bg : STATUS_COLORS[appt.status]}`}>
+                          <div className="text-xs font-medium">{appt.start_time.slice(0, 5)} - {appt.end_time.slice(0, 5)}</div>
+                          <div className="text-xs truncate">{appt.service?.name}</div>
+                          {showingAllSpecialists && specialist ? (
+                            <div className="text-xs font-medium truncate">
+                              {specialist.first_name} {specialist.last_name}
+                            </div>
+                          ) : (
+                            <div className="text-xs text-muted-foreground truncate">
+                              {appt.client?.first_name} {appt.client?.last_name || ''}
+                            </div>
+                          )}
                         </div>
-                      )
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Create Appointment Modal */}
+      <CreateAppointmentModal
+        open={showCreateModal}
+        onOpenChange={setShowCreateModal}
+        onAppointmentCreated={handleAppointmentCreated}
+        preselectedDate={preselectedDate}
+        preselectedTime={preselectedTime}
+      />
+
+      {/* Appointment Detail Modal */}
+      <AppointmentDetailModal
+        open={showDetailModal}
+        onOpenChange={setShowDetailModal}
+        appointment={selectedAppointment}
+        specialists={specialists}
+        specialistColorMap={specialistColorMap}
+        onStatusChange={handleStatusChange}
+      />
     </div>
   )
 }

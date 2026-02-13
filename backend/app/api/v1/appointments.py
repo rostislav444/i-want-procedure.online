@@ -10,11 +10,12 @@ from app.api.deps import DbSession, CurrentUser
 from app.models.appointment import Appointment, AppointmentStatus
 from app.models.schedule import Schedule, ScheduleException, ScheduleExceptionType
 from app.models.service import Service
-from app.models.client import Client
+from app.models.client import Client, ClientCompany
 from app.models.user import User
 from app.models.inventory import ServiceInventoryItem, StockMovement, MovementType
 from app.schemas.appointment import (
     AppointmentCreate,
+    AppointmentCreateAdmin,
     AppointmentUpdate,
     AppointmentResponse,
     AvailableSlot,
@@ -87,7 +88,7 @@ async def get_appointments(
     if status_filter:
         query = query.where(Appointment.status == status_filter)
     if specialist_id:
-        query = query.where(Appointment.specialist_profile_id == specialist_id)
+        query = query.where(Appointment.member_id == specialist_id)
 
     query = query.order_by(Appointment.date, Appointment.start_time)
     result = await db.execute(query)
@@ -237,6 +238,106 @@ async def get_available_slots(
         current_date += timedelta(days=1)
 
     return slots
+
+
+@router.post("", response_model=AppointmentResponse, status_code=status.HTTP_201_CREATED)
+async def create_appointment_admin(
+    appointment_data: AppointmentCreateAdmin,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    """Create appointment from admin panel."""
+    # Handle client
+    client_id = appointment_data.client_id
+
+    if appointment_data.new_client:
+        new_client_data = appointment_data.new_client
+        client = Client(
+            company_id=current_user.company_id,
+            first_name=new_client_data.first_name,
+            last_name=new_client_data.last_name,
+            phone=new_client_data.phone,
+            email=new_client_data.email,
+            language=new_client_data.language,
+            telegram_id=None,
+        )
+        db.add(client)
+        await db.flush()
+
+        db.add(ClientCompany(
+            client_id=client.id,
+            company_id=current_user.company_id,
+        ))
+        client_id = client.id
+    else:
+        result = await db.execute(
+            select(Client).where(Client.id == appointment_data.client_id)
+        )
+        if not result.scalar_one_or_none():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Client not found",
+            )
+
+    # Get service for duration calculation
+    result = await db.execute(
+        select(Service).where(
+            Service.id == appointment_data.service_id,
+            Service.company_id == current_user.company_id,
+        )
+    )
+    service = result.scalar_one_or_none()
+    if not service:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Service not found",
+        )
+
+    # Calculate end_time if not provided
+    end_time = appointment_data.end_time
+    if not end_time:
+        start_dt = datetime.combine(appointment_data.date, appointment_data.start_time)
+        end_dt = start_dt + timedelta(minutes=service.duration_minutes)
+        end_time = end_dt.time()
+
+    # Check for overlapping appointments
+    overlap_result = await db.execute(
+        select(Appointment).where(
+            Appointment.doctor_id == current_user.id,
+            Appointment.date == appointment_data.date,
+            Appointment.status.in_([AppointmentStatus.PENDING, AppointmentStatus.CONFIRMED]),
+            Appointment.end_time > appointment_data.start_time,
+            Appointment.start_time < end_time,
+        )
+    )
+    if overlap_result.scalars().first():
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Time slot conflicts with an existing appointment",
+        )
+
+    # Create appointment
+    appointment = Appointment(
+        company_id=current_user.company_id,
+        doctor_id=current_user.id,
+        client_id=client_id,
+        service_id=appointment_data.service_id,
+        member_id=appointment_data.member_id,
+        date=appointment_data.date,
+        start_time=appointment_data.start_time,
+        end_time=end_time,
+        status=appointment_data.status,
+    )
+    db.add(appointment)
+    await db.commit()
+
+    # Reload with relationships
+    result = await db.execute(
+        select(Appointment)
+        .options(selectinload(Appointment.client), selectinload(Appointment.service))
+        .where(Appointment.id == appointment.id)
+    )
+    return result.scalar_one()
 
 
 @router.get("/{appointment_id}", response_model=AppointmentResponse)
