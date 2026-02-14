@@ -34,9 +34,9 @@ export default function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 glass border-b bg-white/85">
-      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div className="max-w-6xl mx-auto px-4 py-2 sm:py-3 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <Logo className="h-14 w-auto" width={280} height={90} />
+          <Logo className="h-10 sm:h-14 w-auto" width={280} height={90} />
         </Link>
         <nav className="hidden md:flex items-center gap-6 text-sm">
           <Link href="#features" className="text-muted-foreground hover:text-pink-500 transition-colors">Можливості</Link>
@@ -49,10 +49,10 @@ export default function Header() {
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setIsLoginOpen(!isLoginOpen)}
-              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-foreground hover:text-pink-500 transition-colors"
+              className="flex items-center gap-1.5 px-4 sm:px-5 py-2 text-sm font-medium bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full hover:shadow-lg hover:shadow-pink-500/25 transition-all"
             >
               <LogIn className="w-4 h-4" />
-              <span>Увійти</span>
+              <span className="hidden sm:inline">Увійти</span>
               <ChevronDown className={`w-4 h-4 transition-transform ${isLoginOpen ? 'rotate-180' : ''}`} />
             </button>
 
@@ -90,10 +90,10 @@ export default function Header() {
             )}
           </div>
 
-          {/* Register via Telegram */}
+          {/* Register via Telegram - Hidden on mobile */}
           <Link
             href={`https://t.me/${DOCTOR_BOT_NAME}`}
-            className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full text-sm font-medium hover:shadow-lg hover:shadow-pink-500/25 transition-all hover:-translate-y-0.5"
+            className="hidden md:flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full text-sm font-medium hover:shadow-lg hover:shadow-pink-500/25 transition-all hover:-translate-y-0.5"
           >
             <MessageCircle className="w-4 h-4" />
             <span>Спробувати</span>

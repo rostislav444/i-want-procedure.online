@@ -175,18 +175,13 @@ function FeatureCard({ feature, index }: { feature: Feature; index: number }) {
         <div className={`grid lg:grid-cols-2 gap-8 sm:gap-10 lg:gap-12 items-center ${feature.reversed ? 'lg:flex-row-reverse' : ''}`}>
           {/* Content */}
           <div className={`${feature.reversed ? 'lg:order-2' : ''} ${isVisible ? 'animate-reveal-left' : ''}`}>
-            {/* Icon & Badge */}
-            <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full glass-tinted mb-6">
-              <span className="text-3xl">{feature.icon}</span>
-              <span className={`text-sm font-semibold bg-gradient-to-r ${feature.gradient} bg-clip-text text-transparent`}>
-                Функція #{index + 1}
-              </span>
+            {/* Title with Icon */}
+            <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+              <span className="text-4xl sm:text-5xl lg:text-6xl">{feature.icon}</span>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-black">
+                {feature.title}
+              </h2>
             </div>
-
-            {/* Title */}
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-black mb-3 sm:mb-4">
-              {feature.title}
-            </h2>
             <p className={`text-base sm:text-lg lg:text-xl font-semibold bg-gradient-to-r ${feature.gradient} bg-clip-text text-transparent mb-4 sm:mb-6`}>
               {feature.subtitle}
             </p>
