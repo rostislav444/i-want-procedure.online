@@ -115,8 +115,14 @@ services:
 
 volumes:
   postgres_data:
+    external: true
+    name: procedure_postgres_data
   redis_data:
+    external: true
+    name: procedure_redis_data
   static_data:
+    external: true
+    name: procedure_static_data
 
 networks:
   procedure_network:

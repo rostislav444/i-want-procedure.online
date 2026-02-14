@@ -8,6 +8,9 @@ DOMAIN="i-want-procedure.online"
 EMAIL="admin@i-want-procedure.online"
 COMPOSE_FILES="-f docker-compose.prod.yml -f docker-compose.frontend.yml -f docker-compose.nginx.yml"
 
+# Set explicit project name to avoid conflicts
+export COMPOSE_PROJECT_NAME=procedure
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -49,10 +52,58 @@ show_help() {
     echo "  ./deploy.sh setup i-want-procedure.online admin@example.com"
 }
 
-# Create docker network
+# Create docker network and volumes
 create_network() {
-    log_info "Creating docker network..."
+    log_info "Creating docker network and volumes..."
     docker network create procedure_network 2>/dev/null || log_info "Network already exists"
+    docker volume create procedure_postgres_data 2>/dev/null || log_info "postgres_data already exists"
+    docker volume create procedure_redis_data 2>/dev/null || log_info "redis_data already exists"
+    docker volume create procedure_static_data 2>/dev/null || log_info "static_data already exists"
+}
+
+# Validate environment
+validate_environment() {
+    log_info "Validating environment..."
+
+    if [ ! -f "$PROJECT_DIR/backend/.env" ]; then
+        log_error "Missing backend/.env file!"
+        log_error "Please create it from backend/.env.example"
+        exit 1
+    fi
+
+    if [ ! -f "$PROJECT_DIR/deploy/nginx.conf" ]; then
+        log_error "Missing deploy/nginx.conf file!"
+        exit 1
+    fi
+
+    if [ ! -d "$PROJECT_DIR/certbot/letsencrypt/live" ]; then
+        log_warn "SSL certificates not found at certbot/letsencrypt/live/"
+        log_warn "If this is initial setup, run: ./deploy/deploy.sh setup"
+    fi
+
+    log_info "Environment validation passed"
+}
+
+# Pre-deployment health check
+health_check() {
+    log_info "Running pre-deployment health check..."
+
+    # Check if Docker is running
+    if ! docker info > /dev/null 2>&1; then
+        log_error "Docker is not running!"
+        exit 1
+    fi
+
+    # Check if required network exists (or can be created)
+    docker network inspect procedure_network > /dev/null 2>&1 || docker network create procedure_network
+
+    # Check disk space (warn if < 10GB free)
+    available=$(df /var/lib/docker 2>/dev/null | tail -1 | awk '{print $4}')
+    if [ -n "$available" ] && [ "$available" -lt 10485760 ]; then
+        log_warn "Low disk space: Less than 10GB available in /var/lib/docker"
+    fi
+
+    log_info "Health check passed"
 }
 
 # Pull latest code
@@ -74,7 +125,15 @@ build_images() {
 stop_containers() {
     log_info "Step 3/6: Stopping containers..."
     cd $PROJECT_DIR
+
+    # Stop via docker-compose
     docker compose $COMPOSE_FILES down --remove-orphans || true
+
+    # Force remove any containers with our names (handles orphans from other directories)
+    log_info "Cleaning up any orphaned containers..."
+    docker rm -f procedure_db procedure_redis procedure_api \
+                 procedure_client_bot procedure_doctor_bot \
+                 procedure_dozzle procedure_frontend procedure_nginx 2>/dev/null || true
 }
 
 # Cleanup old images
@@ -109,6 +168,8 @@ start_services() {
 # Full deployment
 deploy() {
     log_info "Starting full deployment..."
+    health_check
+    validate_environment
     create_network
     pull_code
     build_images
