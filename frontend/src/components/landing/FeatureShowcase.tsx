@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { Sparkles } from 'lucide-react'
 
@@ -144,37 +143,12 @@ const features: Feature[] = [
 ]
 
 function FeatureCard({ feature, index }: { feature: Feature; index: number }) {
-  const [isVisible, setIsVisible] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true)
-        }
-      },
-      { threshold: 0.2 }
-    )
-
-    if (ref.current) {
-      observer.observe(ref.current)
-    }
-
-    return () => observer.disconnect()
-  }, [])
-
   return (
-    <div
-      ref={ref}
-      className={`py-12 sm:py-16 lg:py-20 transition-all duration-1000 ${
-        isVisible ? 'opacity-100' : 'opacity-0'
-      }`}
-    >
+    <div className="py-12 sm:py-16 lg:py-20">
       <div className="max-w-7xl mx-auto px-4">
         <div className={`grid lg:grid-cols-2 gap-8 sm:gap-10 lg:gap-12 items-center ${feature.reversed ? 'lg:flex-row-reverse' : ''}`}>
           {/* Content */}
-          <div className={`${feature.reversed ? 'lg:order-2' : ''} ${isVisible ? 'animate-reveal-left' : ''}`}>
+          <div className={feature.reversed ? 'lg:order-2' : ''}>
             {/* Title with Icon */}
             <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
               <span className="text-4xl sm:text-5xl lg:text-6xl">{feature.icon}</span>
@@ -207,7 +181,7 @@ function FeatureCard({ feature, index }: { feature: Feature; index: number }) {
           </div>
 
           {/* Screenshot */}
-          <div className={`${feature.reversed ? 'lg:order-1' : ''} ${isVisible ? 'animate-reveal-right' : ''}`}>
+          <div className={feature.reversed ? 'lg:order-1' : ''}>
             <div className="relative group">
               {/* Glow effect */}
               <div className={`absolute -inset-4 bg-gradient-to-r ${feature.gradient} opacity-20 blur-3xl group-hover:opacity-30 transition-opacity rounded-3xl`} />
