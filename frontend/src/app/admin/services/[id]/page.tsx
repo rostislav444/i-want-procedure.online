@@ -49,7 +49,7 @@ export default function ServiceDetailPage() {
       const promises: Promise<any>[] = [
         servicesApi.getById(serviceId),
         inventoryApi.getServiceItems(serviceId),
-        inventoryApi.getItems({ page_size: 200 }),
+        inventoryApi.getItems({ page_size: 100 }),
       ]
       // Only load positions for clinics
       if (companyType === 'clinic') {

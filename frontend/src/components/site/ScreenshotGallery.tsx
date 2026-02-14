@@ -17,6 +17,12 @@ const screenshots: Screenshot[] = [
   { src: '/screens/clients.png', title: 'База клієнтів', desc: 'Контакти та історія візитів' },
   { src: '/screens/client.png', title: 'Картка клієнта', desc: 'Детальна інформація та статистика' },
   { src: '/screens/schedule.png', title: 'Управління розкладом', desc: 'Робочі години та вихідні' },
+  { src: '/screens/protocol.png', title: 'Протокол процедури', desc: 'Фото до/після та опис процедури' },
+  { src: '/screens/inventory.png', title: 'Управління інвентарем', desc: 'Облік залишків та витрат' },
+  { src: '/screens/team.png', title: 'Команда спеціалістів', desc: 'Управління співробітниками' },
+  { src: '/screens/website-builder.png', title: 'Конструктор сайту', desc: 'AI-генерація сайту компанії' },
+  { src: '/screens/calendar-sync.png', title: 'Синхронізація з Google Calendar', desc: 'Налаштування інтеграції' },
+  { src: '/screens/mobile.png', title: 'Мобільна версія', desc: 'Адаптивний дизайн' },
 ]
 
 export default function ScreenshotGallery() {
