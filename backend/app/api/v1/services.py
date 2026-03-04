@@ -3,11 +3,12 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from app.api.deps import DbSession, CurrentUser
-from app.models.service import Service, ServiceStep, ServiceProduct, ServiceCategory
+from app.models.service import Service, ServiceStep, ServiceProduct, ServiceCategory, ServicePriceOption
 from app.schemas.service import (
     ServiceCreate, ServiceUpdate, ServiceResponse, ServiceDetailResponse,
     ServiceStepCreate, ServiceStepUpdate, ServiceStepResponse,
     ServiceProductCreate, ServiceProductUpdate, ServiceProductResponse,
+    ServicePriceOptionCreate, ServicePriceOptionUpdate, ServicePriceOptionResponse,
     ServiceCategoryCreate, ServiceCategoryUpdate, ServiceCategoryResponse, ServiceCategoryTreeResponse,
 )
 
@@ -20,7 +21,7 @@ router = APIRouter(prefix="/services")
 async def get_services(current_user: CurrentUser, db: DbSession):
     result = await db.execute(
         select(Service)
-        .options(selectinload(Service.category), selectinload(Service.specialty))
+        .options(selectinload(Service.category), selectinload(Service.specialty), selectinload(Service.price_options))
         .where(Service.company_id == current_user.company_id)
         .order_by(Service.created_at.desc())
     )
@@ -70,6 +71,18 @@ async def create_service(
             )
             db.add(product)
 
+    # Add price options if provided
+    if service_data.price_options:
+        for option_data in service_data.price_options:
+            option = ServicePriceOption(
+                service_id=service.id,
+                name=option_data.name,
+                price=option_data.price,
+                duration_minutes=option_data.duration_minutes,
+                order=option_data.order,
+            )
+            db.add(option)
+
     await db.commit()
 
     # Reload with relationships
@@ -78,6 +91,7 @@ async def create_service(
         .options(
             selectinload(Service.steps),
             selectinload(Service.products),
+            selectinload(Service.price_options),
             selectinload(Service.category),
             selectinload(Service.specialty),
         )
@@ -93,6 +107,7 @@ async def get_service(service_id: int, current_user: CurrentUser, db: DbSession)
         .options(
             selectinload(Service.steps),
             selectinload(Service.products),
+            selectinload(Service.price_options),
             selectinload(Service.category),
             selectinload(Service.specialty),
         )
@@ -122,6 +137,7 @@ async def update_service(
         .options(
             selectinload(Service.steps),
             selectinload(Service.products),
+            selectinload(Service.price_options),
             selectinload(Service.category),
             selectinload(Service.specialty),
         )
@@ -337,6 +353,91 @@ async def delete_product(
     await db.commit()
 
 
+# ===== Service Price Options CRUD =====
+
+@router.post("/{service_id}/price-options", response_model=ServicePriceOptionResponse, status_code=status.HTTP_201_CREATED)
+async def create_price_option(
+    service_id: int,
+    option_data: ServicePriceOptionCreate,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    result = await db.execute(
+        select(Service).where(
+            Service.id == service_id,
+            Service.company_id == current_user.company_id,
+        )
+    )
+    if not result.scalar_one_or_none():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Service not found")
+
+    option = ServicePriceOption(
+        service_id=service_id,
+        name=option_data.name,
+        price=option_data.price,
+        duration_minutes=option_data.duration_minutes,
+        order=option_data.order,
+    )
+    db.add(option)
+    await db.commit()
+    await db.refresh(option)
+    return option
+
+
+@router.patch("/{service_id}/price-options/{option_id}", response_model=ServicePriceOptionResponse)
+async def update_price_option(
+    service_id: int,
+    option_id: int,
+    option_data: ServicePriceOptionUpdate,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    result = await db.execute(
+        select(ServicePriceOption)
+        .join(Service)
+        .where(
+            ServicePriceOption.id == option_id,
+            ServicePriceOption.service_id == service_id,
+            Service.company_id == current_user.company_id,
+        )
+    )
+    option = result.scalar_one_or_none()
+    if not option:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Price option not found")
+
+    update_data = option_data.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(option, field, value)
+
+    await db.commit()
+    await db.refresh(option)
+    return option
+
+
+@router.delete("/{service_id}/price-options/{option_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_price_option(
+    service_id: int,
+    option_id: int,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    result = await db.execute(
+        select(ServicePriceOption)
+        .join(Service)
+        .where(
+            ServicePriceOption.id == option_id,
+            ServicePriceOption.service_id == service_id,
+            Service.company_id == current_user.company_id,
+        )
+    )
+    option = result.scalar_one_or_none()
+    if not option:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Price option not found")
+
+    await db.delete(option)
+    await db.commit()
+
+
 # ===== Service Categories CRUD =====
 
 def build_category_tree(categories: list[ServiceCategory], parent_id: int | None = None) -> list[dict]:
@@ -506,6 +607,13 @@ from typing import Optional
 from app.core.config import settings
 
 
+class GeneratedPriceOption(BaseModel):
+    """A price variant for a generated service."""
+    name: str
+    price: int
+    duration_minutes: Optional[int] = None
+
+
 class GeneratedService(BaseModel):
     """A single generated service."""
     name: str
@@ -513,6 +621,7 @@ class GeneratedService(BaseModel):
     duration_minutes: int
     price: int
     category_name: str
+    price_options: list[GeneratedPriceOption] = []
 
 
 class GenerateServicesRequest(BaseModel):
@@ -531,15 +640,19 @@ class GenerateServicesResponse(BaseModel):
     estimated_tokens: int
 
 
-SERVICES_GENERATION_PROMPT = """Ти експерт з бьюті-індустрії та косметології в Україні. Твоє завдання - створити список послуг для спеціаліста.
+SERVICES_GENERATION_PROMPT = """Ти експерт з бьюті-індустрії та косметології в Україні. Твоє завдання — точно перенести прайс-лист спеціаліста у структурований формат.
+
+ГОЛОВНЕ ПРАВИЛО: Скопіюй ВСІ послуги з вхідних даних. НЕ пропускай жодної! Це критично важливо. Якщо на сайті/в тексті є 50 послуг — поверни всі 50.
 
 ПРАВИЛА:
-1. Аналізуй вхідні дані (текст, опис з сайту, PDF) та створи релевантні послуги
-2. Групуй послуги по категоріях (наприклад: "Чистки", "Пілінги", "Ін'єкції", "Догляд")
-3. Вказуй реалістичну тривалість процедури в хвилинах (30, 45, 60, 90, 120)
-4. Вказуй орієнтовну ціну для українського ринку (місто: {city})
-5. Опис має бути коротким (1-2 речення) та інформативним
-6. Якщо інформації недостатньо - використовуй типові послуги для цієї спеціальності
+1. Копіюй КОЖНУ послугу з вхідних даних — назву та ціну бери точно як у джерелі
+2. Групуй послуги по категоріях з джерела. Якщо категорії вже є — використовуй їх. Якщо ні — створи логічні категорії
+3. Тривалість: якщо вказана у джерелі — бери звідти. Якщо ні — вказуй реалістичну (30, 45, 60, 90, 120 хв)
+4. Ціни: бери ТОЧНО з джерела. Якщо ціни відсутні — ставь орієнтовну для {city}
+5. Опис: коротко (1-2 речення). Якщо є у джерелі — використовуй, якщо ні — додай стислий опис
+6. Якщо послуга має варіанти (різні зони, об'єми, кількість) з різними цінами — об'єднай їх в ОДНУ послугу з "price_options". Основна ціна (price) = мінімальна серед варіантів
+7. НЕ створюй окремі послуги для кожної зони — використовуй price_options
+8. Якщо інформації мало — додай типові послуги для цієї спеціальності. Але якщо вхідні дані детальні — копіюй тільки те що є, нічого не вигадуй
 
 ФОРМАТ ВІДПОВІДІ (тільки JSON, без пояснень):
 {{
@@ -550,36 +663,61 @@ SERVICES_GENERATION_PROMPT = """Ти експерт з бьюті-індустр
       "description": "Короткий опис",
       "duration_minutes": 60,
       "price": 1500,
-      "category_name": "Категорія 1"
+      "category_name": "Категорія 1",
+      "price_options": [
+        {{"name": "Обличчя", "price": 1500}},
+        {{"name": "Обличчя + шия", "price": 2000}},
+        {{"name": "Обличчя + шия + декольте", "price": 2500}}
+      ]
     }}
   ]
 }}
 
-Створи 10-20 найбільш популярних послуг."""
+Примітка: price_options додавай ТІЛЬКИ для послуг де дійсно є варіанти. Для послуг з фіксованою ціною залишай price_options порожнім масивом []."""
 
 
-@router.post("/generate-from-ai", response_model=GenerateServicesResponse)
-async def generate_services_from_ai(
-    request: GenerateServicesRequest,
-    current_user: CurrentUser,
-):
-    """Generate services using AI based on text, URL, or PDF."""
-    if not settings.ANTHROPIC_API_KEY:
-        raise HTTPException(
-            status_code=503,
-            detail="AI generation not configured. Please set ANTHROPIC_API_KEY."
-        )
+import asyncio
+import uuid
+import logging
+from pathlib import Path
+from datetime import datetime
 
-    # Build the prompt based on source type
-    source_description = ""
-    if request.source_type == "text":
-        source_description = f"Текстовий опис послуг:\n{request.content}"
-    elif request.source_type == "url":
-        source_description = f"URL сайту з послугами: {request.content}\n\nПроаналізуй цей URL та створи список послуг на основі інформації з сайту."
-    elif request.source_type == "pdf":
-        source_description = f"PDF документ (base64):\n{request.content[:1000]}...\n\nПроаналізуй цей документ та створи список послуг."
+_ai_jobs: dict[str, dict] = {}  # job_id -> {status, result, error}
+_ai_logger = logging.getLogger("ai_generation")
 
-    user_prompt = f"""Спеціальність/посада: {request.position_name}
+
+async def _run_ai_generation(job_id: str, request: GenerateServicesRequest):
+    """Background task that runs AI generation."""
+    try:
+        import anthropic
+        import json
+
+        debug_dir = Path("/app/debug_ai_responses")
+        debug_dir.mkdir(exist_ok=True)
+
+        # Build source description
+        source_description = ""
+        if request.source_type == "text":
+            source_description = f"Текстовий опис послуг:\n{request.content}"
+        elif request.source_type == "url":
+            import httpx
+            from bs4 import BeautifulSoup
+            async with httpx.AsyncClient(follow_redirects=True, timeout=15.0) as http_client:
+                resp = await http_client.get(request.content, headers={
+                    "User-Agent": "Mozilla/5.0 (compatible; ProcedureBot/1.0)"
+                })
+                resp.raise_for_status()
+                soup = BeautifulSoup(resp.text, "html.parser")
+                for tag in soup(["script", "style", "nav", "footer", "header", "noscript", "iframe"]):
+                    tag.decompose()
+                page_text = soup.get_text(separator="\n", strip=True)
+                if len(page_text) > 30000:
+                    page_text = page_text[:30000] + "\n... (текст обрізано)"
+                source_description = f"Контент зі сторінки {request.content}:\n\n{page_text}"
+        elif request.source_type == "pdf":
+            source_description = f"PDF документ (base64):\n{request.content[:1000]}..."
+
+        user_prompt = f"""Спеціальність/посада: {request.position_name}
 Місто: {request.city}
 
 {source_description}
@@ -588,62 +726,125 @@ async def generate_services_from_ai(
 
 Створи список послуг у форматі JSON."""
 
-    try:
-        import anthropic
-        import json
-
-        client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
-
+        _ai_jobs[job_id]["status"] = "streaming"
+        client = anthropic.AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
         system_prompt = SERVICES_GENERATION_PROMPT.format(city=request.city)
 
-        message = client.messages.create(
+        response_text = ""
+        async with client.messages.stream(
             model="claude-sonnet-4-20250514",
-            max_tokens=4096,
+            max_tokens=32768,
             system=system_prompt,
-            messages=[
-                {
-                    "role": "user",
-                    "content": user_prompt,
-                }
-            ],
+            messages=[{"role": "user", "content": user_prompt}],
+        ) as stream:
+            async for text in stream.text_stream:
+                response_text += text
+
+        final_message = await stream.get_final_message()
+        stop_reason = final_message.stop_reason
+        input_tokens = final_message.usage.input_tokens
+        output_tokens = final_message.usage.output_tokens
+
+        # Save debug
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        debug_file = debug_dir / f"{timestamp}.txt"
+        debug_file.write_text(
+            f"stop_reason: {stop_reason}\ninput_tokens: {input_tokens}\n"
+            f"output_tokens: {output_tokens}\nsource_type: {request.source_type}\n"
+            f"content: {request.content[:200]}\n---RAW RESPONSE---\n{response_text}",
+            encoding="utf-8",
         )
+        _ai_logger.info(f"AI response saved: {debug_file} (stop={stop_reason}, tokens={output_tokens})")
 
-        # Parse the JSON response
-        response_text = message.content[0].text
+        _ai_jobs[job_id]["status"] = "parsing"
 
-        # Try to extract JSON from the response
+        # Parse JSON
+        clean_text = response_text
+        if "```json" in clean_text:
+            clean_text = clean_text.split("```json")[1].split("```")[0]
+        elif "```" in clean_text:
+            parts = clean_text.split("```")
+            if len(parts) >= 2:
+                clean_text = parts[1]
+        clean_text = clean_text.strip()
+
+        data = None
         try:
-            # Remove markdown code blocks if present
-            if "```json" in response_text:
-                response_text = response_text.split("```json")[1].split("```")[0]
-            elif "```" in response_text:
-                response_text = response_text.split("```")[1].split("```")[0]
+            data = json.loads(clean_text)
+        except json.JSONDecodeError as e:
+            _ai_logger.warning(f"JSON parse failed: {e}. Attempting repair...")
+            for search in ['},\n', '},', '}']:
+                last_good = clean_text.rfind(search)
+                if last_good <= 0:
+                    continue
+                candidate = clean_text[:last_good + 1]
+                for closing in [']}', ']\n}']:
+                    try:
+                        data = json.loads(candidate + closing)
+                        break
+                    except json.JSONDecodeError:
+                        pass
+                if data:
+                    break
 
-            data = json.loads(response_text.strip())
-        except json.JSONDecodeError:
-            # Try to find JSON object in the text
-            import re
-            json_match = re.search(r'\{[\s\S]*\}', response_text)
-            if json_match:
-                data = json.loads(json_match.group())
-            else:
-                raise HTTPException(
-                    status_code=500,
-                    detail="Failed to parse AI response as JSON"
-                )
+        if data is None:
+            _ai_jobs[job_id] = {"status": "error", "error": "Не вдалося розпарсити відповідь AI"}
+            return
 
-        services = [GeneratedService(**s) for s in data.get("services", [])]
-        categories = data.get("categories", [])
-        estimated_tokens = message.usage.input_tokens + message.usage.output_tokens
+        services = []
+        for s in data.get("services", []):
+            try:
+                services.append(GeneratedService(**s).model_dump())
+            except Exception:
+                pass
 
-        return GenerateServicesResponse(
-            services=services,
-            categories=categories,
-            estimated_tokens=estimated_tokens,
-        )
+        _ai_jobs[job_id] = {
+            "status": "done",
+            "result": {
+                "services": services,
+                "categories": data.get("categories", []),
+                "estimated_tokens": input_tokens + output_tokens,
+            },
+        }
+        _ai_logger.info(f"Job {job_id}: {len(services)} services parsed")
 
-    except anthropic.APIError as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"AI API error: {str(e)}"
-        )
+    except Exception as e:
+        _ai_logger.exception(f"Job {job_id} failed")
+        _ai_jobs[job_id] = {"status": "error", "error": str(e)}
+
+
+@router.post("/generate-from-ai")
+async def generate_services_from_ai(
+    request: GenerateServicesRequest,
+    current_user: CurrentUser,
+):
+    """Start AI generation job, returns job_id for polling."""
+    if not settings.ANTHROPIC_API_KEY:
+        raise HTTPException(status_code=503, detail="AI generation not configured.")
+
+    job_id = str(uuid.uuid4())
+    _ai_jobs[job_id] = {"status": "started"}
+    asyncio.create_task(_run_ai_generation(job_id, request))
+    return {"job_id": job_id, "status": "started"}
+
+
+@router.get("/generate-from-ai/{job_id}")
+async def get_generation_status(
+    job_id: str,
+    current_user: CurrentUser,
+):
+    """Poll for AI generation result."""
+    job = _ai_jobs.get(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    if job["status"] == "done":
+        result = job["result"]
+        del _ai_jobs[job_id]  # Cleanup
+        return {"status": "done", **result}
+    elif job["status"] == "error":
+        error = job.get("error", "Unknown error")
+        del _ai_jobs[job_id]
+        raise HTTPException(status_code=500, detail=error)
+    else:
+        return {"status": job["status"]}

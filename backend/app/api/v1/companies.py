@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from app.api.deps import DbSession, CurrentUser
-from app.models.company import Company, generate_slug
+from app.models.company import Company, CompanyType, generate_slug
 from app.models.user import User
 from app.models.company_member import CompanyMember
 from app.models.schedule import Schedule
@@ -146,8 +146,24 @@ async def update_my_company(
     company = result.scalar_one()
 
     update_data = company_data.model_dump(exclude_unset=True)
+
+    # When upgrading to clinic, make the owner also a manager
+    old_type = company.type
+    new_type = update_data.get("type")
+
     for field, value in update_data.items():
         setattr(company, field, value)
+
+    if new_type and old_type == CompanyType.SOLO and new_type == CompanyType.CLINIC:
+        # Find owner membership and grant manager role
+        result_member = await db.execute(
+            select(CompanyMember).where(
+                CompanyMember.company_id == company_id,
+                CompanyMember.is_owner == True,
+            )
+        )
+        for member in result_member.scalars().all():
+            member.is_manager = True
 
     await db.commit()
     await db.refresh(company)

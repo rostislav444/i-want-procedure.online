@@ -11,6 +11,7 @@ class CompanyCreate(BaseModel):
 
 class CompanyUpdate(BaseModel):
     name: str | None = None
+    type: CompanyType | None = None
     description: str | None = None
     phone: str | None = None
     address: str | None = None

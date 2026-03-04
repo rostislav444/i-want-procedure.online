@@ -30,16 +30,16 @@ export default function TargetAudienceSection() {
 
   return (
     <section className="py-12 sm:py-16 relative overflow-hidden">
-      <div className="absolute w-96 h-96 bg-yellow-200 -top-40 -right-48 rounded-full blur-3xl opacity-30 animate-blob" />
+      <div className="absolute w-96 h-96 bg-yellow-200 dark:bg-yellow-500/15 -top-40 -right-48 rounded-full blur-3xl opacity-30 animate-blob" />
 
       <div className="max-w-6xl mx-auto px-4 relative">
         {/* Header */}
         <div className="text-center mb-10 sm:mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-purple-100 to-pink-100 text-purple-600 text-sm font-medium mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-500/15 dark:to-pink-500/15 text-purple-600 dark:text-purple-400 text-sm font-medium mb-4">
             <Heart className="w-4 h-4" />
             <span>Для кого</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold dark:text-white">
             Для кого <span className="gradient-text">Procedure?</span>
           </h2>
         </div>
@@ -49,7 +49,7 @@ export default function TargetAudienceSection() {
           {segments.map((segment, i) => (
             <div
               key={i}
-              className="group p-6 rounded-2xl bg-card border border-pink-100 shadow-soft hover:shadow-xl transition-all hover:-translate-y-2"
+              className="group p-6 rounded-2xl bg-card dark:bg-white/5 border border-pink-100 dark:border-pink-500/20 shadow-soft hover:shadow-xl transition-all hover:-translate-y-2"
             >
               {/* Icon */}
               <div className="mb-4">
@@ -61,8 +61,8 @@ export default function TargetAudienceSection() {
               </div>
 
               {/* Content */}
-              <h3 className="text-xl font-bold mb-2">{segment.title}</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
+              <h3 className="text-xl font-bold mb-2 dark:text-white">{segment.title}</h3>
+              <p className="text-muted-foreground dark:text-gray-400 text-sm leading-relaxed">
                 {segment.desc}
               </p>
             </div>

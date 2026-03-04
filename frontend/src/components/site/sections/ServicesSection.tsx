@@ -20,6 +20,14 @@ interface Props {
   isAltBackground?: boolean
 }
 
+function formatPrice(service: Service): string {
+  if (service.price_options && service.price_options.length > 0) {
+    const minPrice = Math.min(...service.price_options.map(o => Number(o.price)))
+    return `від ${minPrice.toLocaleString('uk-UA')} ₴`
+  }
+  return `${Number(service.price).toLocaleString('uk-UA')} ₴`
+}
+
 export function ServicesSection({ content, theme, company, services, categories, isAltBackground = false }: Props) {
   const displayMode = content.display_mode || 'bento'
   const title = content.title || 'Наші послуги'
@@ -260,7 +268,7 @@ function BentoLayout({ services, servicesByCategoryMap, getCategoryName, theme, 
                         className={`font-bold ${isFeatured ? 'text-2xl' : 'text-xl'}`}
                         style={{ color: 'var(--color-primary-500)' }}
                       >
-                        {Number(service.price).toLocaleString('uk-UA')} ₴
+                        {formatPrice(service)}
                       </div>
                     </div>
 
@@ -322,7 +330,7 @@ function GridLayout({ services, theme, telegramBotLink }: LayoutProps) {
               {service.duration_minutes} хв
             </div>
             <div className="font-bold text-xl" style={{ color: 'var(--color-primary-500)' }}>
-              {Number(service.price).toLocaleString('uk-UA')} ₴
+              {formatPrice(service)}
             </div>
           </div>
         </a>
@@ -368,7 +376,7 @@ function CardsLayout({ services, theme, telegramBotLink }: LayoutProps) {
 
           <div className="text-right flex-shrink-0">
             <div className="font-bold text-xl" style={{ color: 'var(--color-primary-500)' }}>
-              {Number(service.price).toLocaleString('uk-UA')} ₴
+              {formatPrice(service)}
             </div>
             <ArrowRight
               className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity"
@@ -428,7 +436,7 @@ function ListLayout({ servicesByCategoryMap, getCategoryName, theme, telegramBot
                 rel="noopener noreferrer"
                 className="group px-6 py-4 flex items-center justify-between gap-4 hover:bg-black/5 transition-colors"
               >
-                <div className="min-w-0">
+                <div className="min-w-0 flex-grow">
                   <h4 className="font-medium" style={{ color: 'var(--color-text)' }}>
                     {service.name}
                   </h4>
@@ -436,16 +444,30 @@ function ListLayout({ servicesByCategoryMap, getCategoryName, theme, telegramBot
                     <Clock className="w-4 h-4" />
                     {service.duration_minutes} хв
                   </div>
+                  {service.price_options && service.price_options.length > 0 && (
+                    <div className="mt-2 space-y-1">
+                      {service.price_options.map((opt) => (
+                        <div key={opt.id} className="flex items-center justify-between text-sm">
+                          <span style={{ color: 'var(--color-text-muted)' }}>{opt.name}</span>
+                          <span className="font-medium" style={{ color: 'var(--color-primary-500)' }}>
+                            {Number(opt.price).toLocaleString('uk-UA')} ₴
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className="font-bold text-xl" style={{ color: 'var(--color-primary-500)' }}>
-                    {Number(service.price).toLocaleString('uk-UA')} ₴
-                  </span>
-                  <ArrowRight
-                    className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity"
-                    style={{ color: 'var(--color-primary-500)' }}
-                  />
-                </div>
+                {!(service.price_options && service.price_options.length > 0) && (
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className="font-bold text-xl" style={{ color: 'var(--color-primary-500)' }}>
+                      {formatPrice(service)}
+                    </span>
+                    <ArrowRight
+                      className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity"
+                      style={{ color: 'var(--color-primary-500)' }}
+                    />
+                  </div>
+                )}
               </a>
             ))}
           </div>

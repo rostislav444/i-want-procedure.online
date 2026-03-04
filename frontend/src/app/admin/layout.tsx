@@ -4,11 +4,147 @@ import { useEffect, useState, useMemo } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Calendar, Clock, Users, LogOut, Menu, X, LinkIcon, Copy, Check, Home, Scissors, ChevronLeft, ChevronRight, UsersRound, Settings, Package } from 'lucide-react'
+import { Calendar, Clock, Users, LogOut, Menu, X, LinkIcon, Copy, Check, Home, Scissors, ChevronLeft, ChevronRight, UsersRound, Settings, Package, Building2, ChevronsUpDown, Crown, Briefcase, Wrench } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ThemeSettings } from '@/components/theme-settings'
 import { CompanyProvider, useCompany } from '@/contexts/CompanyContext'
 import { CompanySelector } from '@/components/company-selector'
+
+// Company switcher component
+function CompanySwitcher({ collapsed = false }: { collapsed?: boolean }) {
+  const { memberships, selectedCompanyId, selectCompany } = useCompany()
+  const [open, setOpen] = useState(false)
+
+  if (memberships.length <= 1) return null
+
+  const currentMembership = memberships.find(m => m.id === selectedCompanyId)
+
+  const getRoleLabel = (m: typeof memberships[0]) => {
+    if (m.is_owner) return 'Власник'
+    if (m.is_manager) return 'Менеджер'
+    if (m.is_specialist) return 'Спеціаліст'
+    return 'Учасник'
+  }
+
+  const getRoleIcon = (m: typeof memberships[0]) => {
+    if (m.is_owner) return Crown
+    if (m.is_manager) return Briefcase
+    return Wrench
+  }
+
+  const handleSelect = (id: number) => {
+    selectCompany(id)
+    setOpen(false)
+  }
+
+  if (collapsed) {
+    return (
+      <div className="relative border-b p-2 flex justify-center">
+        <button
+          onClick={() => setOpen(!open)}
+          className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
+          title={currentMembership?.name}
+        >
+          {currentMembership?.logo_url ? (
+            <img src={currentMembership.logo_url} alt="" className="w-full h-full object-cover rounded-lg" />
+          ) : (
+            <Building2 className="w-5 h-5 text-muted-foreground" />
+          )}
+        </button>
+        {open && (
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+            <div className="absolute left-full top-0 ml-2 z-50 w-64 bg-card border rounded-lg shadow-lg py-1">
+              {memberships.map((m) => {
+                const RoleIcon = getRoleIcon(m)
+                const isActive = m.id === selectedCompanyId
+                return (
+                  <button
+                    key={m.id}
+                    onClick={() => handleSelect(m.id)}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-muted/50 transition-colors ${isActive ? 'bg-primary/5' : ''}`}
+                  >
+                    <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center shrink-0">
+                      {m.logo_url ? (
+                        <img src={m.logo_url} alt="" className="w-full h-full object-cover rounded-md" />
+                      ) : (
+                        <Building2 className="w-4 h-4 text-muted-foreground" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-medium truncate ${isActive ? 'text-primary' : ''}`}>{m.name}</p>
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <RoleIcon className="w-3 h-3" />
+                        <span>{getRoleLabel(m)}</span>
+                      </div>
+                    </div>
+                    {isActive && <div className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />}
+                  </button>
+                )
+              })}
+            </div>
+          </>
+        )}
+      </div>
+    )
+  }
+
+  return (
+    <div className="relative border-b p-3">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-muted/50 transition-colors"
+      >
+        <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
+          {currentMembership?.logo_url ? (
+            <img src={currentMembership.logo_url} alt="" className="w-full h-full object-cover rounded-lg" />
+          ) : (
+            <Building2 className="w-5 h-5 text-muted-foreground" />
+          )}
+        </div>
+        <div className="flex-1 min-w-0 text-left">
+          <p className="text-sm font-medium truncate">{currentMembership?.name}</p>
+          <p className="text-xs text-muted-foreground">{currentMembership?.type === 'clinic' ? 'Клініка' : 'ФОП'}</p>
+        </div>
+        <ChevronsUpDown className="w-4 h-4 text-muted-foreground shrink-0" />
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute left-2 right-2 top-full mt-1 z-50 bg-card border rounded-lg shadow-lg py-1">
+            {memberships.map((m) => {
+              const RoleIcon = getRoleIcon(m)
+              const isActive = m.id === selectedCompanyId
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => handleSelect(m.id)}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-muted/50 transition-colors ${isActive ? 'bg-primary/5' : ''}`}
+                >
+                  <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center shrink-0">
+                    {m.logo_url ? (
+                      <img src={m.logo_url} alt="" className="w-full h-full object-cover rounded-md" />
+                    ) : (
+                      <Building2 className="w-4 h-4 text-muted-foreground" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm font-medium truncate ${isActive ? 'text-primary' : ''}`}>{m.name}</p>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <RoleIcon className="w-3 h-3" />
+                      <span>{getRoleLabel(m)}</span>
+                    </div>
+                  </div>
+                  {isActive && <div className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />}
+                </button>
+              )
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
 
 // Base navigation items with icon colors
 const baseNavigation = [
@@ -131,6 +267,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
               <X className="h-5 w-5" />
             </Button>
           </div>
+          <CompanySwitcher />
           <nav className="flex-1 py-2">
             {navigation.map((item) => {
               const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href))
@@ -218,6 +355,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
               </>
             )}
           </div>
+          <CompanySwitcher collapsed={sidebarCollapsed} />
           <nav className="flex-1">
             {navigation.map((item) => {
               const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href))

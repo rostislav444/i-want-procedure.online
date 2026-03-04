@@ -39,6 +39,8 @@ export default function ServiceDetailPage() {
   const [newStep, setNewStep] = useState({ title: '', description: '', duration_minutes: 0 })
   const [showNewProduct, setShowNewProduct] = useState(false)
   const [newProduct, setNewProduct] = useState({ name: '', description: '', manufacturer: '' })
+  const [showNewPriceOption, setShowNewPriceOption] = useState(false)
+  const [newPriceOption, setNewPriceOption] = useState({ name: '', price: '', duration_minutes: '' })
 
   useEffect(() => {
     loadData()
@@ -136,6 +138,33 @@ export default function ServiceDetailPage() {
     }
   }
 
+  const handleAddPriceOption = async () => {
+    if (!newPriceOption.name || !newPriceOption.price) return
+    try {
+      const order = (service?.price_options?.length || 0)
+      await servicesApi.addPriceOption(serviceId, {
+        name: newPriceOption.name,
+        price: parseFloat(newPriceOption.price),
+        duration_minutes: newPriceOption.duration_minutes ? parseInt(newPriceOption.duration_minutes) : undefined,
+        order,
+      })
+      await loadData()
+      setNewPriceOption({ name: '', price: '', duration_minutes: '' })
+      setShowNewPriceOption(false)
+    } catch (error) {
+      console.error('Error adding price option:', error)
+    }
+  }
+
+  const handleDeletePriceOption = async (optionId: number) => {
+    try {
+      await servicesApi.deletePriceOption(serviceId, optionId)
+      await loadData()
+    } catch (error) {
+      console.error('Error deleting price option:', error)
+    }
+  }
+
   const handleAddInventoryItem = async () => {
     if (!newInventoryItem.item_id) return
     try {
@@ -220,9 +249,83 @@ export default function ServiceDetailPage() {
           </div>
           <div className="flex items-center gap-2.5 px-6 py-3">
             <Banknote className="h-5 w-5 text-pink-500" />
-            <span>{service.price} грн</span>
+            <span>
+              {service.price_options && service.price_options.length > 0
+                ? `від ${Math.min(...service.price_options.map(o => Number(o.price)))} грн`
+                : `${service.price} грн`
+              }
+            </span>
           </div>
         </div>
+      </Card>
+
+      {/* Price Options */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Banknote className="h-5 w-5" />
+            Варіанти ціни
+          </CardTitle>
+          <Button variant="outline" size="sm" onClick={() => setShowNewPriceOption(true)}>
+            <Plus className="mr-1 h-4 w-4" />
+            Додати варіант
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {showNewPriceOption && (
+            <div className="mb-4 p-4 border rounded-lg bg-muted/50">
+              <div className="grid gap-3">
+                <Input
+                  placeholder="Назва зони (напр. Обличчя + шия)"
+                  value={newPriceOption.name}
+                  onChange={(e) => setNewPriceOption({ ...newPriceOption, name: e.target.value })}
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    type="number"
+                    placeholder="Ціна (грн)"
+                    value={newPriceOption.price}
+                    onChange={(e) => setNewPriceOption({ ...newPriceOption, price: e.target.value })}
+                  />
+                  <Input
+                    type="number"
+                    placeholder="Тривалість (хв, опціонально)"
+                    value={newPriceOption.duration_minutes}
+                    onChange={(e) => setNewPriceOption({ ...newPriceOption, duration_minutes: e.target.value })}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={handleAddPriceOption}>Додати</Button>
+                  <Button size="sm" variant="ghost" onClick={() => setShowNewPriceOption(false)}>Скасувати</Button>
+                </div>
+              </div>
+            </div>
+          )}
+          {service.price_options && service.price_options.length > 0 ? (
+            <div className="space-y-2">
+              {service.price_options.map(option => (
+                <div key={option.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <span className="font-medium">{option.name}</span>
+                    {option.duration_minutes && (
+                      <span className="text-sm text-muted-foreground">({option.duration_minutes} хв)</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="font-bold text-primary">{option.price} грн</span>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeletePriceOption(option.id!)}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-center py-4">
+              Варіантів ціни немає. Буде використана основна ціна послуги.
+            </p>
+          )}
+        </CardContent>
       </Card>
 
       {/* Steps */}

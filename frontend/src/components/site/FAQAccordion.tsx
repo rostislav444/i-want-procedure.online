@@ -48,16 +48,16 @@ export default function FAQAccordion() {
 
   return (
     <section className="py-12 sm:py-16 relative overflow-hidden">
-      <div className="absolute w-80 h-80 bg-purple-200 -top-40 -right-48 rounded-full blur-3xl opacity-30 animate-blob" />
+      <div className="absolute w-80 h-80 bg-purple-200 dark:bg-purple-500/15 -top-40 -right-48 rounded-full blur-3xl opacity-30 animate-blob" />
 
       <div className="max-w-4xl mx-auto px-4 relative">
         {/* Header */}
         <div className="text-center mb-8 sm:mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-purple-100 to-pink-100 text-purple-600 text-sm font-medium mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-500/15 dark:to-pink-500/15 text-purple-600 dark:text-purple-400 text-sm font-medium mb-4">
             <HelpCircle className="w-4 h-4" />
             <span>FAQ</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 dark:text-white">
             Часті <span className="gradient-text">запитання</span>
           </h2>
         </div>
@@ -69,13 +69,13 @@ export default function FAQAccordion() {
             return (
               <div
                 key={index}
-                className="overflow-hidden rounded-2xl bg-card border border-pink-100 shadow-soft"
+                className="overflow-hidden rounded-2xl bg-card dark:bg-white/5 border border-pink-100 dark:border-pink-500/20 shadow-soft"
               >
                 <button
-                  className="w-full flex items-center justify-between p-4 sm:p-5 text-left hover:bg-pink-50 transition-colors"
+                  className="w-full flex items-center justify-between p-4 sm:p-5 text-left hover:bg-pink-50 dark:hover:bg-pink-500/10 transition-colors"
                   onClick={() => setOpenIndex(isOpen ? null : index)}
                 >
-                  <span className="font-semibold pr-4 text-sm sm:text-base text-foreground">
+                  <span className="font-semibold pr-4 text-sm sm:text-base text-foreground dark:text-white">
                     {item.question}
                   </span>
                   <ChevronDown
@@ -89,7 +89,7 @@ export default function FAQAccordion() {
                     isOpen ? 'max-h-96' : 'max-h-0'
                   }`}
                 >
-                  <div className="px-4 sm:px-5 pb-4 sm:pb-5 pt-0 text-sm sm:text-base text-muted-foreground">
+                  <div className="px-4 sm:px-5 pb-4 sm:pb-5 pt-0 text-sm sm:text-base text-muted-foreground dark:text-gray-400">
                     {item.answer}
                   </div>
                 </div>

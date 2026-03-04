@@ -152,7 +152,7 @@ function FeatureCard({ feature, index }: { feature: Feature; index: number }) {
             {/* Title with Icon */}
             <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
               <span className="text-4xl sm:text-5xl lg:text-6xl">{feature.icon}</span>
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-black">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-black dark:text-white">
                 {feature.title}
               </h2>
             </div>
@@ -161,7 +161,7 @@ function FeatureCard({ feature, index }: { feature: Feature; index: number }) {
             </p>
 
             {/* Description */}
-            <p className="text-sm sm:text-base lg:text-lg text-gray-600 mb-6 sm:mb-8 leading-relaxed">
+            <p className="text-sm sm:text-base lg:text-lg text-gray-600 dark:text-gray-400 mb-6 sm:mb-8 leading-relaxed">
               {feature.description}
             </p>
 
@@ -174,7 +174,7 @@ function FeatureCard({ feature, index }: { feature: Feature; index: number }) {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <span className="text-gray-700">{benefit}</span>
+                  <span className="text-gray-700 dark:text-gray-300">{benefit}</span>
                 </div>
               ))}
             </div>
@@ -187,7 +187,7 @@ function FeatureCard({ feature, index }: { feature: Feature; index: number }) {
               <div className={`absolute -inset-4 bg-gradient-to-r ${feature.gradient} opacity-20 blur-3xl group-hover:opacity-30 transition-opacity rounded-3xl`} />
 
               {/* Screenshot container */}
-              <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white/50 group-hover:scale-[1.02] transition-transform duration-500">
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white/50 dark:border-white/10 group-hover:scale-[1.02] transition-transform duration-500">
                 <Image
                   src={feature.screenshot}
                   alt={feature.title}
@@ -214,17 +214,17 @@ function FeatureCard({ feature, index }: { feature: Feature; index: number }) {
 
 export default function FeatureShowcase() {
   return (
-    <section id="features" className="py-8 sm:py-12 bg-gradient-to-b from-white to-slate-50">
+    <section id="features" className="py-8 sm:py-12 bg-gradient-to-b from-white to-slate-50 dark:from-background dark:to-background">
       {/* Section Header */}
       <div className="max-w-4xl mx-auto px-4 text-center mb-10 sm:mb-16 lg:mb-20">
         <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full glass-tinted mb-6">
-          <Sparkles className="w-5 h-5 text-pink-600" />
-          <span className="text-sm font-semibold text-pink-600">Функціонал</span>
+          <Sparkles className="w-5 h-5 text-pink-600 dark:text-pink-400" />
+          <span className="text-sm font-semibold text-pink-600 dark:text-pink-400">Функціонал</span>
         </div>
-        <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-black mb-4 sm:mb-6">
+        <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-black mb-4 sm:mb-6 dark:text-white">
           Все для вашого <span className="bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">бізнесу</span>
         </h2>
-        <p className="text-base sm:text-lg lg:text-xl text-gray-600">
+        <p className="text-base sm:text-lg lg:text-xl text-gray-600 dark:text-gray-400">
           Повноцінна система управління, яка замінює 10+ різних інструментів
         </p>
       </div>

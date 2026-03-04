@@ -20,6 +20,83 @@ import { servicesApi, categoriesApi, positionsApi, Service, ServiceCategory, Pos
 import { useCompany } from '@/contexts/CompanyContext'
 import { Briefcase } from 'lucide-react'
 
+const AI_LOADING_STEPS_URL = [
+  { label: 'Завантаження сторінки...', duration: 3000 },
+  { label: 'Аналіз прайс-листа...', duration: 5000 },
+  { label: 'Розпізнавання послуг та цін...', duration: 8000 },
+  { label: 'Групування по категоріях...', duration: 6000 },
+  { label: 'Формування варіантів цін...', duration: 5000 },
+  { label: 'Фінальна перевірка...', duration: 10000 },
+]
+
+const AI_LOADING_STEPS_TEXT = [
+  { label: 'Аналіз тексту...', duration: 3000 },
+  { label: 'Розпізнавання послуг та цін...', duration: 8000 },
+  { label: 'Групування по категоріях...', duration: 6000 },
+  { label: 'Формування варіантів цін...', duration: 5000 },
+  { label: 'Фінальна перевірка...', duration: 10000 },
+]
+
+function AiLoadingState({ sourceType }: { sourceType: 'text' | 'url' }) {
+  const steps = sourceType === 'url' ? AI_LOADING_STEPS_URL : AI_LOADING_STEPS_TEXT
+  const [currentStep, setCurrentStep] = useState(0)
+  const [elapsed, setElapsed] = useState(0)
+
+  useEffect(() => {
+    const timer = setInterval(() => setElapsed(prev => prev + 1), 1000)
+    return () => clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
+    if (currentStep >= steps.length - 1) return
+    const timeout = setTimeout(() => {
+      setCurrentStep(prev => Math.min(prev + 1, steps.length - 1))
+    }, steps[currentStep].duration)
+    return () => clearTimeout(timeout)
+  }, [currentStep, steps])
+
+  const formatTime = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
+
+  return (
+    <div className="py-10 flex flex-col items-center gap-6">
+      {/* Animated spinner */}
+      <div className="relative">
+        <div className="w-16 h-16 rounded-full border-4 border-muted" />
+        <div className="absolute inset-0 w-16 h-16 rounded-full border-4 border-transparent border-t-primary animate-spin" />
+        <Sparkles className="absolute inset-0 m-auto h-6 w-6 text-primary animate-pulse" />
+      </div>
+
+      {/* Steps */}
+      <div className="w-full max-w-sm space-y-2">
+        {steps.map((step, i) => (
+          <div
+            key={i}
+            className={`flex items-center gap-3 text-sm transition-all duration-500 ${
+              i < currentStep ? 'text-muted-foreground' : i === currentStep ? 'text-foreground font-medium' : 'text-muted-foreground/40'
+            }`}
+          >
+            <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">
+              {i < currentStep ? (
+                <Check className="h-4 w-4 text-green-500" />
+              ) : i === currentStep ? (
+                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+              ) : (
+                <div className="w-2 h-2 rounded-full bg-muted-foreground/30" />
+              )}
+            </div>
+            {step.label}
+          </div>
+        ))}
+      </div>
+
+      {/* Timer */}
+      <p className="text-xs text-muted-foreground">
+        {formatTime(elapsed)} — не закривайте це вікно
+      </p>
+    </div>
+  )
+}
+
 const POSITION_COLORS: Record<string, string> = {
   blue: 'bg-blue-500',
   purple: 'bg-purple-500',
@@ -112,7 +189,7 @@ export default function ServicesPage() {
       const [servicesData, categoriesData, positionsData] = await Promise.all([
         servicesApi.getAll(),
         categoriesApi.getTree(),
-        companyType === 'clinic' ? positionsApi.getAll() : Promise.resolve([]),
+        positionsApi.getAll(),
       ])
       setServices(servicesData)
       setCategories(categoriesData)
@@ -312,6 +389,12 @@ export default function ServicesPage() {
           price: service.price,
           category_id: categoryMap[service.category_name],
           position_id: selectedPosition?.id,
+          price_options: service.price_options?.map((opt, idx) => ({
+            name: opt.name,
+            price: opt.price,
+            duration_minutes: opt.duration_minutes,
+            order: idx,
+          })),
         })
       }
 
@@ -386,6 +469,17 @@ export default function ServicesPage() {
   const servicesWithoutPosition = services.filter(s => !s.position_id).length
 
   // Render service card (grid view)
+  const formatServicePrice = (service: Service): string => {
+    if (service.price_options && service.price_options.length > 0) {
+      const prices = service.price_options.map(o => Number(o.price))
+      const minPrice = Math.min(...prices)
+      const maxPrice = Math.max(...prices)
+      if (minPrice === maxPrice) return `${minPrice} грн`
+      return `від ${minPrice} грн`
+    }
+    return `${service.price} грн`
+  }
+
   const renderServiceCard = (service: Service) => (
     <Link key={service.id} href={`/admin/services/${service.id}`}>
       <Card className="h-full hover:shadow-md transition-shadow cursor-pointer group">
@@ -413,7 +507,7 @@ export default function ServicesPage() {
               {service.duration_minutes} хв
             </span>
             <span className="font-bold text-primary">
-              {service.price} грн
+              {formatServicePrice(service)}
             </span>
           </div>
         </CardFooter>
@@ -442,7 +536,7 @@ export default function ServicesPage() {
           {service.duration_minutes} хв
         </span>
         <span className="font-semibold text-primary flex-shrink-0 w-24 text-right">
-          {service.price} грн
+          {formatServicePrice(service)}
         </span>
       </div>
     </Link>
@@ -873,6 +967,7 @@ export default function ServicesPage() {
 
       {/* AI Generation Modal */}
       <Dialog open={aiModalOpen} onOpenChange={(open) => {
+        if (!open && (aiGenerating || aiSaving)) return
         setAiModalOpen(open)
         if (!open) {
           setAiResult(null)
@@ -881,7 +976,7 @@ export default function ServicesPage() {
           setAiPositionName('')
         }
       }}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" onPointerDownOutside={(e) => { if (aiGenerating || aiSaving) e.preventDefault() }} onEscapeKeyDown={(e) => { if (aiGenerating || aiSaving) e.preventDefault() }}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-purple-500" />
@@ -890,11 +985,14 @@ export default function ServicesPage() {
           </DialogHeader>
 
           {!aiResult ? (
+            aiGenerating ? (
+              <AiLoadingState sourceType={aiSourceType} />
+            ) : (
             <div className="space-y-4 py-4">
               {/* Position Name */}
               <div className="space-y-2">
                 <Label>Спеціальність / Посада *</Label>
-                {companyType === 'clinic' && positions.length > 0 ? (
+                {positions.length > 0 ? (
                   <select
                     value={aiPositionName}
                     onChange={(e) => setAiPositionName(e.target.value)}
@@ -970,6 +1068,7 @@ export default function ServicesPage() {
                 <p className="mt-1">AI створить категорії та послуги автоматично. Ви зможете переглянути та обрати потрібні перед збереженням.</p>
               </div>
             </div>
+            )
           ) : (
             <div className="space-y-4 py-4">
               <div className="flex items-center justify-between">
@@ -1027,9 +1126,25 @@ export default function ServicesPage() {
                             {service.duration_minutes} хв
                           </span>
                           <span className="font-medium text-primary">
-                            {service.price} грн
+                            {service.price_options && service.price_options.length > 0
+                              ? `від ${Math.min(...service.price_options.map(o => o.price))} грн`
+                              : `${service.price} грн`
+                            }
                           </span>
                         </div>
+                        {service.price_options && service.price_options.length > 0 && (
+                          <ul className="mt-2 space-y-0.5 text-sm text-muted-foreground">
+                            {service.price_options.map((opt, i) => (
+                              <li key={i} className="flex items-center justify-between">
+                                <span className="flex items-center gap-1.5">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-primary/50 flex-shrink-0" />
+                                  {opt.name}
+                                </span>
+                                <span className="font-medium text-foreground">{opt.price} грн</span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1047,27 +1162,21 @@ export default function ServicesPage() {
           )}
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setAiModalOpen(false)}>
-              Скасувати
-            </Button>
-            {!aiResult ? (
+            {!aiGenerating && (
+              <Button variant="outline" onClick={() => setAiModalOpen(false)}>
+                Скасувати
+              </Button>
+            )}
+            {!aiResult && !aiGenerating && (
               <Button
                 onClick={handleAiGenerate}
-                disabled={!aiContent.trim() || !aiPositionName.trim() || aiGenerating}
+                disabled={!aiContent.trim() || !aiPositionName.trim()}
               >
-                {aiGenerating ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Генерація...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="h-4 w-4 mr-2" />
-                    Згенерувати
-                  </>
-                )}
+                <Sparkles className="h-4 w-4 mr-2" />
+                Згенерувати
               </Button>
-            ) : (
+            )}
+            {aiResult && (
               <Button
                 onClick={handleAiSaveSelected}
                 disabled={aiSaving || aiResult.services.filter(s => s.selected).length === 0}

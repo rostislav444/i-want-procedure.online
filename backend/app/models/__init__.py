@@ -1,6 +1,6 @@
 from app.models.company import Company, IndustryTheme
 from app.models.user import User
-from app.models.service import Service, ServiceCategory
+from app.models.service import Service, ServiceCategory, ServicePriceOption
 from app.models.schedule import Schedule
 from app.models.client import Client
 from app.models.appointment import Appointment
@@ -37,6 +37,7 @@ __all__ = [
     "User",
     "Service",
     "ServiceCategory",
+    "ServicePriceOption",
     "Schedule",
     "Client",
     "Appointment",

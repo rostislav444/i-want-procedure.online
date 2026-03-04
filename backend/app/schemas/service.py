@@ -97,6 +97,33 @@ class ServiceProductResponse(BaseModel):
         from_attributes = True
 
 
+# Price option schemas
+class ServicePriceOptionCreate(BaseModel):
+    name: str
+    price: Decimal
+    duration_minutes: Optional[int] = None
+    order: int = 0
+
+
+class ServicePriceOptionUpdate(BaseModel):
+    name: Optional[str] = None
+    price: Optional[Decimal] = None
+    duration_minutes: Optional[int] = None
+    order: Optional[int] = None
+
+
+class ServicePriceOptionResponse(BaseModel):
+    id: int
+    service_id: int
+    name: str
+    price: Decimal
+    duration_minutes: Optional[int] = None
+    order: int
+
+    class Config:
+        from_attributes = True
+
+
 # Service schemas
 class ServiceCreate(BaseModel):
     name: str
@@ -109,6 +136,7 @@ class ServiceCreate(BaseModel):
     doctor_id: Optional[int] = None
     steps: Optional[list[ServiceStepCreate]] = None
     products: Optional[list[ServiceProductCreate]] = None
+    price_options: Optional[list[ServicePriceOptionCreate]] = None
 
 
 class ServiceUpdate(BaseModel):
@@ -154,6 +182,7 @@ class ServiceResponse(BaseModel):
     created_at: datetime
     category: Optional[ServiceCategoryBrief] = None
     specialty: Optional[SpecialtyBrief] = None
+    price_options: list[ServicePriceOptionResponse] = []
 
     class Config:
         from_attributes = True
@@ -174,6 +203,7 @@ class ServiceDetailResponse(BaseModel):
     created_at: datetime
     steps: list[ServiceStepResponse] = []
     products: list[ServiceProductResponse] = []
+    price_options: list[ServicePriceOptionResponse] = []
     category: Optional[ServiceCategoryResponse] = None
     specialty: Optional[SpecialtyBrief] = None
 

@@ -87,6 +87,9 @@ class Service(Base):
     inventory_items: Mapped[list["ServiceInventoryItem"]] = relationship(
         back_populates="service", cascade="all, delete-orphan"
     )
+    price_options: Mapped[list["ServicePriceOption"]] = relationship(
+        back_populates="service", cascade="all, delete-orphan", order_by="ServicePriceOption.order"
+    )
 
 
 class ServiceStep(Base):
@@ -116,3 +119,18 @@ class ServiceProduct(Base):
 
     # Relationships
     service: Mapped["Service"] = relationship(back_populates="products")
+
+
+class ServicePriceOption(Base):
+    """Варіанти ціни для послуги (наприклад, за зоною обробки)"""
+    __tablename__ = "service_price_options"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    service_id: Mapped[int] = mapped_column(ForeignKey("services.id", ondelete="CASCADE"))
+    name: Mapped[str] = mapped_column(String(255))
+    price: Mapped[Decimal] = mapped_column(Numeric(10, 2))
+    duration_minutes: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    order: Mapped[int] = mapped_column(Integer, default=0)
+
+    # Relationships
+    service: Mapped["Service"] = relationship(back_populates="price_options")

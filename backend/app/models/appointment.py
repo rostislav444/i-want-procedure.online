@@ -2,7 +2,9 @@ from datetime import datetime, date, time
 from enum import Enum
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import String, Text, DateTime, Date, Time, ForeignKey, func
+from decimal import Decimal
+
+from sqlalchemy import String, Text, DateTime, Date, Time, ForeignKey, Numeric, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -11,7 +13,7 @@ if TYPE_CHECKING:
     from app.models.company import Company
     from app.models.user import User
     from app.models.client import Client
-    from app.models.service import Service
+    from app.models.service import Service, ServicePriceOption
     from app.models.company_member import CompanyMember
     from app.models.procedure_protocol import ProcedureProtocol
     from app.models.inventory import StockMovement
@@ -58,6 +60,14 @@ class Appointment(Base):
     google_event_id: Mapped[Optional[str]] = mapped_column(
         String(255), nullable=True
     )
+    # Price at time of booking
+    price_option_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("service_price_options.id", ondelete="SET NULL"), nullable=True
+    )
+    service_price: Mapped[Optional[Decimal]] = mapped_column(
+        Numeric(10, 2), nullable=True
+    )
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -76,6 +86,7 @@ class Appointment(Base):
         uselist=False,
         cascade="all, delete-orphan"
     )
+    price_option: Mapped[Optional["ServicePriceOption"]] = relationship()
     stock_movements: Mapped[list["StockMovement"]] = relationship(
         back_populates="appointment"
     )

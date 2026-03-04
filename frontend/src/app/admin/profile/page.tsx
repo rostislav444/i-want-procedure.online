@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { User, Save, Calendar, Link2, Unlink } from 'lucide-react'
+import { User, Save, Calendar, Link2, Unlink, Building2, Users, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { authApi, googleApi, GoogleCalendarInfo } from '@/lib/api'
+import { authApi, googleApi, GoogleCalendarInfo, companyApi } from '@/lib/api'
+import { useCompany } from '@/contexts/CompanyContext'
 
 interface UserData {
   id: number
@@ -21,9 +22,11 @@ interface UserData {
 
 export default function ProfilePage() {
   const router = useRouter()
+  const { company, companyType, userRole, refreshCompany } = useCompany()
   const [user, setUser] = useState<UserData | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [upgrading, setUpgrading] = useState(false)
   const [success, setSuccess] = useState<string | null>(null)
   const [googleStatus, setGoogleStatus] = useState<GoogleCalendarInfo | null>(null)
   const [googleLoading, setGoogleLoading] = useState(false)
@@ -141,6 +144,36 @@ export default function ProfilePage() {
       console.error('Error disabling calendar:', error)
     } finally {
       setGoogleLoading(false)
+    }
+  }
+
+  const handleUpgradeToClinic = async () => {
+    if (!confirm('Ви впевнені, що хочете перейти на профіль компанії? Це дозволить додавати співробітників.')) return
+
+    setUpgrading(true)
+    try {
+      await companyApi.updateCompany({ type: 'clinic' })
+      showSuccess('Профіль оновлено до компанії!')
+      await refreshCompany()
+    } catch (error) {
+      console.error('Error upgrading to clinic:', error)
+    } finally {
+      setUpgrading(false)
+    }
+  }
+
+  const handleDowngradeToSolo = async () => {
+    if (!confirm('Ви впевнені, що хочете повернутися до профілю спеціаліста?')) return
+
+    setUpgrading(true)
+    try {
+      await companyApi.updateCompany({ type: 'solo' })
+      showSuccess('Профіль оновлено до спеціаліста!')
+      await refreshCompany()
+    } catch (error) {
+      console.error('Error downgrading to solo:', error)
+    } finally {
+      setUpgrading(false)
     }
   }
 
@@ -337,6 +370,59 @@ export default function ProfilePage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Company Type */}
+      {userRole === 'owner' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Building2 className="h-5 w-5" />
+              Тип профілю
+            </CardTitle>
+            <CardDescription>
+              {companyType === 'solo'
+                ? 'Зараз у вас профіль спеціаліста. Перейдіть на профіль компанії, щоб додавати співробітників.'
+                : 'У вас профіль компанії. Ви можете управляти командою та додавати співробітників.'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {companyType === 'solo' ? (
+              <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">Спеціаліст</span>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                    <Users className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium text-primary">Компанія</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Отримаєте можливість додавати команду, посади та налаштування клініки
+                  </p>
+                </div>
+                <Button onClick={handleUpgradeToClinic} disabled={upgrading}>
+                  {upgrading ? 'Оновлення...' : 'Перейти'}
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-4 p-4 bg-primary/5 rounded-lg border border-primary/20">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Users className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium text-primary">Профіль компанії</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Ви можете керувати командою та налаштуваннями через розділи &laquo;Команда&raquo; та &laquo;Налаштування&raquo;
+                  </p>
+                </div>
+                <Button variant="outline" size="sm" onClick={handleDowngradeToSolo} disabled={upgrading}>
+                  {upgrading ? 'Оновлення...' : 'Повернути спеціаліста'}
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Account Info */}
       <Card>

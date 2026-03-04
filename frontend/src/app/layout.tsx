@@ -23,6 +23,9 @@ const themeScript = `
     const defaultBg = isDark ? 'blue' : 'white';
     document.documentElement.setAttribute('data-accent', accent);
     document.documentElement.setAttribute('data-bg', bg || defaultBg);
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    }
   })();
 `
 

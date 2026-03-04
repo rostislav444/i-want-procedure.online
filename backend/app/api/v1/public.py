@@ -43,7 +43,8 @@ async def get_company_services(slug: str, db: DbSession):
         .where(Service.company_id == company.id, Service.is_active == True)
         .options(
             selectinload(Service.category),
-            selectinload(Service.specialty)
+            selectinload(Service.specialty),
+            selectinload(Service.price_options),
         )
         .order_by(Service.category_id, Service.name)
     )

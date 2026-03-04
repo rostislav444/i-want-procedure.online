@@ -66,6 +66,14 @@ export interface PublicServiceCategory {
   services?: PublicService[]
 }
 
+export interface PublicServicePriceOption {
+  id: number
+  name: string
+  price: number
+  duration_minutes?: number
+  order: number
+}
+
 export interface PublicService {
   id: number
   name: string
@@ -76,6 +84,7 @@ export interface PublicService {
   category?: PublicServiceCategory
   steps?: PublicServiceStep[]
   products?: PublicServiceProduct[]
+  price_options?: PublicServicePriceOption[]
 }
 
 export interface PublicServiceStep {

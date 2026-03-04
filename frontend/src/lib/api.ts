@@ -117,6 +117,15 @@ export interface ServiceProduct {
   manufacturer?: string
 }
 
+export interface ServicePriceOption {
+  id?: number
+  service_id?: number
+  name: string
+  price: number
+  duration_minutes?: number
+  order: number
+}
+
 export interface ServiceCategory {
   id: number
   company_id: number
@@ -142,6 +151,7 @@ export interface Service {
   created_at: string
   steps?: ServiceStep[]
   products?: ServiceProduct[]
+  price_options?: ServicePriceOption[]
   category?: ServiceCategory
 }
 
@@ -164,6 +174,7 @@ export const servicesApi = {
     position_id?: number
     steps?: Omit<ServiceStep, 'id' | 'service_id'>[]
     products?: Omit<ServiceProduct, 'id' | 'service_id'>[]
+    price_options?: Omit<ServicePriceOption, 'id' | 'service_id'>[]
   }): Promise<Service> => {
     const response = await api.post('/services', data)
     return response.data
@@ -207,6 +218,18 @@ export const servicesApi = {
   deleteProduct: async (serviceId: number, productId: number): Promise<void> => {
     await api.delete(`/services/${serviceId}/products/${productId}`)
   },
+  // Price Options
+  addPriceOption: async (serviceId: number, option: Omit<ServicePriceOption, 'id' | 'service_id'>): Promise<ServicePriceOption> => {
+    const response = await api.post(`/services/${serviceId}/price-options`, option)
+    return response.data
+  },
+  updatePriceOption: async (serviceId: number, optionId: number, data: Partial<ServicePriceOption>): Promise<ServicePriceOption> => {
+    const response = await api.patch(`/services/${serviceId}/price-options/${optionId}`, data)
+    return response.data
+  },
+  deletePriceOption: async (serviceId: number, optionId: number): Promise<void> => {
+    await api.delete(`/services/${serviceId}/price-options/${optionId}`)
+  },
   // AI Generation
   generateFromAI: async (data: {
     position_name: string
@@ -221,12 +244,27 @@ export const servicesApi = {
       duration_minutes: number
       price: number
       category_name: string
+      price_options?: Array<{ name: string; price: number; duration_minutes?: number }>
     }>
     categories: string[]
     estimated_tokens: number
   }> => {
-    const response = await api.post('/services/generate-from-ai', data)
-    return response.data
+    // Start the job
+    const startResponse = await api.post('/services/generate-from-ai', data)
+    const { job_id } = startResponse.data
+
+    // Poll for result
+    const maxAttempts = 150 // 5 minutes max
+    for (let i = 0; i < maxAttempts; i++) {
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      const pollResponse = await api.get(`/services/generate-from-ai/${job_id}`)
+      const result = pollResponse.data
+      if (result.status === 'done') {
+        return result
+      }
+      // If not done, continue polling (status: started/streaming/parsing)
+    }
+    throw new Error('Перевищено час очікування генерації')
   },
 }
 
@@ -670,6 +708,7 @@ export const companyApi = {
   },
   updateCompany: async (data: Partial<{
     name: string
+    type: 'solo' | 'clinic'
     description: string
     phone: string
     address: string

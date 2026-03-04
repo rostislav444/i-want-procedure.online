@@ -48,20 +48,20 @@ export default function CreativeHero() {
         <div className={`flex flex-col sm:flex-row gap-4 justify-center items-center transition-all duration-1000 delay-600 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <Link
             href="/admin"
-            className="group relative px-8 py-4 bg-gradient-to-r from-pink-600 to-purple-600 text-white rounded-2xl font-semibold text-lg overflow-hidden transition-all hover:scale-105 hover:shadow-2xl hover:shadow-pink-500/50"
+            className="group relative px-5 py-2.5 bg-gradient-to-r from-pink-600 to-purple-600 text-white rounded-full font-medium text-sm overflow-hidden transition-all hover:scale-105 hover:shadow-lg hover:shadow-pink-500/40"
           >
             <span className="relative z-10 flex items-center gap-2">
               Спробувати безкоштовно
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </span>
             <div className="absolute inset-0 shimmer" />
           </Link>
 
           <Link
             href="#features"
-            className="px-8 py-4 glass-tinted rounded-2xl font-semibold text-lg flex items-center gap-2 transition-all hover:scale-105"
+            className="px-5 py-2.5 glass-tinted rounded-full font-medium text-sm flex items-center gap-2 transition-all hover:scale-105"
           >
-            <Sparkles className="w-5 h-5 text-pink-600" />
+            <Sparkles className="w-4 h-4 text-pink-600" />
             Переглянути функції
           </Link>
         </div>
