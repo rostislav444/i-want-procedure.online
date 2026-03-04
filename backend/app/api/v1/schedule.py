@@ -6,6 +6,7 @@ from sqlalchemy import select, and_
 
 from app.api.deps import DbSession, CurrentUser
 from app.models.schedule import Schedule, ScheduleException, ScheduleExceptionType
+from app.models.company_member import CompanyMember
 from app.schemas.schedule import (
     ScheduleCreate,
     ScheduleUpdate,
@@ -18,11 +19,31 @@ from app.schemas.schedule import (
 router = APIRouter(prefix="/schedule")
 
 
+async def _resolve_doctor_id(current_user, db: DbSession, doctor_id: Optional[int] = None) -> int:
+    """Resolve doctor_id: if provided (clinic mode), verify access and return user_id for that member."""
+    if not doctor_id:
+        return current_user.id
+
+    # doctor_id here is member_id (company_members.id), resolve to user_id
+    result = await db.execute(
+        select(CompanyMember).where(CompanyMember.id == doctor_id)
+    )
+    member = result.scalar_one_or_none()
+    if not member:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Specialist not found")
+    return member.user_id
+
+
 @router.get("", response_model=list[ScheduleResponse])
-async def get_schedules(current_user: CurrentUser, db: DbSession):
+async def get_schedules(
+    current_user: CurrentUser,
+    db: DbSession,
+    doctor_id: Optional[int] = None,
+):
+    target_user_id = await _resolve_doctor_id(current_user, db, doctor_id)
     result = await db.execute(
         select(Schedule)
-        .where(Schedule.doctor_id == current_user.id)
+        .where(Schedule.doctor_id == target_user_id)
         .order_by(Schedule.day_of_week)
     )
     return result.scalars().all()
@@ -66,11 +87,14 @@ async def create_or_update_schedules(
     schedules_data: list[ScheduleCreate],
     current_user: CurrentUser,
     db: DbSession,
+    doctor_id: Optional[int] = None,
 ):
-    """Create or update schedules for all days"""
+    """Create or update schedules for all days. doctor_id is member_id for clinic mode."""
+    target_user_id = await _resolve_doctor_id(current_user, db, doctor_id)
+
     # Delete existing schedules
     result = await db.execute(
-        select(Schedule).where(Schedule.doctor_id == current_user.id)
+        select(Schedule).where(Schedule.doctor_id == target_user_id)
     )
     existing_schedules = result.scalars().all()
     for schedule in existing_schedules:
@@ -80,7 +104,7 @@ async def create_or_update_schedules(
     new_schedules = []
     for schedule_data in schedules_data:
         schedule = Schedule(
-            doctor_id=current_user.id,
+            doctor_id=target_user_id,
             day_of_week=schedule_data.day_of_week,
             start_time=schedule_data.start_time,
             end_time=schedule_data.end_time,
@@ -152,10 +176,12 @@ async def get_schedule_exceptions(
     db: DbSession,
     date_from: Optional[date] = None,
     date_to: Optional[date] = None,
+    doctor_id: Optional[int] = None,
 ):
-    """Get schedule exceptions for the current doctor"""
+    """Get schedule exceptions. doctor_id is member_id for clinic filtering."""
+    target_user_id = await _resolve_doctor_id(current_user, db, doctor_id)
     query = select(ScheduleException).where(
-        ScheduleException.doctor_id == current_user.id
+        ScheduleException.doctor_id == target_user_id
     )
 
     if date_from:
@@ -173,14 +199,17 @@ async def create_schedule_exception(
     exception_data: ScheduleExceptionCreate,
     current_user: CurrentUser,
     db: DbSession,
+    doctor_id: Optional[int] = None,
 ):
     """Create a schedule exception (day off, modified hours, break, etc.)"""
+    target_user_id = await _resolve_doctor_id(current_user, db, doctor_id)
+
     # For day_off, modified, working - only one per day allowed
     # For breaks - multiple allowed per day
     if exception_data.type != ScheduleExceptionType.BREAK:
         result = await db.execute(
             select(ScheduleException).where(
-                ScheduleException.doctor_id == current_user.id,
+                ScheduleException.doctor_id == target_user_id,
                 ScheduleException.date == exception_data.date,
                 ScheduleException.type != ScheduleExceptionType.BREAK,
             )
@@ -193,7 +222,7 @@ async def create_schedule_exception(
             )
 
     exception = ScheduleException(
-        doctor_id=current_user.id,
+        doctor_id=target_user_id,
         date=exception_data.date,
         type=exception_data.type,
         start_time=exception_data.start_time,
@@ -206,16 +235,26 @@ async def create_schedule_exception(
     return exception
 
 
-@router.get("/exceptions/{exception_id}", response_model=ScheduleExceptionResponse)
-async def get_schedule_exception(
-    exception_id: int,
-    current_user: CurrentUser,
-    db: DbSession,
-):
+async def _get_allowed_doctor_ids(current_user, db) -> set[int]:
+    """Get all user_ids that current_user can manage (own + company members)."""
+    allowed = {current_user.id}
+    result = await db.execute(
+        select(CompanyMember.user_id).where(CompanyMember.company_id.in_(
+            select(CompanyMember.company_id).where(CompanyMember.user_id == current_user.id)
+        ))
+    )
+    for row in result.scalars().all():
+        allowed.add(row)
+    return allowed
+
+
+async def _find_exception(exception_id: int, current_user, db) -> ScheduleException:
+    """Find exception by id, checking access for clinic mode."""
+    allowed_ids = await _get_allowed_doctor_ids(current_user, db)
     result = await db.execute(
         select(ScheduleException).where(
             ScheduleException.id == exception_id,
-            ScheduleException.doctor_id == current_user.id,
+            ScheduleException.doctor_id.in_(allowed_ids),
         )
     )
     exception = result.scalar_one_or_none()
@@ -227,6 +266,15 @@ async def get_schedule_exception(
     return exception
 
 
+@router.get("/exceptions/{exception_id}", response_model=ScheduleExceptionResponse)
+async def get_schedule_exception(
+    exception_id: int,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    return await _find_exception(exception_id, current_user, db)
+
+
 @router.patch("/exceptions/{exception_id}", response_model=ScheduleExceptionResponse)
 async def update_schedule_exception(
     exception_id: int,
@@ -234,18 +282,7 @@ async def update_schedule_exception(
     current_user: CurrentUser,
     db: DbSession,
 ):
-    result = await db.execute(
-        select(ScheduleException).where(
-            ScheduleException.id == exception_id,
-            ScheduleException.doctor_id == current_user.id,
-        )
-    )
-    exception = result.scalar_one_or_none()
-    if not exception:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Schedule exception not found",
-        )
+    exception = await _find_exception(exception_id, current_user, db)
 
     update_data = exception_data.model_dump(exclude_unset=True)
     for field, value in update_data.items():
@@ -262,18 +299,6 @@ async def delete_schedule_exception(
     current_user: CurrentUser,
     db: DbSession,
 ):
-    result = await db.execute(
-        select(ScheduleException).where(
-            ScheduleException.id == exception_id,
-            ScheduleException.doctor_id == current_user.id,
-        )
-    )
-    exception = result.scalar_one_or_none()
-    if not exception:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Schedule exception not found",
-        )
-
+    exception = await _find_exception(exception_id, current_user, db)
     await db.delete(exception)
     await db.commit()

@@ -15,7 +15,8 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { CalendarView, CalendarEvent, ViewMode } from '@/components/calendar'
-import { scheduleApi, appointmentsApi, ScheduleException, ScheduleExceptionType } from '@/lib/api'
+import { scheduleApi, appointmentsApi, specialistsApi, ScheduleException, ScheduleExceptionType, SpecialistListItem } from '@/lib/api'
+import { useCompany } from '@/contexts/CompanyContext'
 
 const DAYS = [
   { id: 0, name: 'Пн', full: 'Понеділок' },
@@ -52,6 +53,10 @@ const EXCEPTION_TYPES: { value: ScheduleExceptionType; label: string; shortLabel
 ]
 
 export default function SchedulePage() {
+  const { companyType, selectedCompanyId } = useCompany()
+  const [specialists, setSpecialists] = useState<SpecialistListItem[]>([])
+  const [selectedSpecialistId, setSelectedSpecialistId] = useState<number | undefined>(undefined)
+
   const [schedules, setSchedules] = useState<ScheduleDay[]>(
     DAYS.map((day) => ({
       day_of_week: day.id,
@@ -77,19 +82,32 @@ export default function SchedulePage() {
   const [exceptionEndTime, setExceptionEndTime] = useState('13:00')
   const [exceptionReason, setExceptionReason] = useState('')
   const [savingException, setSavingException] = useState(false)
+  const [slotDuration, setSlotDuration] = useState(60)
 
   const weekStart = startOfWeek(selectedDate, { weekStartsOn: 1 })
   const weekEnd = endOfWeek(selectedDate, { weekStartsOn: 1 })
   const monthStart = startOfMonth(selectedDate)
   const monthEnd = endOfMonth(selectedDate)
 
+  // Load specialists for clinic
+  useEffect(() => {
+    if (companyType === 'clinic' && selectedCompanyId) {
+      specialistsApi.getAll(selectedCompanyId).then(data => {
+        setSpecialists(data)
+        if (data.length > 0 && !selectedSpecialistId) {
+          setSelectedSpecialistId(data[0].id)
+        }
+      })
+    }
+  }, [companyType, selectedCompanyId])
+
   useEffect(() => {
     loadSchedule()
-  }, [])
+  }, [selectedSpecialistId])
 
   useEffect(() => {
     loadExceptionsAndAppointments()
-  }, [selectedDate, viewMode])
+  }, [selectedDate, viewMode, selectedSpecialistId])
 
   // Update exception type when dialog date changes (if current type becomes invalid)
   useEffect(() => {
@@ -109,7 +127,9 @@ export default function SchedulePage() {
 
   const loadSchedule = async () => {
     try {
-      const data = await scheduleApi.getAll()
+      const data = await scheduleApi.getAll(
+        selectedSpecialistId ? { doctor_id: selectedSpecialistId } : undefined
+      )
       if (data.length > 0) {
         setSchedules(
           DAYS.map((day) => {
@@ -153,8 +173,8 @@ export default function SchedulePage() {
       }
 
       const [exceptionsData, appointmentsData] = await Promise.all([
-        scheduleApi.getExceptions({ date_from: dateFrom, date_to: dateTo }),
-        appointmentsApi.getAll({ date_from: dateFrom, date_to: dateTo }),
+        scheduleApi.getExceptions({ date_from: dateFrom, date_to: dateTo, doctor_id: selectedSpecialistId }),
+        appointmentsApi.getAll({ date_from: dateFrom, date_to: dateTo, specialist_id: selectedSpecialistId }),
       ])
 
       setExceptions(exceptionsData)
@@ -167,7 +187,10 @@ export default function SchedulePage() {
   const handleSaveSchedule = async () => {
     setSaving(true)
     try {
-      await scheduleApi.createBulk(schedules)
+      await scheduleApi.createBulk(
+        schedules,
+        selectedSpecialistId ? { doctor_id: selectedSpecialistId } : undefined
+      )
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
     } catch (error) {
@@ -250,7 +273,7 @@ export default function SchedulePage() {
     return events
   }, [exceptions, appointments, schedules])
 
-  const openExceptionDialog = (date: Date, exception?: ScheduleException) => {
+  const openExceptionDialog = (date: Date, exception?: ScheduleException, presetTime?: { start: string; end: string }) => {
     setDialogDate(date)
     setSelectedException(exception || null)
 
@@ -259,18 +282,22 @@ export default function SchedulePage() {
       setExceptionStartTime(exception.start_time ? formatTime(exception.start_time) : '09:00')
       setExceptionEndTime(exception.end_time ? formatTime(exception.end_time) : '18:00')
       setExceptionReason(exception.reason || '')
+    } else if (presetTime) {
+      setExceptionType('break')
+      setExceptionStartTime(presetTime.start)
+      setExceptionEndTime(presetTime.end)
+      setExceptionReason('')
     } else {
       const dayOfWeek = (date.getDay() + 6) % 7
       const schedule = schedules.find(s => s.day_of_week === dayOfWeek)
       const isWorkingDay = schedule?.is_working_day ?? false
 
-      // Set default type based on whether it's a working day
       if (isWorkingDay) {
-        setExceptionType('break') // Default to break on working day
+        setExceptionType('break')
         setExceptionStartTime('12:00')
         setExceptionEndTime('13:00')
       } else {
-        setExceptionType('working') // Default to working day on non-working day
+        setExceptionType('working')
         setExceptionStartTime(schedule?.start_time ? formatTime(schedule.start_time) : '09:00')
         setExceptionEndTime(schedule?.end_time ? formatTime(schedule.end_time) : '18:00')
       }
@@ -290,12 +317,8 @@ export default function SchedulePage() {
     }
   }
 
-  const handleEmptySlotClick = (date: Date, time: string) => {
-    const [hour] = time.split(':').map(Number)
-    const endHour = hour + 1
-    setExceptionStartTime(`${hour.toString().padStart(2, '0')}:00`)
-    setExceptionEndTime(`${endHour.toString().padStart(2, '0')}:00`)
-    openExceptionDialog(date)
+  const handleEmptySlotClick = (date: Date, startTime: string, endTime: string) => {
+    openExceptionDialog(date, undefined, { start: startTime, end: endTime })
   }
 
   const handleSaveException = async () => {
@@ -319,7 +342,10 @@ export default function SchedulePage() {
       if (selectedException) {
         await scheduleApi.updateException(selectedException.id, data)
       } else {
-        await scheduleApi.createException(data)
+        await scheduleApi.createException(
+          data,
+          selectedSpecialistId ? { doctor_id: selectedSpecialistId } : undefined
+        )
       }
 
       await loadExceptionsAndAppointments()
@@ -346,8 +372,12 @@ export default function SchedulePage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
+              <div className="animate-pulse space-y-3">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="h-10 bg-muted rounded" style={{ opacity: 1 - i * 0.15 }} />
+                ))}
+              </div>
+            </div>
     )
   }
 
@@ -424,14 +454,46 @@ export default function SchedulePage() {
       <div className="flex-1 flex flex-col min-w-0">
         <div className="flex items-center gap-2 mb-4">
           <h1 className="text-2xl font-bold">Розклад</h1>
-          <Button
-            onClick={() => openExceptionDialog(selectedDate)}
-            size="sm"
-            className="ml-auto"
-          >
-            <Plus className="h-4 w-4 mr-1" />
-            Додати виключення
-          </Button>
+
+          {companyType === 'clinic' && specialists.length > 0 && (
+            <div className="flex items-center gap-1 ml-4">
+              {specialists.map((spec) => (
+                <button
+                  key={spec.id}
+                  onClick={() => setSelectedSpecialistId(spec.id)}
+                  className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
+                    selectedSpecialistId === spec.id
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  }`}
+                >
+                  {spec.first_name} {spec.last_name?.[0]}.
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="ml-auto flex items-center gap-2">
+            <select
+              value={slotDuration}
+              onChange={(e) => setSlotDuration(Number(e.target.value))}
+              className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+            >
+              <option value={15}>15 хв</option>
+              <option value={30}>30 хв</option>
+              <option value={45}>45 хв</option>
+              <option value={60}>1 год</option>
+              <option value={90}>1.5 год</option>
+              <option value={120}>2 год</option>
+            </select>
+            <Button
+              onClick={() => openExceptionDialog(selectedDate)}
+              size="sm"
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              Додати виключення
+            </Button>
+          </div>
         </div>
 
         <CalendarView
@@ -442,6 +504,7 @@ export default function SchedulePage() {
           onViewModeChange={setViewMode}
           onDateClick={handleDateClick}
           onEmptySlotClick={handleEmptySlotClick}
+          slotDuration={slotDuration}
           className="flex-1"
         />
       </div>
@@ -454,6 +517,12 @@ export default function SchedulePage() {
               <Calendar className="h-5 w-5" />
               {selectedException ? 'Редагувати виключення' : 'Додати виключення'}
             </DialogTitle>
+            {selectedSpecialistId && (() => {
+              const spec = specialists.find(s => s.id === selectedSpecialistId)
+              return spec ? (
+                <p className="text-sm text-muted-foreground">{spec.first_name} {spec.last_name}</p>
+              ) : null
+            })()}
           </DialogHeader>
 
           <div className="space-y-4 py-4">

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import {
   format,
   startOfMonth,
@@ -16,7 +16,7 @@ import {
   isSameMonth,
 } from 'date-fns'
 import { uk } from 'date-fns/locale'
-import { ChevronLeft, ChevronRight, Calendar, CalendarDays, CalendarRange } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Calendar, CalendarDays, CalendarRange, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 
@@ -44,7 +44,8 @@ interface CalendarViewProps {
   onViewModeChange: (mode: ViewMode) => void
   availableViews?: ViewMode[]
   onDateClick?: (date: Date) => void
-  onEmptySlotClick?: (date: Date, time: string) => void
+  onEmptySlotClick?: (date: Date, startTime: string, endTime: string) => void
+  slotDuration?: number // default ghost block duration in minutes (default 15)
   startHour?: number
   endHour?: number
   renderDayHeader?: (date: Date) => React.ReactNode
@@ -64,6 +65,7 @@ export default function CalendarView({
   availableViews = ['day', 'week', 'month'],
   onDateClick,
   onEmptySlotClick,
+  slotDuration = 15,
   startHour = 8,
   endHour = 20,
   renderDayHeader,
@@ -176,18 +178,147 @@ export default function CalendarView({
     return (
       <div
         key={event.id}
-        className={`absolute left-0.5 right-0.5 flex cursor-pointer overflow-hidden transition-opacity ${event.onClick ? 'hover:ring-2 hover:ring-primary/50' : ''}`}
+        className={`absolute left-1 right-1 overflow-hidden transition-all rounded-lg shadow-md hover:shadow-lg ${event.color} ${event.textColor || ''} ${event.onClick ? 'pointer-events-auto cursor-pointer hover:ring-2 hover:ring-primary/50' : ''}`}
         style={{ ...style, opacity }}
         onClick={event.onClick}
       >
-        <div className={`w-0.5 ${compact ? '' : 'w-1'} rounded-l ${event.borderColor}`} />
-        <div className={`flex-1 px-1.5 py-0.5 rounded-r ${event.color} ${event.textColor || ''}`}>
+        <div className={`absolute left-1 top-1.5 bottom-1.5 ${compact ? 'w-0.5' : 'w-1'} rounded-full ${event.borderColor}`} />
+        <div className="pl-4 pr-2 py-1">
           <div className="text-xs font-medium truncate">
             {event.start_time.slice(0, 5)} {event.title}
           </div>
           {!compact && heightNum >= 48 && event.subtitle && (
             <div className="text-xs opacity-75 truncate">{event.subtitle}</div>
           )}
+        </div>
+      </div>
+    )
+  }
+
+  // Check if a time range overlaps with any event on a given date
+  const isSlotOccupied = (dateStr: string, fromMin: number, toMin: number) => {
+    const dayEvents = events.filter(e => e.date === dateStr)
+    return dayEvents.some(e => {
+      const [sh, sm] = e.start_time.split(':').map(Number)
+      const [eh, em] = e.end_time.split(':').map(Number)
+      const eStart = sh * 60 + sm
+      const eEnd = eh * 60 + em
+      return fromMin < eEnd && toMin > eStart
+    })
+  }
+
+  // Drag-select state for time range selection
+  const [dragDate, setDragDate] = useState<string | null>(null)
+  const [dragStartMin, setDragStartMin] = useState<number | null>(null)
+  const [dragCurrentMin, setDragCurrentMin] = useState<number | null>(null)
+  const isDragging = useRef(false)
+
+  const fmtTime = (totalMin: number) => {
+    const h = Math.floor(totalMin / 60)
+    const m = totalMin % 60
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`
+  }
+
+  const getDragRange = () => {
+    if (dragStartMin === null || dragCurrentMin === null) return null
+    const minVal = Math.min(dragStartMin, dragCurrentMin)
+    const maxVal = Math.max(dragStartMin, dragCurrentMin) + 15
+    // Use slotDuration as minimum
+    const duration = maxVal - minVal
+    const endMin = duration < slotDuration ? minVal + slotDuration : maxVal
+    return { startMin: minVal, endMin }
+  }
+
+  // Global mouseup to finish drag
+  useEffect(() => {
+    const handleMouseUp = () => {
+      if (!isDragging.current || dragDate === null || dragStartMin === null || dragCurrentMin === null) {
+        isDragging.current = false
+        setDragDate(null)
+        setDragStartMin(null)
+        setDragCurrentMin(null)
+        return
+      }
+      isDragging.current = false
+      const range = getDragRange()
+      if (range && onEmptySlotClick) {
+        const dateObj = new Date(dragDate + 'T00:00:00')
+        onEmptySlotClick(dateObj, fmtTime(range.startMin), fmtTime(range.endMin))
+      }
+      setDragDate(null)
+      setDragStartMin(null)
+      setDragCurrentMin(null)
+    }
+    document.addEventListener('mouseup', handleMouseUp)
+    return () => document.removeEventListener('mouseup', handleMouseUp)
+  }, [dragDate, dragStartMin, dragCurrentMin, onEmptySlotClick])
+
+  const renderHourSlot = (date: Date, hour: number) => {
+    const quarters = [0, 15, 30, 45]
+    const dateStr = format(date, 'yyyy-MM-dd')
+    if (!onEmptySlotClick) {
+      return <div key={hour} className="h-16 border-b border-dashed border-border/50" />
+    }
+    return (
+      <div key={hour} className="h-16 border-b border-dashed border-border/50 relative flex flex-col">
+        {quarters.map((min) => {
+          const slotMin = hour * 60 + min
+          const occupied = isSlotOccupied(dateStr, slotMin, slotMin + 15)
+          const isInDrag = !occupied && dragDate === dateStr && getDragRange() !== null &&
+            slotMin >= getDragRange()!.startMin && slotMin < getDragRange()!.endMin
+          return (
+            <div
+              key={min}
+              className={`flex-1 relative select-none ${occupied ? '' : 'cursor-pointer'} ${isInDrag ? '' : occupied ? '' : 'group/q'}`}
+              style={min === 30 ? { borderTop: '1px dotted var(--border)' } : undefined}
+              onMouseDown={(e) => {
+                if (occupied) return
+                e.preventDefault()
+                isDragging.current = true
+                setDragDate(dateStr)
+                setDragStartMin(slotMin)
+                setDragCurrentMin(slotMin)
+              }}
+              onMouseEnter={() => {
+                if (isDragging.current && dragDate === dateStr && !occupied) {
+                  setDragCurrentMin(slotMin)
+                }
+              }}
+            >
+              {/* Hover preview with slotDuration (only when not dragging, only on free slots) */}
+              {!isDragging.current && !occupied && !isSlotOccupied(dateStr, slotMin, slotMin + slotDuration) && (
+                <div className="absolute inset-x-1 top-0 opacity-0 group-hover/q:opacity-100 transition-opacity pointer-events-none z-30 rounded-lg bg-primary/15 shadow-md border-2 border-primary/30 border-dashed flex items-center overflow-hidden" style={{ height: `${(slotDuration / 60) * 64}px` }}>
+                  <div className="absolute left-1 top-1.5 bottom-1.5 w-1 rounded-full bg-primary/40" />
+                  <div className="pl-4 flex items-center gap-1.5 text-primary">
+                    <Plus className="h-3.5 w-3.5 flex-shrink-0" />
+                    <span className="text-xs font-semibold whitespace-nowrap">{fmtTime(slotMin)}–{fmtTime(slotMin + slotDuration)}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+
+  const renderGhostBlock = (dateStr: string) => {
+    if (dragDate !== dateStr) return null
+    const range = getDragRange()
+    if (!range) return null
+    const topMin = range.startMin - startHour * 60
+    const height = range.endMin - range.startMin
+    const topPx = (topMin / 60) * 64
+    const heightPx = (height / 60) * 64
+    return (
+      <div
+        className="absolute left-1 right-1 z-30 pointer-events-none rounded-lg bg-primary/15 shadow-md border-2 border-primary/30 border-dashed flex items-center overflow-hidden"
+        style={{ top: `${topPx}px`, height: `${heightPx}px` }}
+      >
+        <div className="absolute left-1 top-1.5 bottom-1.5 w-1 rounded-full bg-primary/40" />
+        <div className="pl-4 flex items-center gap-1.5 text-primary">
+          <Plus className="h-3.5 w-3.5 flex-shrink-0" />
+          <span className="text-xs font-semibold whitespace-nowrap">{fmtTime(range.startMin)}–{fmtTime(range.endMin)}</span>
         </div>
       </div>
     )
@@ -200,14 +331,9 @@ export default function CalendarView({
       <div className="flex h-full overflow-auto">
         {renderTimeColumn()}
         <div className="flex-1 relative">
-          {hours.map((hour) => (
-            <div
-              key={hour}
-              className="h-16 border-b border-dashed border-border cursor-pointer hover:bg-muted/30"
-              onClick={() => onEmptySlotClick?.(selectedDate, `${hour}:00`)}
-            />
-          ))}
-          <div className="absolute inset-0 px-2">
+          {hours.map((hour) => renderHourSlot(selectedDate, hour))}
+          {renderGhostBlock(format(selectedDate, 'yyyy-MM-dd'))}
+          <div className="absolute inset-0 px-2 pointer-events-none">
             {dayEvents.map((event) => renderEvent(event))}
           </div>
           {dayEvents.length === 0 && (
@@ -247,15 +373,10 @@ export default function CalendarView({
                 )}
               </div>
               <div className="flex-1 relative">
-                {hours.map((hour) => (
-                  <div
-                    key={hour}
-                    className="h-16 border-b border-dashed border-border/50 cursor-pointer hover:bg-muted/30"
-                    onClick={() => onEmptySlotClick?.(day, `${hour}:00`)}
-                  />
-                ))}
+                {hours.map((hour) => renderHourSlot(day, hour))}
+                {renderGhostBlock(format(day, 'yyyy-MM-dd'))}
                 {isDayToday && renderCurrentTimeLine()}
-                <div className="absolute inset-0 px-0.5">
+                <div className="absolute inset-0 px-0.5 pointer-events-none">
                   {dayEvents.map((event) => renderEvent(event, true))}
                 </div>
               </div>

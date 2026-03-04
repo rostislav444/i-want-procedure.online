@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { ThemeSettings } from '@/components/theme-settings'
 import { CompanyProvider, useCompany } from '@/contexts/CompanyContext'
 import { CompanySelector } from '@/components/company-selector'
+import { Loader } from '@/components/ui/loader'
 
 // Company switcher component
 function CompanySwitcher({ collapsed = false }: { collapsed?: boolean }) {
@@ -221,7 +222,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <Loader size="lg" />
       </div>
     )
   }
@@ -235,7 +236,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <Loader size="lg" />
       </div>
     )
   }

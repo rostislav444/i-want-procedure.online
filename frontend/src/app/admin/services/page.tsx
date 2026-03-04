@@ -480,6 +480,17 @@ export default function ServicesPage() {
     return `${service.price} грн`
   }
 
+  const formatServicePriceShort = (service: Service): string => {
+    if (service.price_options && service.price_options.length > 0) {
+      const prices = service.price_options.map(o => Number(o.price))
+      const minPrice = Math.min(...prices)
+      const maxPrice = Math.max(...prices)
+      if (minPrice === maxPrice) return `${minPrice}`
+      return `від ${minPrice}`
+    }
+    return `${service.price || '—'}`
+  }
+
   const renderServiceCard = (service: Service) => (
     <Link key={service.id} href={`/admin/services/${service.id}`}>
       <Card className="h-full hover:shadow-md transition-shadow cursor-pointer group">
@@ -516,38 +527,44 @@ export default function ServicesPage() {
   )
 
   // Render service list item (list view)
-  const renderServiceListItem = (service: Service) => (
+  const renderServiceListItem = (service: Service, index: number) => (
     <Link key={service.id} href={`/admin/services/${service.id}`}>
-      <div className="flex items-center gap-4 py-2 px-3 hover:bg-muted/50 rounded-md cursor-pointer group">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="font-medium group-hover:text-primary transition-colors truncate">
-              {service.name}
-            </span>
-            {!service.is_active && (
-              <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded flex-shrink-0">
-                Неактивна
-              </span>
-            )}
-          </div>
+      <div className={`flex items-center py-2.5 px-4 hover:bg-muted/50 cursor-pointer group ${index > 0 ? 'border-t border-border/50' : ''}`}>
+        <div className="flex-1 min-w-0 pr-4">
+          <span className="font-medium group-hover:text-primary transition-colors truncate block">
+            {service.name}
+          </span>
         </div>
-        <span className="flex items-center gap-1 text-sm text-muted-foreground flex-shrink-0">
-          <Clock className="h-3.5 w-3.5" />
-          {service.duration_minutes} хв
+        {!service.is_active && (
+          <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded flex-shrink-0 mr-4">
+            Неактивна
+          </span>
+        )}
+        <span className="text-sm text-muted-foreground flex-shrink-0 w-16 text-right tabular-nums">
+          {service.duration_minutes}
         </span>
-        <span className="font-semibold text-primary flex-shrink-0 w-24 text-right">
-          {formatServicePrice(service)}
+        <span className="font-semibold text-primary flex-shrink-0 w-28 text-right tabular-nums">
+          {formatServicePriceShort(service)}
         </span>
       </div>
     </Link>
   )
 
   // Render services based on view mode
+  const renderServiceListHeader = () => (
+    <div className="flex items-center py-2 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider border-b">
+      <div className="flex-1 min-w-0">Назва</div>
+      <div className="flex-shrink-0 w-16 text-right">Хв</div>
+      <div className="flex-shrink-0 w-28 text-right">Ціна, грн</div>
+    </div>
+  )
+
   const renderServices = (servicesList: Service[]) => {
     if (viewMode === 'list') {
       return (
-        <div className="space-y-1">
-          {servicesList.map(renderServiceListItem)}
+        <div className="border rounded-lg overflow-hidden bg-background">
+          {renderServiceListHeader()}
+          {servicesList.map((service, index) => renderServiceListItem(service, index))}
         </div>
       )
     }
@@ -676,8 +693,12 @@ export default function ServicesPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
+              <div className="animate-pulse space-y-3">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="h-10 bg-muted rounded" style={{ opacity: 1 - i * 0.15 }} />
+                ))}
+              </div>
+            </div>
     )
   }
 

@@ -321,8 +321,8 @@ export interface ScheduleException {
 
 // Schedule API
 export const scheduleApi = {
-  getAll: async () => {
-    const response = await api.get('/schedule')
+  getAll: async (params?: { doctor_id?: number }) => {
+    const response = await api.get('/schedule', { params })
     return response.data
   },
   createBulk: async (schedules: Array<{
@@ -330,12 +330,12 @@ export const scheduleApi = {
     start_time: string
     end_time: string
     is_working_day: boolean
-  }>) => {
-    const response = await api.post('/schedule/bulk', schedules)
+  }>, params?: { doctor_id?: number }) => {
+    const response = await api.post('/schedule/bulk', schedules, { params })
     return response.data
   },
   // Exceptions
-  getExceptions: async (params?: { date_from?: string; date_to?: string }): Promise<ScheduleException[]> => {
+  getExceptions: async (params?: { date_from?: string; date_to?: string; doctor_id?: number }): Promise<ScheduleException[]> => {
     const response = await api.get('/schedule/exceptions', { params })
     return response.data
   },
@@ -345,8 +345,8 @@ export const scheduleApi = {
     start_time?: string
     end_time?: string
     reason?: string
-  }): Promise<ScheduleException> => {
-    const response = await api.post('/schedule/exceptions', data)
+  }, params?: { doctor_id?: number }): Promise<ScheduleException> => {
+    const response = await api.post('/schedule/exceptions', data, { params })
     return response.data
   },
   updateException: async (id: number, data: Partial<{
@@ -1453,6 +1453,7 @@ export interface InventoryItem {
 export interface VariantListItem {
   id: number
   name: string
+  purchase_price?: number
   sale_price?: number
   current_stock: number
   is_default: boolean

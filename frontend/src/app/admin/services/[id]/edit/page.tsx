@@ -168,8 +168,12 @@ export default function ServiceEditPage() {
   if (loading || !service) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
+              <div className="animate-pulse space-y-3">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="h-10 bg-muted rounded" style={{ opacity: 1 - i * 0.15 }} />
+                ))}
+              </div>
+            </div>
     )
   }
 

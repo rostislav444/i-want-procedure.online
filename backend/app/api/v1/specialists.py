@@ -5,8 +5,8 @@ For clinics: managers can manage all specialists.
 Specialists can only view/edit their own profile and services.
 """
 from datetime import date
-from fastapi import APIRouter, HTTPException, status, Depends
-from sqlalchemy import select, func, delete
+from fastapi import APIRouter, HTTPException, status
+from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
 
 from app.api.deps import DbSession, CurrentUser
@@ -20,7 +20,6 @@ from app.schemas.specialist import (
     SpecialistProfileUpdate,
     SpecialistListItem,
     SpecialistServiceResponse,
-    AssignServicesRequest,
 )
 
 router = APIRouter(prefix="/specialists")
@@ -30,13 +29,31 @@ router = APIRouter(prefix="/specialists")
 
 async def get_specialist_stats(db: DbSession, member_id: int) -> dict:
     """Get stats for a company member (specialist)."""
-    # Services count
-    services_result = await db.execute(
+    # Get member's position and company
+    member_result = await db.execute(
+        select(CompanyMember).where(CompanyMember.id == member_id)
+    )
+    member = member_result.scalar_one_or_none()
+
+    # Services count = all services by position minus exclusions
+    svc_query = (
+        select(func.count(Service.id))
+        .where(Service.company_id == member.company_id)
+        .where(Service.is_active == True)
+    )
+    if member and member.position_id:
+        svc_query = svc_query.where(Service.position_id == member.position_id)
+
+    # Subtract excluded services
+    excluded_result = await db.execute(
         select(func.count(MemberService.id))
         .where(MemberService.member_id == member_id)
-        .where(MemberService.is_active == True)
+        .where(MemberService.is_active == False)
     )
-    services_count = services_result.scalar() or 0
+    excluded_count = excluded_result.scalar() or 0
+
+    services_result = await db.execute(svc_query)
+    services_count = (services_result.scalar() or 0) - excluded_count
 
     # Unique clients count
     clients_result = await db.execute(
@@ -343,8 +360,12 @@ async def get_specialist_services(
     db: DbSession,
     company_id: int,
 ):
-    """Get all services assigned to a specialist."""
-    # Verify user has access
+    """Get all services available to a specialist.
+
+    By default, a specialist has access to ALL services matching their position.
+    member_services entries with is_active=False are used as exclusions.
+    member_services entries with custom_price/duration override defaults.
+    """
     membership = await get_user_membership(db, current_user, company_id)
     if not membership and not current_user.is_superadmin:
         raise HTTPException(
@@ -352,199 +373,140 @@ async def get_specialist_services(
             detail="You are not a member of this company",
         )
 
-    # Verify specialist exists
     result = await db.execute(
         select(CompanyMember)
         .where(CompanyMember.id == specialist_id)
         .where(CompanyMember.company_id == company_id)
     )
     member = result.scalar_one_or_none()
-
     if not member:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Specialist not found",
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Specialist not found")
 
-    # Get member services with service details
-    result = await db.execute(
-        select(MemberService)
-        .options(selectinload(MemberService.service))
-        .where(MemberService.member_id == specialist_id)
-        .order_by(MemberService.created_at.desc())
-    )
-    member_services = result.scalars().all()
-
-    return [
-        SpecialistServiceResponse(
-            id=ms.id,
-            member_id=ms.member_id,
-            service_id=ms.service_id,
-            service_name=ms.service.name,
-            service_price=ms.service.price,
-            service_duration_minutes=ms.service.duration_minutes,
-            custom_price=ms.custom_price,
-            custom_duration_minutes=ms.custom_duration_minutes,
-            is_active=ms.is_active,
-            created_at=ms.created_at,
-        )
-        for ms in member_services
-    ]
-
-
-@router.post("/{specialist_id}/services", response_model=list[SpecialistServiceResponse])
-async def assign_services_to_specialist(
-    specialist_id: int,
-    request: AssignServicesRequest,
-    current_user: CurrentUser,
-    db: DbSession,
-    company_id: int,
-):
-    """
-    Assign services to a specialist. Replaces all existing assignments.
-    Only managers can do this.
-    """
-    # Get current user's membership
-    current_membership = await get_user_membership(db, current_user, company_id)
-    if not current_membership and not current_user.is_superadmin:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You are not a member of this company",
-        )
-
-    # Verify specialist exists
-    result = await db.execute(
-        select(CompanyMember)
-        .where(CompanyMember.id == specialist_id)
-        .where(CompanyMember.company_id == company_id)
-    )
-    member = result.scalar_one_or_none()
-
-    if not member:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Specialist not found",
-        )
-
-    # Check manager access
-    if current_membership and not (current_membership.is_owner or current_membership.is_manager):
-        if not current_user.is_superadmin:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Only managers can assign services",
-            )
-
-    # Verify all services belong to the company
-    result = await db.execute(
+    # Get all services matching specialist's position (or all if no position)
+    svc_query = (
         select(Service)
-        .where(Service.id.in_(request.service_ids))
         .where(Service.company_id == company_id)
+        .where(Service.is_active == True)
     )
-    valid_services = result.scalars().all()
-    valid_service_ids = {s.id for s in valid_services}
+    if member.position_id:
+        svc_query = svc_query.where(Service.position_id == member.position_id)
 
-    invalid_ids = set(request.service_ids) - valid_service_ids
-    if invalid_ids:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Services not found: {invalid_ids}",
-        )
+    result = await db.execute(svc_query.order_by(Service.name))
+    all_services = result.scalars().all()
 
-    # Remove existing assignments
-    await db.execute(
-        delete(MemberService)
-        .where(MemberService.member_id == specialist_id)
-    )
-
-    # Create new assignments
-    for service_id in request.service_ids:
-        ms = MemberService(
-            member_id=specialist_id,
-            service_id=service_id,
-        )
-        db.add(ms)
-
-    await db.commit()
-
-    # Reload with service details
+    # Get exclusions/overrides from member_services
     result = await db.execute(
         select(MemberService)
-        .options(selectinload(MemberService.service))
         .where(MemberService.member_id == specialist_id)
     )
-    member_services = result.scalars().all()
+    overrides = {ms.service_id: ms for ms in result.scalars().all()}
 
-    return [
-        SpecialistServiceResponse(
-            id=ms.id,
-            member_id=ms.member_id,
-            service_id=ms.service_id,
-            service_name=ms.service.name,
-            service_price=ms.service.price,
-            service_duration_minutes=ms.service.duration_minutes,
-            custom_price=ms.custom_price,
-            custom_duration_minutes=ms.custom_duration_minutes,
-            is_active=ms.is_active,
-            created_at=ms.created_at,
-        )
-        for ms in member_services
-    ]
+    response = []
+    for svc in all_services:
+        override = overrides.get(svc.id)
+        # If there's an override with is_active=False, skip this service
+        if override and not override.is_active:
+            continue
+        response.append(SpecialistServiceResponse(
+            id=override.id if override else 0,
+            member_id=specialist_id,
+            service_id=svc.id,
+            service_name=svc.name,
+            service_price=svc.price,
+            service_duration_minutes=svc.duration_minutes,
+            custom_price=override.custom_price if override else None,
+            custom_duration_minutes=override.custom_duration_minutes if override else None,
+            is_active=True,
+            created_at=override.created_at if override else svc.created_at,
+        ))
+
+    return response
 
 
-@router.delete("/{specialist_id}/services/{service_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def remove_service_from_specialist(
+@router.post("/{specialist_id}/services/exclude")
+async def exclude_service_from_specialist(
     specialist_id: int,
-    service_id: int,
     current_user: CurrentUser,
     db: DbSession,
     company_id: int,
+    service_id: int,
 ):
-    """Remove a specific service from a specialist."""
-    # Get current user's membership
+    """Exclude a service from a specialist (mark as not available)."""
     current_membership = await get_user_membership(db, current_user, company_id)
     if not current_membership and not current_user.is_superadmin:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You are not a member of this company",
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
 
-    # Verify specialist exists
     result = await db.execute(
         select(CompanyMember)
         .where(CompanyMember.id == specialist_id)
         .where(CompanyMember.company_id == company_id)
     )
     member = result.scalar_one_or_none()
-
     if not member:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Specialist not found",
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Specialist not found")
 
-    # Check access
     if current_membership and not check_manager_access(current_membership, member, current_user.is_superadmin):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only managers can remove services",
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
 
-    # Find and delete the assignment
+    # Check if override already exists
     result = await db.execute(
         select(MemberService)
         .where(MemberService.member_id == specialist_id)
         .where(MemberService.service_id == service_id)
     )
-    member_service = result.scalar_one_or_none()
+    existing = result.scalar_one_or_none()
 
-    if not member_service:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Service not assigned to this specialist",
-        )
+    if existing:
+        existing.is_active = False
+    else:
+        db.add(MemberService(
+            member_id=specialist_id,
+            service_id=service_id,
+            is_active=False,
+        ))
 
-    await db.delete(member_service)
     await db.commit()
+    return {"status": "excluded"}
+
+
+@router.post("/{specialist_id}/services/include")
+async def include_service_for_specialist(
+    specialist_id: int,
+    current_user: CurrentUser,
+    db: DbSession,
+    company_id: int,
+    service_id: int,
+):
+    """Re-include a previously excluded service (remove the exclusion)."""
+    current_membership = await get_user_membership(db, current_user, company_id)
+    if not current_membership and not current_user.is_superadmin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+
+    result = await db.execute(
+        select(CompanyMember)
+        .where(CompanyMember.id == specialist_id)
+        .where(CompanyMember.company_id == company_id)
+    )
+    member = result.scalar_one_or_none()
+    if not member:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Specialist not found")
+
+    if current_membership and not check_manager_access(current_membership, member, current_user.is_superadmin):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+
+    # Remove the exclusion override
+    result = await db.execute(
+        select(MemberService)
+        .where(MemberService.member_id == specialist_id)
+        .where(MemberService.service_id == service_id)
+    )
+    existing = result.scalar_one_or_none()
+
+    if existing:
+        await db.delete(existing)
+        await db.commit()
+
+    return {"status": "included"}
 
 
 # ===== Specialist Appointments =====

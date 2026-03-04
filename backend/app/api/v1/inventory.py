@@ -1052,6 +1052,7 @@ async def get_items(
                 variants_list.append(VariantListItem(
                     id=variant.id,
                     name=variant.name,
+                    purchase_price=variant.purchase_price,
                     sale_price=variant.sale_price,
                     current_stock=variant_stock,
                     is_default=variant.is_default,

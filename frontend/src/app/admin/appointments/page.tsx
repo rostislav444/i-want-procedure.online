@@ -12,6 +12,7 @@ import { appointmentsApi, specialistsApi, SpecialistListItem, Appointment } from
 import { useCompany } from '@/contexts/CompanyContext'
 import CreateAppointmentModal from '@/components/appointments/CreateAppointmentModal'
 import AppointmentDetailModal from '@/components/appointments/AppointmentDetailModal'
+import { Loader } from '@/components/ui/loader'
 
 // Specialist color palette
 const SPECIALIST_COLORS = [
@@ -287,7 +288,7 @@ export default function AppointmentsPage() {
 
         {loading ? (
           <Card className="flex-1 flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <Loader size="md" />
           </Card>
         ) : (
           <CalendarView

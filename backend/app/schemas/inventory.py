@@ -376,6 +376,7 @@ class VariantListItem(BaseModel):
     """Скорочена версія варіанту для списку"""
     id: int
     name: str
+    purchase_price: Optional[Decimal] = None
     sale_price: Optional[Decimal] = None
     current_stock: int = 0
     is_default: bool = False

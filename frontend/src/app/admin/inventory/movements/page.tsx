@@ -146,7 +146,11 @@ export default function InventoryMovementsPage() {
         <CardContent>
           {loading ? (
             <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+              <div className="animate-pulse space-y-3">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="h-10 bg-muted rounded" style={{ opacity: 1 - i * 0.15 }} />
+                ))}
+              </div>
             </div>
           ) : movements.length > 0 ? (
             <div className="space-y-6">

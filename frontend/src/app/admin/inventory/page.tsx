@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Plus, Package, Search, AlertTriangle, ArrowDownUp, FolderTree, Tags, ChevronLeft, ChevronRight, ChevronDown, LayoutGrid } from 'lucide-react'
+import { Plus, Package, Search, AlertTriangle, ArrowDownUp, FolderTree, Tags, ChevronLeft, ChevronRight, ChevronDown, LayoutGrid, List, ArrowUp, ArrowDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
+import { TableSkeleton, CardsSkeleton, FadeIn } from '@/components/ui/loader'
 import { inventoryApi, InventoryItemListItem, InventoryCategory, InventoryStats, Brand, getFileUrl } from '@/lib/api'
 
 const USAGE_TYPE_LABELS: Record<string, string> = {
@@ -113,6 +114,17 @@ export default function InventoryPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [showLowStock, setShowLowStock] = useState(false)
 
+  // View mode
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('table')
+
+  // Sorting (for table view)
+  type SortField = 'name' | 'total_stock' | 'purchase_price' | 'sale_price'
+  const [sortBy, setSortBy] = useState<SortField>('total_stock')
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
+
+  // Expanded variants in table
+  const [expandedItemIds, setExpandedItemIds] = useState<Set<number>>(new Set())
+
   // Category sidebar
   const [expandedCategoryIds, setExpandedCategoryIds] = useState<Set<number>>(new Set())
   const [expandedBrandIds, setExpandedBrandIds] = useState<Set<number>>(new Set())
@@ -194,6 +206,45 @@ export default function InventoryPage() {
     item.sku?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.barcode?.toLowerCase().includes(searchQuery.toLowerCase())
   )
+
+  const sortedItems = viewMode === 'table'
+    ? [...filteredItems].sort((a, b) => {
+        let cmp = 0
+        switch (sortBy) {
+          case 'name':
+            cmp = a.name.localeCompare(b.name, 'uk')
+            break
+          case 'total_stock':
+            cmp = a.total_stock - b.total_stock
+            break
+          case 'purchase_price':
+            cmp = (Number(a.purchase_price) || Number(a.min_variant_price) || 0) - (Number(b.purchase_price) || Number(b.min_variant_price) || 0)
+            break
+          case 'sale_price':
+            cmp = (Number(a.sale_price) || Number(a.min_variant_price) || 0) - (Number(b.sale_price) || Number(b.min_variant_price) || 0)
+            break
+        }
+        return sortDir === 'asc' ? cmp : -cmp
+      })
+    : filteredItems
+
+  const handleSort = (field: SortField) => {
+    if (sortBy === field) {
+      setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortBy(field)
+      setSortDir(field === 'name' ? 'asc' : 'asc')
+    }
+  }
+
+  const toggleItemExpanded = (id: number) => {
+    setExpandedItemIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
 
   const toggleCategoryExpanded = (id: number) => {
     setExpandedCategoryIds(prev => {
@@ -284,8 +335,9 @@ export default function InventoryPage() {
       </div>
 
       {/* Stats Cards */}
+      {loading && !stats && <CardsSkeleton />}
       {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <FadeIn className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card>
             <CardContent className="p-4">
               <div className="text-2xl font-bold">{stats.total_items}</div>
@@ -310,7 +362,7 @@ export default function InventoryPage() {
               <div className="text-sm text-muted-foreground">Вартість складу</div>
             </CardContent>
           </Card>
-        </div>
+        </FadeIn>
       )}
 
       {/* Main Layout with Sidebar */}
@@ -482,112 +534,298 @@ export default function InventoryPage() {
               <AlertTriangle className="mr-2 h-4 w-4" />
               Закінчуються
             </Button>
+
+            {/* View mode toggle */}
+            <div className="flex border rounded-md">
+              <Button
+                variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                size="sm"
+                className="rounded-r-none px-2.5"
+                onClick={() => setViewMode('grid')}
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'table' ? 'default' : 'ghost'}
+                size="sm"
+                className="rounded-l-none px-2.5"
+                onClick={() => setViewMode('table')}
+              >
+                <List className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
 
-          {/* Items Grid */}
+          {/* Items */}
           {loading ? (
-            <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-              <p className="mt-2 text-muted-foreground">Завантаження...</p>
-            </div>
-          ) : filteredItems.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredItems.map(item => (
-                <Link key={item.id} href={`/admin/inventory/${item.id}`}>
-                  <Card className="hover:shadow-md transition-shadow cursor-pointer h-full flex flex-col">
-                    {/* Image */}
-                    <div className="aspect-[4/3] bg-muted flex items-center justify-center overflow-hidden">
-                      {item.main_image_url ? (
-                        <img
-                          src={getFileUrl(item.main_image_url)}
-                          alt={item.name}
-                          className="object-cover w-full h-full"
-                        />
-                      ) : (
-                        <Package className="h-12 w-12 text-muted-foreground" />
-                      )}
-                    </div>
+            <Card>
+              <TableSkeleton rows={10} cols={6} />
+            </Card>
+          ) : sortedItems.length > 0 ? (
+            viewMode === 'table' ? (
+              /* ===== TABLE VIEW ===== */
+              <FadeIn><Card>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b bg-muted/50">
+                        <th className="text-left p-3 w-8"></th>
+                        <th
+                          className="text-left p-3 cursor-pointer hover:bg-muted/80 select-none"
+                          onClick={() => handleSort('name')}
+                        >
+                          <div className="flex items-center gap-1">
+                            Назва
+                            {sortBy === 'name' && (sortDir === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
+                          </div>
+                        </th>
+                        <th className="text-left p-3">Категорія</th>
+                        <th className="text-left p-3">Бренд</th>
+                        <th
+                          className="text-right p-3 cursor-pointer hover:bg-muted/80 select-none"
+                          onClick={() => handleSort('total_stock')}
+                        >
+                          <div className="flex items-center justify-end gap-1">
+                            Залишок
+                            {sortBy === 'total_stock' && (sortDir === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
+                          </div>
+                        </th>
+                        <th
+                          className="text-right p-3 cursor-pointer hover:bg-muted/80 select-none"
+                          onClick={() => handleSort('purchase_price')}
+                        >
+                          <div className="flex items-center justify-end gap-1">
+                            Закупівля
+                            {sortBy === 'purchase_price' && (sortDir === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
+                          </div>
+                        </th>
+                        <th
+                          className="text-right p-3 cursor-pointer hover:bg-muted/80 select-none"
+                          onClick={() => handleSort('sale_price')}
+                        >
+                          <div className="flex items-center justify-end gap-1">
+                            Продаж
+                            {sortBy === 'sale_price' && (sortDir === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
+                          </div>
+                        </th>
+                        <th className="text-center p-3">Тип</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sortedItems.map(item => {
+                        const hasVariants = item.variants && item.variants.length > 0
+                        const isExpanded = expandedItemIds.has(item.id)
 
-                    <CardContent className="p-4 flex-1">
-                      <h3 className="font-medium line-clamp-2">{item.name}</h3>
-                      {item.sku && (
-                        <p className="text-sm text-muted-foreground">SKU: {item.sku}</p>
-                      )}
-                      {(item.category_name || item.brand_name) && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {item.brand_name && <span className="font-medium">{item.brand_name}</span>}
-                          {item.brand_name && item.category_name && ' · '}
-                          {item.category_name}
-                        </p>
-                      )}
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        <Badge variant={item.usage_type === 'sale' ? 'default' : 'secondary'} className="text-xs">
-                          {USAGE_TYPE_LABELS[item.usage_type]}
-                        </Badge>
-                        {item.is_low_stock && (
-                          <Badge variant="destructive" className="text-xs">
-                            <AlertTriangle className="mr-1 h-3 w-3" />
-                            Мало
-                          </Badge>
-                        )}
-                        {!item.is_active && (
-                          <Badge variant="outline" className="text-xs">Неактивний</Badge>
+                        return (
+                          <React.Fragment key={item.id}>
+                            {/* Main item row */}
+                            <tr className={cn(
+                              'border-b hover:bg-muted/30 transition-colors',
+                              item.is_low_stock && 'bg-red-50 dark:bg-red-950/20'
+                            )}>
+                              <td className="p-3">
+                                {hasVariants ? (
+                                  <button
+                                    onClick={() => toggleItemExpanded(item.id)}
+                                    className="p-0.5 hover:bg-muted rounded"
+                                  >
+                                    <ChevronDown className={cn('h-4 w-4 transition-transform', !isExpanded && '-rotate-90')} />
+                                  </button>
+                                ) : null}
+                              </td>
+                              <td className="p-3">
+                                <Link href={`/admin/inventory/${item.id}`} className="hover:underline">
+                                  <div className="font-medium">{item.name}</div>
+                                  {item.sku && <div className="text-xs text-muted-foreground">SKU: {item.sku}</div>}
+                                </Link>
+                              </td>
+                              <td className="p-3 text-muted-foreground">{item.category_name || '—'}</td>
+                              <td className="p-3 text-muted-foreground">{item.brand_name || '—'}</td>
+                              <td className="p-3 text-right">
+                                <span className={cn(
+                                  'font-semibold',
+                                  item.is_low_stock ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'
+                                )}>
+                                  {item.total_stock}
+                                </span>
+                                <span className="text-muted-foreground ml-1 text-xs">{item.unit}</span>
+                                {item.is_low_stock && (
+                                  <AlertTriangle className="inline-block ml-1 h-3.5 w-3.5 text-red-500" />
+                                )}
+                              </td>
+                              <td className="p-3 text-right text-muted-foreground">
+                                {hasVariants
+                                  ? '—'
+                                  : item.purchase_price ? `${item.purchase_price} грн` : '—'}
+                              </td>
+                              <td className="p-3 text-right">
+                                {hasVariants ? (
+                                  item.min_variant_price && item.max_variant_price ? (
+                                    <span className="text-primary font-medium">
+                                      {item.min_variant_price === item.max_variant_price
+                                        ? `${item.min_variant_price}`
+                                        : `${item.min_variant_price}–${item.max_variant_price}`}
+                                      <span className="text-xs ml-0.5">грн</span>
+                                    </span>
+                                  ) : '—'
+                                ) : item.sale_price ? (
+                                  <span className="text-primary font-medium">{item.sale_price} <span className="text-xs">грн</span></span>
+                                ) : '—'}
+                              </td>
+                              <td className="p-3 text-center">
+                                <Badge variant={item.usage_type === 'sale' ? 'default' : 'secondary'} className="text-xs">
+                                  {USAGE_TYPE_LABELS[item.usage_type]}
+                                </Badge>
+                              </td>
+                            </tr>
+
+                            {/* Variant sub-rows */}
+                            {hasVariants && isExpanded && item.variants?.map(variant => (
+                              <tr key={variant.id} className={cn(
+                                'border-b bg-muted/10',
+                                variant.is_low_stock && 'bg-red-50/50 dark:bg-red-950/10'
+                              )}>
+                                <td className="p-3"></td>
+                                <td className="p-3 pl-8">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-muted-foreground">↳</span>
+                                    <span className={cn(variant.is_default && 'font-medium')}>
+                                      {variant.name}
+                                      {variant.is_default && <span className="text-xs text-muted-foreground ml-1">(осн.)</span>}
+                                    </span>
+                                  </div>
+                                </td>
+                                <td className="p-3"></td>
+                                <td className="p-3"></td>
+                                <td className="p-3 text-right">
+                                  <span className={cn(
+                                    'font-semibold',
+                                    variant.is_low_stock ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'
+                                  )}>
+                                    {variant.current_stock}
+                                  </span>
+                                  {variant.is_low_stock && (
+                                    <AlertTriangle className="inline-block ml-1 h-3 w-3 text-red-500" />
+                                  )}
+                                </td>
+                                <td className="p-3 text-right text-muted-foreground">
+                                  {variant.purchase_price ? `${variant.purchase_price} грн` : '—'}
+                                </td>
+                                <td className="p-3 text-right">
+                                  {variant.sale_price ? (
+                                    <span className="text-primary font-medium">{variant.sale_price} <span className="text-xs">грн</span></span>
+                                  ) : '—'}
+                                </td>
+                                <td className="p-3"></td>
+                              </tr>
+                            ))}
+                          </React.Fragment>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </Card></FadeIn>
+            ) : (
+              /* ===== GRID VIEW ===== */
+              <FadeIn className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredItems.map(item => (
+                  <Link key={item.id} href={`/admin/inventory/${item.id}`}>
+                    <Card className="hover:shadow-md transition-shadow cursor-pointer h-full flex flex-col">
+                      {/* Image */}
+                      <div className="aspect-[4/3] bg-muted flex items-center justify-center overflow-hidden">
+                        {item.main_image_url ? (
+                          <img
+                            src={getFileUrl(item.main_image_url)}
+                            alt={item.name}
+                            className="object-cover w-full h-full"
+                          />
+                        ) : (
+                          <Package className="h-12 w-12 text-muted-foreground" />
                         )}
                       </div>
 
-                      {/* Variants List */}
-                      {item.variants && item.variants.length > 0 && (
-                        <div className="mt-3 pt-3 border-t">
-                          <p className="text-xs text-muted-foreground mb-2">
-                            {item.variants.length} варіант{item.variants.length === 1 ? '' : item.variants.length < 5 ? 'и' : 'ів'}:
+                      <CardContent className="p-4 flex-1">
+                        <h3 className="font-medium line-clamp-2">{item.name}</h3>
+                        {item.sku && (
+                          <p className="text-sm text-muted-foreground">SKU: {item.sku}</p>
+                        )}
+                        {(item.category_name || item.brand_name) && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {item.brand_name && <span className="font-medium">{item.brand_name}</span>}
+                            {item.brand_name && item.category_name && ' · '}
+                            {item.category_name}
                           </p>
-                          <div className="space-y-1">
-                            {item.variants.slice(0, 4).map(variant => (
-                              <div key={variant.id} className="flex items-center justify-between text-xs">
-                                <span className={cn(
-                                  'truncate flex-1',
-                                  variant.is_default && 'font-medium'
-                                )}>
-                                  {variant.name}
-                                  {variant.is_default && ' *'}
-                                </span>
-                                <span className="text-muted-foreground ml-2">{variant.current_stock} шт</span>
-                                {variant.sale_price && (
-                                  <span className="text-primary font-medium ml-2">{variant.sale_price} грн</span>
-                                )}
-                              </div>
-                            ))}
-                            {item.variants.length > 4 && (
-                              <p className="text-xs text-muted-foreground">
-                                + ще {item.variants.length - 4}...
-                              </p>
-                            )}
-                          </div>
+                        )}
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          <Badge variant={item.usage_type === 'sale' ? 'default' : 'secondary'} className="text-xs">
+                            {USAGE_TYPE_LABELS[item.usage_type]}
+                          </Badge>
+                          {item.is_low_stock && (
+                            <Badge variant="destructive" className="text-xs">
+                              <AlertTriangle className="mr-1 h-3 w-3" />
+                              Мало
+                            </Badge>
+                          )}
+                          {!item.is_active && (
+                            <Badge variant="outline" className="text-xs">Неактивний</Badge>
+                          )}
                         </div>
-                      )}
-                    </CardContent>
 
-                    <CardFooter className="px-4 py-3 border-t bg-muted/30 flex justify-between mt-auto">
-                      <span className="text-sm">
-                        Залишок: <strong>{item.total_stock} {item.unit}</strong>
-                      </span>
-                      {/* Show price range for items with variants, or single price */}
-                      {item.min_variant_price && item.max_variant_price ? (
-                        <span className="font-bold text-primary">
-                          {item.min_variant_price === item.max_variant_price
-                            ? `${item.min_variant_price} грн`
-                            : `${item.min_variant_price} - ${item.max_variant_price} грн`}
+                        {/* Variants List */}
+                        {item.variants && item.variants.length > 0 && (
+                          <div className="mt-3 pt-3 border-t">
+                            <p className="text-xs text-muted-foreground mb-2">
+                              {item.variants.length} варіант{item.variants.length === 1 ? '' : item.variants.length < 5 ? 'и' : 'ів'}:
+                            </p>
+                            <div className="space-y-1">
+                              {item.variants.slice(0, 4).map(variant => (
+                                <div key={variant.id} className="flex items-center justify-between text-xs">
+                                  <span className={cn(
+                                    'truncate flex-1',
+                                    variant.is_default && 'font-medium'
+                                  )}>
+                                    {variant.name}
+                                    {variant.is_default && ' *'}
+                                  </span>
+                                  <span className="text-muted-foreground ml-2">{variant.current_stock} шт</span>
+                                  {variant.sale_price && (
+                                    <span className="text-primary font-medium ml-2">{variant.sale_price} грн</span>
+                                  )}
+                                </div>
+                              ))}
+                              {item.variants.length > 4 && (
+                                <p className="text-xs text-muted-foreground">
+                                  + ще {item.variants.length - 4}...
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+
+                      <CardFooter className="px-4 py-3 border-t bg-muted/30 flex justify-between mt-auto">
+                        <span className="text-sm">
+                          Залишок: <strong>{item.total_stock} {item.unit}</strong>
                         </span>
-                      ) : item.sale_price ? (
-                        <span className="font-bold text-primary">
-                          {item.sale_price} грн
-                        </span>
-                      ) : null}
-                    </CardFooter>
-                  </Card>
-                </Link>
-              ))}
-            </div>
+                        {/* Show price range for items with variants, or single price */}
+                        {item.min_variant_price && item.max_variant_price ? (
+                          <span className="font-bold text-primary">
+                            {item.min_variant_price === item.max_variant_price
+                              ? `${item.min_variant_price} грн`
+                              : `${item.min_variant_price} - ${item.max_variant_price} грн`}
+                          </span>
+                        ) : item.sale_price ? (
+                          <span className="font-bold text-primary">
+                            {item.sale_price} грн
+                          </span>
+                        ) : null}
+                      </CardFooter>
+                    </Card>
+                  </Link>
+                ))}
+              </FadeIn>
+            )
           ) : (
             <Card>
               <CardContent className="p-12 text-center">
