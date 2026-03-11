@@ -1,8 +1,10 @@
 from datetime import date, datetime, time, timedelta
+from decimal import Decimal
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query, status
-from sqlalchemy import select, and_
+from pydantic import BaseModel
+from sqlalchemy import select, and_, func
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,7 +14,7 @@ from app.models.schedule import Schedule, ScheduleException, ScheduleExceptionTy
 from app.models.service import Service
 from app.models.client import Client, ClientCompany
 from app.models.user import User
-from app.models.inventory import ServiceInventoryItem, StockMovement, MovementType
+from app.models.inventory import ServiceInventoryItem, StockMovement, StockBatch, MovementType, InventoryItem
 from app.schemas.appointment import (
     AppointmentCreate,
     AppointmentCreateAdmin,
@@ -23,7 +25,145 @@ from app.schemas.appointment import (
 from bots.notifications import notify_client_appointment_confirmed, notify_client_appointment_cancelled
 from app.services.google_calendar import update_appointment_in_calendar
 
+
+# === Schemas for financials ===
+
+class ConsumptionItemResponse(BaseModel):
+    movement_id: int
+    item_id: int
+    item_name: str
+    quantity: int
+    unit_price: Optional[Decimal] = None
+    total_cost: Optional[Decimal] = None
+    unit: str
+    batch_id: Optional[int] = None
+    batch_number: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+class AppointmentFinancialsResponse(BaseModel):
+    appointment_id: int
+    revenue: Optional[Decimal] = None
+    material_cost: Decimal
+    profit: Optional[Decimal] = None
+    margin_pct: Optional[float] = None
+    consumption: list[ConsumptionItemResponse]
+
+
+class AddConsumptionRequest(BaseModel):
+    item_id: int
+    quantity: int
+    unit_price: Optional[Decimal] = None
+    batch_id: Optional[int] = None
+
+
+class UpdateConsumptionRequest(BaseModel):
+    quantity: Optional[int] = None
+    unit_price: Optional[Decimal] = None
+
 router = APIRouter(prefix="/appointments")
+
+
+async def deduct_from_batches_fifo(
+    db: AsyncSession,
+    company_id: int,
+    item_id: int,
+    quantity: int,
+    appointment_id: int,
+    performed_by_id: int,
+    notes: str,
+    specific_batch_id: Optional[int] = None,
+) -> list[StockMovement]:
+    """
+    FIFO-списання з партій. Повертає створені movements.
+    Якщо specific_batch_id — списує з конкретної партії.
+    """
+    movements = []
+    remaining = quantity
+
+    if specific_batch_id:
+        # Specific batch
+        batch_result = await db.execute(
+            select(StockBatch).where(
+                StockBatch.id == specific_batch_id,
+                StockBatch.item_id == item_id,
+                StockBatch.company_id == company_id,
+            )
+        )
+        batch = batch_result.scalar_one_or_none()
+        if batch and batch.quantity_remaining > 0:
+            take = min(remaining, batch.quantity_remaining)
+            batch.quantity_remaining -= take
+            movement = StockMovement(
+                company_id=company_id,
+                item_id=item_id,
+                movement_type=MovementType.OUTGOING,
+                quantity=-take,
+                unit_price=batch.purchase_price,
+                appointment_id=appointment_id,
+                performed_by=performed_by_id,
+                notes=notes,
+                batch_id=batch.id,
+                batch_number=batch.batch_number,
+            )
+            db.add(movement)
+            movements.append(movement)
+            remaining -= take
+    else:
+        # FIFO — oldest batches first
+        batches_result = await db.execute(
+            select(StockBatch).where(
+                StockBatch.item_id == item_id,
+                StockBatch.company_id == company_id,
+                StockBatch.quantity_remaining > 0,
+            ).order_by(StockBatch.received_at.asc())
+        )
+        batches = batches_result.scalars().all()
+
+        for batch in batches:
+            if remaining <= 0:
+                break
+            take = min(remaining, batch.quantity_remaining)
+            batch.quantity_remaining -= take
+            movement = StockMovement(
+                company_id=company_id,
+                item_id=item_id,
+                movement_type=MovementType.OUTGOING,
+                quantity=-take,
+                unit_price=batch.purchase_price,
+                appointment_id=appointment_id,
+                performed_by=performed_by_id,
+                notes=notes,
+                batch_id=batch.id,
+                batch_number=batch.batch_number,
+            )
+            db.add(movement)
+            movements.append(movement)
+            remaining -= take
+
+    # If no batch found (or not enough), create movement without batch
+    if remaining > 0:
+        # Fallback: get price from InventoryItem
+        item_result = await db.execute(
+            select(InventoryItem).where(InventoryItem.id == item_id)
+        )
+        item = item_result.scalar_one_or_none()
+        movement = StockMovement(
+            company_id=company_id,
+            item_id=item_id,
+            movement_type=MovementType.OUTGOING,
+            quantity=-remaining,
+            unit_price=item.purchase_price if item else None,
+            appointment_id=appointment_id,
+            performed_by=performed_by_id,
+            notes=notes,
+        )
+        db.add(movement)
+        movements.append(movement)
+
+    return movements
 
 
 async def auto_deduct_inventory(
@@ -34,13 +174,14 @@ async def auto_deduct_inventory(
     """
     Автоматическое списание товаров со склада при завершении записи.
     Списывает товары, привязанные к услуге через ServiceInventoryItem.
+    Використовує FIFO для визначення ціни з конкретної партії.
     """
     if not appointment.service_id:
         return
 
-    # Получаем товары, привязанные к услуге
     result = await db.execute(
         select(ServiceInventoryItem)
+        .options(selectinload(ServiceInventoryItem.item))
         .where(ServiceInventoryItem.service_id == appointment.service_id)
     )
     service_items = result.scalars().all()
@@ -48,18 +189,16 @@ async def auto_deduct_inventory(
     if not service_items:
         return
 
-    # Создаём движения для каждого товара
     for service_item in service_items:
-        movement = StockMovement(
+        await deduct_from_batches_fifo(
+            db=db,
             company_id=appointment.company_id,
             item_id=service_item.item_id,
-            movement_type=MovementType.OUTGOING,
-            quantity=-service_item.quantity,  # Отрицательное для расхода
+            quantity=service_item.quantity,
             appointment_id=appointment.id,
-            performed_by=performed_by_id,
-            notes=f"Автосписание: {appointment.service.name if appointment.service else 'Послуга'}",
+            performed_by_id=performed_by_id,
+            notes=f"Автосписання: {appointment.service.name if appointment.service else 'Послуга'}",
         )
-        db.add(movement)
 
 
 @router.get("", response_model=list[AppointmentResponse])
@@ -432,3 +571,225 @@ async def update_appointment_status(
         )
 
     return appointment
+
+
+# === Financials & Consumption Endpoints ===
+
+async def _get_appointment_or_404(db: AsyncSession, appointment_id: int, company_id: int) -> Appointment:
+    result = await db.execute(
+        select(Appointment)
+        .options(selectinload(Appointment.service))
+        .where(
+            Appointment.id == appointment_id,
+            Appointment.company_id == company_id,
+        )
+    )
+    appointment = result.scalar_one_or_none()
+    if not appointment:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+    return appointment
+
+
+@router.get("/{appointment_id}/financials", response_model=AppointmentFinancialsResponse)
+async def get_appointment_financials(
+    appointment_id: int,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    """Фінансовий підсумок процедури: витрати матеріалів, виручка, прибуток."""
+    appointment = await _get_appointment_or_404(db, appointment_id, current_user.company_id)
+
+    # Отримуємо всі витратні рухи товарів для цього запису
+    result = await db.execute(
+        select(StockMovement, InventoryItem)
+        .join(InventoryItem, StockMovement.item_id == InventoryItem.id)
+        .where(
+            StockMovement.appointment_id == appointment_id,
+            StockMovement.movement_type.in_([MovementType.OUTGOING, MovementType.WRITE_OFF]),
+        )
+        .order_by(StockMovement.created_at)
+    )
+    rows = result.all()
+
+    consumption = []
+    material_cost = Decimal("0")
+    for movement, item in rows:
+        qty = abs(movement.quantity)
+        price = movement.unit_price or item.purchase_price
+        total = Decimal(str(qty)) * price if price else None
+        if total:
+            material_cost += total
+        consumption.append(ConsumptionItemResponse(
+            movement_id=movement.id,
+            item_id=item.id,
+            item_name=item.name,
+            quantity=qty,
+            unit_price=price,
+            total_cost=total,
+            unit=item.unit,
+            batch_id=movement.batch_id,
+            batch_number=movement.batch_number,
+        ))
+
+    revenue = appointment.service_price
+    profit = (revenue - material_cost) if revenue is not None else None
+    margin_pct = float(profit / revenue * 100) if profit is not None and revenue and revenue > 0 else None
+
+    return AppointmentFinancialsResponse(
+        appointment_id=appointment_id,
+        revenue=revenue,
+        material_cost=material_cost,
+        profit=profit,
+        margin_pct=round(margin_pct, 1) if margin_pct is not None else None,
+        consumption=consumption,
+    )
+
+
+@router.post("/{appointment_id}/consumption", response_model=ConsumptionItemResponse, status_code=201)
+async def add_consumption(
+    appointment_id: int,
+    data: AddConsumptionRequest,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    """Додати матеріал до витрат процедури. Використовує FIFO для партій."""
+    appointment = await _get_appointment_or_404(db, appointment_id, current_user.company_id)
+
+    # Перевіряємо товар
+    result = await db.execute(
+        select(InventoryItem).where(
+            InventoryItem.id == data.item_id,
+            InventoryItem.company_id == current_user.company_id,
+        )
+    )
+    item = result.scalar_one_or_none()
+    if not item:
+        raise HTTPException(status_code=404, detail="Inventory item not found")
+
+    if data.unit_price is not None:
+        # Explicit price — create movement directly
+        movement = StockMovement(
+            company_id=current_user.company_id,
+            item_id=data.item_id,
+            movement_type=MovementType.OUTGOING,
+            quantity=-data.quantity,
+            unit_price=data.unit_price,
+            appointment_id=appointment_id,
+            performed_by=current_user.id,
+            notes=f"Ручне додавання: {item.name}",
+            batch_id=data.batch_id,
+        )
+        db.add(movement)
+        # Decrement batch remaining if specified
+        if data.batch_id:
+            batch_result = await db.execute(
+                select(StockBatch).where(StockBatch.id == data.batch_id)
+            )
+            batch = batch_result.scalar_one_or_none()
+            if batch:
+                batch.quantity_remaining = max(0, batch.quantity_remaining - data.quantity)
+        await db.commit()
+        await db.refresh(movement)
+        movements = [movement]
+    else:
+        # Use FIFO batch deduction
+        movements = await deduct_from_batches_fifo(
+            db=db,
+            company_id=current_user.company_id,
+            item_id=data.item_id,
+            quantity=data.quantity,
+            appointment_id=appointment_id,
+            performed_by_id=current_user.id,
+            notes=f"Ручне додавання: {item.name}",
+            specific_batch_id=data.batch_id,
+        )
+        await db.commit()
+
+    # Return the first movement as the response
+    movement = movements[0]
+    await db.refresh(movement)
+
+    qty = abs(movement.quantity)
+    unit_price = movement.unit_price
+    total = Decimal(str(qty)) * unit_price if unit_price else None
+
+    return ConsumptionItemResponse(
+        movement_id=movement.id,
+        item_id=item.id,
+        item_name=item.name,
+        quantity=qty,
+        unit_price=unit_price,
+        total_cost=total,
+        unit=item.unit,
+    )
+
+
+@router.patch("/{appointment_id}/consumption/{movement_id}", response_model=ConsumptionItemResponse)
+async def update_consumption(
+    appointment_id: int,
+    movement_id: int,
+    data: UpdateConsumptionRequest,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    """Оновити кількість або ціну витраченого матеріалу."""
+    await _get_appointment_or_404(db, appointment_id, current_user.company_id)
+
+    result = await db.execute(
+        select(StockMovement)
+        .options(selectinload(StockMovement.item))
+        .where(
+            StockMovement.id == movement_id,
+            StockMovement.appointment_id == appointment_id,
+            StockMovement.company_id == current_user.company_id,
+        )
+    )
+    movement = result.scalar_one_or_none()
+    if not movement:
+        raise HTTPException(status_code=404, detail="Movement not found")
+
+    if data.quantity is not None:
+        movement.quantity = -abs(data.quantity)
+    if data.unit_price is not None:
+        movement.unit_price = data.unit_price
+
+    await db.commit()
+    await db.refresh(movement)
+
+    item = movement.item
+    qty = abs(movement.quantity)
+    price = movement.unit_price or (item.purchase_price if item else None)
+    total = Decimal(str(qty)) * price if price else None
+
+    return ConsumptionItemResponse(
+        movement_id=movement.id,
+        item_id=item.id,
+        item_name=item.name,
+        quantity=qty,
+        unit_price=price,
+        total_cost=total,
+        unit=item.unit,
+    )
+
+
+@router.delete("/{appointment_id}/consumption/{movement_id}", status_code=204)
+async def delete_consumption(
+    appointment_id: int,
+    movement_id: int,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    """Видалити витрату матеріалу з процедури."""
+    result = await db.execute(
+        select(StockMovement).where(
+            StockMovement.id == movement_id,
+            StockMovement.appointment_id == appointment_id,
+            StockMovement.company_id == current_user.company_id,
+        )
+    )
+    movement = result.scalar_one_or_none()
+    if not movement:
+        raise HTTPException(status_code=404, detail="Movement not found")
+
+    await db.delete(movement)
+    await db.commit()

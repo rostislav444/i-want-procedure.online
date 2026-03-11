@@ -4,12 +4,13 @@ import { useEffect, useState, useMemo } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Calendar, Clock, Users, LogOut, Menu, X, LinkIcon, Copy, Check, Home, Scissors, ChevronLeft, ChevronRight, UsersRound, Settings, Package, Building2, ChevronsUpDown, Crown, Briefcase, Wrench } from 'lucide-react'
+import { Calendar, Clock, Users, LogOut, Menu, X, LinkIcon, Copy, Check, Home, Scissors, ChevronLeft, ChevronRight, UsersRound, Settings, Package, Building2, ChevronsUpDown, Crown, Briefcase, Wrench, TrendingUp, CreditCard, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ThemeSettings } from '@/components/theme-settings'
 import { CompanyProvider, useCompany } from '@/contexts/CompanyContext'
 import { CompanySelector } from '@/components/company-selector'
 import { Loader } from '@/components/ui/loader'
+import { billingApi, BillingOverview } from '@/lib/api'
 
 // Company switcher component
 function CompanySwitcher({ collapsed = false }: { collapsed?: boolean }) {
@@ -155,6 +156,8 @@ const baseNavigation = [
   { name: 'Розклад', href: '/admin/schedule', icon: Clock, iconColor: 'text-amber-500' },
   { name: 'Клієнти', href: '/admin/clients', icon: Users, iconColor: 'text-emerald-500' },
   { name: 'Склад', href: '/admin/inventory', icon: Package, iconColor: 'text-lime-500' },
+  { name: 'Фінанси', href: '/admin/accounting', icon: TrendingUp, iconColor: 'text-green-500' },
+  { name: 'Підписка', href: '/admin/billing', icon: CreditCard, iconColor: 'text-indigo-500' },
   { name: 'Посилання', href: '/admin/links', icon: LinkIcon, iconColor: 'text-cyan-500' },
 ]
 
@@ -176,6 +179,71 @@ function getNavigation(companyType: 'solo' | 'clinic' | null) {
   return baseNavigation
 }
 
+// Payment required blocking overlay
+function PaymentRequiredOverlay({ overview, onPay, paying }: {
+  overview: BillingOverview
+  onPay: (plan?: string) => void
+  paying: boolean
+}) {
+  const sub = overview.subscription
+  const progress = sub ? Math.min((sub.confirmed_clients_count / sub.trial_client_limit) * 100, 100) : 100
+
+  return (
+    <div className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-card border rounded-2xl shadow-2xl max-w-lg w-full p-8 text-center">
+        <div className="mx-auto w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mb-6">
+          <AlertTriangle className="h-8 w-8 text-amber-600" />
+        </div>
+        <h2 className="text-2xl font-bold mb-2">Потрібна оплата</h2>
+        <p className="text-muted-foreground mb-6">
+          {sub?.status === 'trial'
+            ? `Ви обслужили ${sub.confirmed_clients_count} з ${sub.trial_client_limit} безкоштовних клієнтів. Оберіть план, щоб продовжити.`
+            : 'Ваша підписка закінчилася. Оновіть підписку для продовження роботи.'}
+        </p>
+
+        {sub?.status === 'trial' && (
+          <div className="mb-6">
+            <div className="h-2 bg-muted rounded-full overflow-hidden">
+              <div className="h-full bg-amber-500 rounded-full" style={{ width: `${progress}%` }} />
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {sub.confirmed_clients_count} / {sub.trial_client_limit} клієнтів
+            </p>
+          </div>
+        )}
+
+        <div className="space-y-3">
+          <Button
+            className="w-full h-12 text-base"
+            onClick={() => onPay()}
+            disabled={paying}
+          >
+            {paying ? (
+              <>
+                <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                Створення платежу...
+              </>
+            ) : (
+              <>
+                <CreditCard className="h-5 w-5 mr-2" />
+                Оплатити підписку
+              </>
+            )}
+          </Button>
+          <Link href="/admin/billing" className="block">
+            <Button variant="outline" className="w-full">
+              Переглянути тарифи
+            </Button>
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
@@ -183,6 +251,8 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [billingOverview, setBillingOverview] = useState<BillingOverview | null>(null)
+  const [billingPaying, setBillingPaying] = useState(false)
 
   // Load sidebar state from localStorage
   useEffect(() => {
@@ -191,6 +261,41 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       setSidebarCollapsed(saved === 'true')
     }
   }, [])
+
+  // Check billing status
+  useEffect(() => {
+    if (user && company) {
+      billingApi.getOverview()
+        .then(setBillingOverview)
+        .catch(() => {}) // Silently fail - don't block if billing API is down
+    }
+  }, [user, company])
+
+  // Determine if payment is required (blocks the app)
+  const needsPayment = billingOverview?.subscription
+    ? (
+        // Trial ended (reached client limit)
+        (!billingOverview.subscription.trial_active && billingOverview.subscription.status === 'trial') ||
+        // Subscription expired
+        billingOverview.subscription.status === 'expired'
+      )
+    : false
+
+  // Allow billing page even when payment is needed
+  const isBillingPage = pathname.startsWith('/admin/billing')
+
+  const handleBillingPay = async (plan?: string) => {
+    try {
+      setBillingPaying(true)
+      const result = await billingApi.createPayment(plan)
+      window.location.href = result.page_url
+    } catch (error: any) {
+      console.error('Payment failed:', error)
+      alert(error.response?.data?.detail || 'Помилка створення платежу')
+    } finally {
+      setBillingPaying(false)
+    }
+  }
 
   const toggleSidebarCollapsed = () => {
     const newState = !sidebarCollapsed
@@ -473,6 +578,15 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
           {children}
         </main>
       </div>
+
+      {/* Payment required blocking overlay */}
+      {needsPayment && !isBillingPage && billingOverview && (
+        <PaymentRequiredOverlay
+          overview={billingOverview}
+          onPay={handleBillingPay}
+          paying={billingPaying}
+        />
+      )}
     </div>
   )
 }

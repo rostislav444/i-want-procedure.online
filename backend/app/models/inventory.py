@@ -310,6 +310,9 @@ class InventoryItem(Base):
     service_items: Mapped[list["ServiceInventoryItem"]] = relationship(
         back_populates="item", cascade="all, delete-orphan"
     )
+    batches: Mapped[list["StockBatch"]] = relationship(
+        back_populates="item", cascade="all, delete-orphan", order_by="StockBatch.received_at"
+    )
 
 
 class InventoryItemAttribute(Base):
@@ -367,6 +370,11 @@ class StockMovement(Base):
     batch_number: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     expiry_date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
+    # Зв'язок з конкретною партією
+    batch_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("stock_batches.id", ondelete="SET NULL"), nullable=True
+    )
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -376,12 +384,14 @@ class StockMovement(Base):
     item: Mapped["InventoryItem"] = relationship(back_populates="stock_movements")
     performed_by_user: Mapped[Optional["User"]] = relationship(back_populates="stock_movements")
     appointment: Mapped[Optional["Appointment"]] = relationship(back_populates="stock_movements")
+    batch: Mapped[Optional["StockBatch"]] = relationship(back_populates="movements")
 
 
 class ServiceInventoryItem(Base):
-    """Зв'язок послуги з товарами для автосписання.
+    """Зв'язок послуги з товарами з каталогу.
 
-    Можна прив'язувати як батьківський товар, так і конкретний варіант (дочірній товар).
+    Визначає які товари потрібні для процедури та в якій кількості.
+    Використовується як для інформації, так і для автосписання зі складу.
     """
     __tablename__ = "service_inventory_items"
 
@@ -396,6 +406,12 @@ class ServiceInventoryItem(Base):
     # Скільки списувати за одну процедуру
     quantity: Mapped[int] = mapped_column(Integer, default=1)
 
+    # Чи обов'язковий товар для процедури
+    is_required: Mapped[bool] = mapped_column(Boolean, default=True)
+
+    # Нотатки (наприклад, опис використання)
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -403,3 +419,42 @@ class ServiceInventoryItem(Base):
     # Relationships
     service: Mapped["Service"] = relationship(back_populates="inventory_items")
     item: Mapped["InventoryItem"] = relationship(back_populates="service_items")
+
+
+class StockBatch(Base):
+    """Партія товару на складі.
+
+    Кожна закупка/приход створює нову партію з конкретною ціною.
+    При списанні товару використовується FIFO — спочатку найстаріша партія.
+    """
+    __tablename__ = "stock_batches"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("companies.id", ondelete="CASCADE"))
+    item_id: Mapped[int] = mapped_column(
+        ForeignKey("inventory_items.id", ondelete="CASCADE")
+    )
+
+    batch_number: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    purchase_price: Mapped[Optional[Decimal]] = mapped_column(Numeric(10, 2), nullable=True)
+    quantity_received: Mapped[int] = mapped_column(Integer)
+    quantity_remaining: Mapped[int] = mapped_column(Integer)
+
+    supplier: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    expiry_date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    received_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    # Relationships
+    company: Mapped["Company"] = relationship()
+    item: Mapped["InventoryItem"] = relationship(back_populates="batches")
+    movements: Mapped[list["StockMovement"]] = relationship(back_populates="batch")

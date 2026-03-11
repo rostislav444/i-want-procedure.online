@@ -407,10 +407,51 @@ export const appointmentsApi = {
     const response = await api.get('/appointments/available-slots', { params })
     return response.data
   },
+  getById: async (id: number): Promise<Appointment> => {
+    const response = await api.get(`/appointments/${id}`)
+    return response.data
+  },
   updateStatus: async (id: number, status: string) => {
     const response = await api.patch(`/appointments/${id}`, { status })
     return response.data
   },
+  getFinancials: async (id: number): Promise<AppointmentFinancials> => {
+    const response = await api.get(`/appointments/${id}/financials`)
+    return response.data
+  },
+  addConsumption: async (appointmentId: number, data: { item_id: number; quantity: number; unit_price?: number }): Promise<ConsumptionItem> => {
+    const response = await api.post(`/appointments/${appointmentId}/consumption`, data)
+    return response.data
+  },
+  updateConsumption: async (appointmentId: number, movementId: number, data: { quantity?: number; unit_price?: number }): Promise<ConsumptionItem> => {
+    const response = await api.patch(`/appointments/${appointmentId}/consumption/${movementId}`, data)
+    return response.data
+  },
+  deleteConsumption: async (appointmentId: number, movementId: number): Promise<void> => {
+    await api.delete(`/appointments/${appointmentId}/consumption/${movementId}`)
+  },
+}
+
+// Appointment Financials Types
+export interface ConsumptionItem {
+  movement_id: number
+  item_id: number
+  item_name: string
+  quantity: number
+  unit_price: number | null
+  total_cost: number | null
+  unit: string
+  batch_id: number | null
+  batch_number: string | null
+}
+
+export interface AppointmentFinancials {
+  appointment_id: number
+  revenue: number | null
+  material_cost: number
+  profit: number | null
+  margin_pct: number | null
+  consumption: ConsumptionItem[]
 }
 
 // Client Types
@@ -690,6 +731,7 @@ export interface Company {
   payment_recipient_name: string | null
   payment_card_number: string | null
   payment_monobank_jar: string | null
+  has_monobank_token: boolean
 }
 
 // Company API
@@ -731,6 +773,7 @@ export const companyApi = {
     payment_recipient_name: string
     payment_card_number: string
     payment_monobank_jar: string
+    monobank_token: string
   }>): Promise<Company> => {
     const response = await api.patch('/companies/me', data)
     return response.data
@@ -1515,9 +1558,28 @@ export interface ServiceInventoryItem {
   service_id: number
   item_id: number
   item_name: string
+  manufacturer?: string | null
   quantity: number
+  is_required: boolean
+  notes?: string | null
   current_stock: number
   unit: string
+  created_at: string
+}
+
+export interface StockBatch {
+  id: number
+  company_id: number
+  item_id: number
+  item_name: string
+  batch_number?: string | null
+  purchase_price?: number | null
+  quantity_received: number
+  quantity_remaining: number
+  supplier?: string | null
+  expiry_date?: string | null
+  received_at: string
+  notes?: string | null
   created_at: string
 }
 
@@ -1687,6 +1749,8 @@ export const inventoryApi = {
     is_active?: boolean
     brand_id?: number | null
     collection_id?: number | null
+    sort_by?: string
+    sort_dir?: string
     page?: number
     page_size?: number
   }): Promise<PaginatedItemsResponse> => {
@@ -1817,6 +1881,14 @@ export const inventoryApi = {
     await api.delete(`/inventory/services/${serviceId}/items/${itemId}`)
   },
 
+  // Batches
+  getItemBatches: async (itemId: number, includeEmpty = false): Promise<StockBatch[]> => {
+    const response = await api.get(`/inventory/items/${itemId}/batches`, {
+      params: { include_empty: includeEmpty },
+    })
+    return response.data
+  },
+
   // Stats
   getStats: async (): Promise<InventoryStats> => {
     const response = await api.get('/inventory/stats')
@@ -1896,5 +1968,168 @@ export const inventoryApi = {
   },
   deleteCollection: async (id: number): Promise<void> => {
     await api.delete(`/inventory/collections/${id}`)
+  },
+}
+
+// === Accounting / Expenses ===
+
+export interface Expense {
+  id: number
+  company_id: number
+  name: string
+  amount: number
+  frequency: string
+  category: string | null
+  notes: string | null
+  is_active: boolean
+  effective_from: string | null
+  effective_to: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface AnalyticsPeriod {
+  period: string
+  revenue: number
+  material_cost: number
+  fixed_cost_allocation: number
+  gross_profit: number
+  net_profit: number
+  appointment_count: number
+  avg_revenue_per_appointment: number | null
+}
+
+export interface AnalyticsSummary {
+  periods: AnalyticsPeriod[]
+  totals: AnalyticsPeriod
+  top_services: { name: string; revenue: number; count: number }[]
+}
+
+export const accountingApi = {
+  // Expenses CRUD
+  getExpenses: async (): Promise<Expense[]> => {
+    const response = await api.get('/accounting/expenses')
+    return response.data
+  },
+  createExpense: async (data: {
+    name: string
+    amount: number
+    frequency?: string
+    category?: string
+    notes?: string
+    is_active?: boolean
+    effective_from?: string
+    effective_to?: string
+  }): Promise<Expense> => {
+    const response = await api.post('/accounting/expenses', data)
+    return response.data
+  },
+  updateExpense: async (id: number, data: Partial<{
+    name: string
+    amount: number
+    frequency: string
+    category: string
+    notes: string
+    is_active: boolean
+    effective_from: string
+    effective_to: string
+  }>): Promise<Expense> => {
+    const response = await api.patch(`/accounting/expenses/${id}`, data)
+    return response.data
+  },
+  deleteExpense: async (id: number): Promise<void> => {
+    await api.delete(`/accounting/expenses/${id}`)
+  },
+
+  // Analytics
+  getAnalytics: async (params: {
+    date_from: string
+    date_to: string
+    group_by?: string
+  }): Promise<AnalyticsSummary> => {
+    const response = await api.get('/accounting/analytics', { params })
+    return response.data
+  },
+}
+
+// === Billing / Subscription ===
+
+export interface SubscriptionInfo {
+  id: number
+  company_id: number
+  plan: string
+  status: string // trial, active, expired, cancelled
+  price: number // kopecks
+  trial_ends_at: string | null
+  current_period_start: string | null
+  current_period_end: string | null
+  created_at: string
+  updated_at: string
+  confirmed_clients_count: number
+  trial_client_limit: number
+  trial_active: boolean
+}
+
+export interface BillingPayment {
+  id: number
+  company_id: number
+  subscription_id: number | null
+  amount: number
+  status: string
+  payment_method: string
+  external_id: string | null
+  notes: string | null
+  created_at: string
+  completed_at: string | null
+}
+
+export interface BillingOverview {
+  subscription: SubscriptionInfo | null
+  recent_payments: BillingPayment[]
+  has_monobank: boolean
+}
+
+export interface CreatePaymentResult {
+  payment_id: number
+  invoice_id: string
+  page_url: string
+}
+
+export interface ClientInvoiceResult {
+  invoice_id: string
+  page_url: string
+  amount: number
+  description: string
+}
+
+export const billingApi = {
+  getOverview: async (): Promise<BillingOverview> => {
+    const response = await api.get('/billing/overview')
+    return response.data
+  },
+  createPayment: async (plan?: string): Promise<CreatePaymentResult> => {
+    const response = await api.post('/billing/pay', { plan: plan || undefined })
+    return response.data
+  },
+  getPayments: async (): Promise<BillingPayment[]> => {
+    const response = await api.get('/billing/payments')
+    return response.data
+  },
+  checkTrial: async (): Promise<{
+    confirmed_clients_count: number
+    trial_client_limit: number
+    trial_active: boolean
+    subscription_status: string
+  }> => {
+    const response = await api.post('/billing/check-trial')
+    return response.data
+  },
+  createClientInvoice: async (params: {
+    appointment_id?: number
+    amount?: number
+    description?: string
+  }): Promise<ClientInvoiceResult> => {
+    const response = await api.post('/billing/client-invoice', null, { params })
+    return response.data
   },
 }

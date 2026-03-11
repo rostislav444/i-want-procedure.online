@@ -3,10 +3,11 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Edit2, Trash2, Package, ArrowDownUp, ChevronRight, TrendingUp, TrendingDown, Boxes, Tag, Barcode } from 'lucide-react'
+import { ArrowLeft, Edit2, Trash2, Package, ArrowDownUp, ChevronRight, TrendingUp, TrendingDown, Boxes, Tag, Barcode, Save, X, AlertTriangle, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -33,7 +34,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { inventoryApi, InventoryItem, StockMovement, getFileUrl } from '@/lib/api'
+import { toast } from 'sonner'
+import { inventoryApi, InventoryItem, StockMovement, StockBatch, InventoryCategory, getFileUrl } from '@/lib/api'
 import { cn } from '@/lib/utils'
 
 const USAGE_TYPE_LABELS: Record<string, string> = {
@@ -66,9 +68,24 @@ export default function InventoryItemPage() {
   const [item, setItem] = useState<InventoryItem | null>(null)
   const [parentItem, setParentItem] = useState<InventoryItem | null>(null)
   const [movements, setMovements] = useState<StockMovement[]>([])
+  const [batches, setBatches] = useState<StockBatch[]>([])
   const [loading, setLoading] = useState(true)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [showMovementDialog, setShowMovementDialog] = useState(false)
+  const [showAllBatches, setShowAllBatches] = useState(false)
+
+  // Edit mode
+  const [isEditing, setIsEditing] = useState(false)
+  const [editForm, setEditForm] = useState({
+    name: '',
+    manufacturer: '',
+    purchase_price: '',
+    sale_price: '',
+    unit: 'шт',
+    min_stock_level: '',
+    description: '',
+  })
+  const [editLoading, setEditLoading] = useState(false)
 
   // Movement form
   const [movementType, setMovementType] = useState('incoming')
@@ -76,6 +93,8 @@ export default function InventoryItemPage() {
   const [notes, setNotes] = useState('')
   const [batchNumber, setBatchNumber] = useState('')
   const [expiryDate, setExpiryDate] = useState('')
+  const [unitPrice, setUnitPrice] = useState('')
+  const [supplier, setSupplier] = useState('')
   const [movementLoading, setMovementLoading] = useState(false)
 
   useEffect(() => {
@@ -88,16 +107,19 @@ export default function InventoryItemPage() {
       const itemData = await inventoryApi.getItem(itemId)
       setItem(itemData)
 
+      // Load batches
+      const batchesData = await inventoryApi.getItemBatches(itemId, true)
+      setBatches(batchesData)
+
       // If this is a variant (has parent_id), load the parent to get siblings and parent movements
       if (itemData.parent_id) {
         const [parentData, variantMovements] = await Promise.all([
           inventoryApi.getItem(itemData.parent_id),
-          inventoryApi.getItemMovements(itemId, false), // Only this variant's movements
+          inventoryApi.getItemMovements(itemId, false),
         ])
         setParentItem(parentData)
         setMovements(variantMovements)
       } else {
-        // Parent item - get movements including all variants
         const parentMovements = await inventoryApi.getItemMovements(itemId, true)
         setParentItem(null)
         setMovements(parentMovements)
@@ -109,13 +131,52 @@ export default function InventoryItemPage() {
     }
   }
 
+  const startEditing = () => {
+    if (!item) return
+    const p = item.parent_id ? item : item
+    setEditForm({
+      name: p.name || '',
+      manufacturer: p.manufacturer || '',
+      purchase_price: p.purchase_price?.toString() || '',
+      sale_price: p.sale_price?.toString() || '',
+      unit: p.unit || 'шт',
+      min_stock_level: p.min_stock_level?.toString() || '',
+      description: p.description || '',
+    })
+    setIsEditing(true)
+  }
+
+  const handleSaveEdit = async () => {
+    if (!item) return
+    setEditLoading(true)
+    try {
+      await inventoryApi.updateItem(itemId, {
+        name: editForm.name,
+        manufacturer: editForm.manufacturer || undefined,
+        purchase_price: editForm.purchase_price ? parseFloat(editForm.purchase_price) : undefined,
+        sale_price: editForm.sale_price ? parseFloat(editForm.sale_price) : undefined,
+        unit: editForm.unit,
+        min_stock_level: editForm.min_stock_level ? parseInt(editForm.min_stock_level) : undefined,
+        description: editForm.description || undefined,
+      })
+      toast.success('Товар оновлено')
+      setIsEditing(false)
+      loadData()
+    } catch (error) {
+      console.error('Error updating item:', error)
+      toast.error('Помилка при оновленні товару')
+    } finally {
+      setEditLoading(false)
+    }
+  }
+
   const handleDelete = async () => {
     try {
       await inventoryApi.deleteItem(itemId)
       router.push('/admin/inventory')
     } catch (error) {
       console.error('Error deleting item:', error)
-      alert('Помилка при видаленні товару')
+      toast.error('Помилка при видаленні товару')
     }
   }
 
@@ -131,21 +192,25 @@ export default function InventoryItemPage() {
         item_id: itemId,
         movement_type: movementType,
         quantity: finalQty,
+        unit_price: unitPrice ? parseFloat(unitPrice) : undefined,
         notes: notes || undefined,
         batch_number: batchNumber || undefined,
         expiry_date: expiryDate || undefined,
       })
 
+      toast.success(movementType === 'incoming' ? 'Товар прийнято' : 'Рух збережено')
       setShowMovementDialog(false)
       setMovementType('incoming')
       setQuantity('')
       setNotes('')
       setBatchNumber('')
       setExpiryDate('')
+      setUnitPrice('')
+      setSupplier('')
       loadData()
     } catch (error) {
       console.error('Error creating movement:', error)
-      alert('Помилка при створенні руху')
+      toast.error('Помилка при створенні руху')
     } finally {
       setMovementLoading(false)
     }
@@ -175,25 +240,23 @@ export default function InventoryItemPage() {
     )
   }
 
-  // Determine display logic:
-  // - isVariant: viewing a specific variant
-  // - parentProduct: parent item (either current item or loaded parent)
-  // - currentVariant: selected variant data (from item when isVariant, null otherwise)
   const isVariant = !!item.parent_id
   const parentProduct = isVariant && parentItem ? parentItem : item
   const currentVariant = isVariant ? item : null
   const selectedVariantId = isVariant ? itemId : null
 
-  // Display uses parent for layout/context, current item for specific data
   const mainImage = (currentVariant?.images?.find(img => img.is_main) || currentVariant?.images?.[0])
     || parentProduct.images?.find(img => img.is_main) || parentProduct.images?.[0]
   const hasVariants = parentProduct.variants && parentProduct.variants.length > 0
   const displayStock = hasVariants ? (parentProduct.total_stock || parentProduct.current_stock) : parentProduct.current_stock
 
-  // For title/meta: use variant if viewing variant, parent otherwise
   const displayName = currentVariant ? currentVariant.name : parentProduct.name
   const displaySku = currentVariant?.sku || parentProduct.sku
   const displayBarcode = currentVariant?.barcode || parentProduct.barcode
+
+  // Filter batches
+  const activeBatches = batches.filter(b => b.quantity_remaining > 0)
+  const displayBatches = showAllBatches ? batches : activeBatches
 
   return (
     <div className="space-y-6">
@@ -247,6 +310,10 @@ export default function InventoryItemPage() {
           </div>
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" onClick={startEditing}>
+            <Edit2 className="mr-2 h-4 w-4" />
+            Редагувати
+          </Button>
           <Button variant="outline" onClick={() => setShowMovementDialog(true)}>
             <ArrowDownUp className="mr-2 h-4 w-4" />
             Рух товару
@@ -279,7 +346,13 @@ export default function InventoryItemPage() {
           </Card>
 
           {/* Stock Card */}
-          <Card className={cn(parentProduct.is_low_stock && 'border-red-300 bg-red-50')}>
+          <Card className={cn(
+            displayStock === 0
+              ? 'border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-950/30'
+              : parentProduct.is_low_stock
+                ? 'border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30'
+                : ''
+          )}>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -291,10 +364,16 @@ export default function InventoryItemPage() {
                     <span className="text-muted-foreground">{parentProduct.unit}</span>
                   </div>
                 </div>
-                <Boxes className={cn('h-8 w-8', parentProduct.is_low_stock ? 'text-red-500' : 'text-muted-foreground/30')} />
+                <Boxes className={cn(
+                  'h-8 w-8',
+                  displayStock === 0 ? 'text-red-500' : parentProduct.is_low_stock ? 'text-amber-500' : 'text-muted-foreground/30'
+                )} />
               </div>
-              {parentProduct.is_low_stock && (
-                <Badge variant="destructive" className="mt-2">Мало на складі</Badge>
+              {displayStock === 0 && (
+                <Badge variant="destructive" className="mt-2">Немає на складі</Badge>
+              )}
+              {parentProduct.is_low_stock && displayStock > 0 && (
+                <Badge className="mt-2 bg-amber-500">Закінчується</Badge>
               )}
               {parentProduct.min_stock_level && (
                 <p className="text-xs text-muted-foreground mt-2">
@@ -309,7 +388,6 @@ export default function InventoryItemPage() {
             (!currentVariant && (parentProduct.sale_price || parentProduct.purchase_price || parentProduct.min_variant_price))) && (
             <Card>
               <CardContent className="p-4 space-y-3">
-                {/* Variant price (specific) */}
                 {currentVariant && currentVariant.sale_price && (
                   <div>
                     <p className="text-xs text-muted-foreground">Ціна продажу</p>
@@ -322,7 +400,6 @@ export default function InventoryItemPage() {
                     <p className="text-lg font-medium">{currentVariant.purchase_price} грн</p>
                   </div>
                 )}
-                {/* Parent price (range or single) */}
                 {!currentVariant && (
                   <>
                     {parentProduct.min_variant_price && parentProduct.max_variant_price ? (
@@ -349,7 +426,6 @@ export default function InventoryItemPage() {
                     )}
                   </>
                 )}
-                {/* Margin calculation: (sale - purchase) / sale * 100 */}
                 {currentVariant && currentVariant.purchase_price && currentVariant.sale_price && (
                   <div className="pt-2 border-t">
                     <p className="text-xs text-muted-foreground">Маржа</p>
@@ -371,7 +447,7 @@ export default function InventoryItemPage() {
           )}
         </div>
 
-        {/* Middle Column - Details & Variants */}
+        {/* Middle Column - Details & Variants & Batches */}
         <div className="lg:col-span-5 space-y-4">
           {/* Details */}
           <Card>
@@ -419,7 +495,7 @@ export default function InventoryItemPage() {
             <Card>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-base">Варіанти</CardTitle>
+                  <CardTitle className="text-base">Різні об&#39;єми / фасовки</CardTitle>
                   <Badge variant="outline">{parentProduct.variants!.length}</Badge>
                 </div>
                 {parentProduct.min_variant_price && parentProduct.max_variant_price && parentProduct.min_variant_price !== parentProduct.max_variant_price && (
@@ -450,12 +526,17 @@ export default function InventoryItemPage() {
                             <div className="font-medium">
                               {variant.sale_price ? `${variant.sale_price} грн` : '—'}
                             </div>
-                            <div className={cn(
-                              'text-xs',
-                              variant.is_low_stock ? 'text-red-600' : 'text-muted-foreground'
+                            <span className={cn(
+                              'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs font-medium',
+                              variant.current_stock === 0
+                                ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                                : variant.is_low_stock
+                                  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                                  : 'text-muted-foreground'
                             )}>
+                              {(variant.current_stock === 0 || variant.is_low_stock) && <AlertTriangle className="h-2.5 w-2.5" />}
                               {variant.current_stock} {parentProduct.unit}
-                            </div>
+                            </span>
                           </div>
                         </div>
                       </Link>
@@ -465,6 +546,85 @@ export default function InventoryItemPage() {
               </CardContent>
             </Card>
           )}
+
+          {/* Batches */}
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base">Партії на складі</CardTitle>
+                {batches.length > activeBatches.length && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs"
+                    onClick={() => setShowAllBatches(!showAllBatches)}
+                  >
+                    {showAllBatches ? 'Тільки з залишком' : `Показати всі (${batches.length})`}
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              {displayBatches.length > 0 ? (
+                <div className="space-y-2">
+                  {displayBatches.map(batch => {
+                    const isExpired = batch.expiry_date && new Date(batch.expiry_date) < new Date()
+                    const isExpiringSoon = batch.expiry_date && !isExpired &&
+                      new Date(batch.expiry_date) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                    const isEmpty = batch.quantity_remaining === 0
+
+                    return (
+                      <div key={batch.id} className={cn(
+                        'p-3 rounded-lg border text-sm',
+                        isEmpty ? 'opacity-50 bg-muted/30' :
+                        isExpired ? 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20' :
+                        isExpiringSoon ? 'border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/20' : ''
+                      )}>
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">
+                              {batch.batch_number || `Партія #${batch.id}`}
+                            </span>
+                            {isExpired && <Badge variant="destructive" className="text-[10px] px-1.5 py-0">Прострочено</Badge>}
+                            {isExpiringSoon && <Badge className="text-[10px] px-1.5 py-0 bg-amber-500">Скоро закінчиться</Badge>}
+                          </div>
+                          <span className={cn(
+                            'font-semibold',
+                            isEmpty ? 'text-muted-foreground' : 'text-green-600'
+                          )}>
+                            {batch.quantity_remaining} / {batch.quantity_received}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                          <span>
+                            {new Date(batch.received_at).toLocaleDateString('uk-UA')}
+                          </span>
+                          {batch.purchase_price && (
+                            <span>{batch.purchase_price} грн/шт</span>
+                          )}
+                          {batch.expiry_date && (
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              до {new Date(batch.expiry_date).toLocaleDateString('uk-UA')}
+                            </span>
+                          )}
+                          {batch.supplier && (
+                            <span>{batch.supplier}</span>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-6 text-muted-foreground">
+                  <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">Партій ще не створено</p>
+                  <p className="text-xs mt-1">Партія створюється автоматично при прийомі товару</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Attributes */}
           {parentProduct.attributes && parentProduct.attributes.length > 0 && (
@@ -533,6 +693,9 @@ export default function InventoryItemPage() {
                         {!currentVariant && movement.item_name && movement.item_name !== parentProduct.name && (
                           <p className="text-xs text-primary truncate">{movement.item_name}</p>
                         )}
+                        {movement.batch_number && (
+                          <p className="text-xs text-muted-foreground truncate">Партія: {movement.batch_number}</p>
+                        )}
                         {movement.notes && (
                           <p className="text-xs text-muted-foreground truncate">{movement.notes}</p>
                         )}
@@ -554,69 +717,194 @@ export default function InventoryItemPage() {
         </div>
       </div>
 
-      {/* Movement Dialog */}
-      <Dialog open={showMovementDialog} onOpenChange={setShowMovementDialog}>
-        <DialogContent>
+      {/* Edit Dialog */}
+      <Dialog open={isEditing} onOpenChange={setIsEditing}>
+        <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Рух товару</DialogTitle>
+            <DialogTitle>Редагувати товар</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Тип руху</Label>
+              <Label>Назва *</Label>
+              <Input
+                value={editForm.name}
+                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Виробник</Label>
+              <Input
+                value={editForm.manufacturer}
+                onChange={(e) => setEditForm({ ...editForm, manufacturer: e.target.value })}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>Ціна закупки</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={editForm.purchase_price}
+                  onChange={(e) => setEditForm({ ...editForm, purchase_price: e.target.value })}
+                  placeholder="0.00"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Ціна продажу</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={editForm.sale_price}
+                  onChange={(e) => setEditForm({ ...editForm, sale_price: e.target.value })}
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>Одиниця виміру</Label>
+                <Select
+                  value={editForm.unit}
+                  onValueChange={(v) => setEditForm({ ...editForm, unit: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="шт">шт</SelectItem>
+                    <SelectItem value="мл">мл</SelectItem>
+                    <SelectItem value="г">г</SelectItem>
+                    <SelectItem value="упак">упак</SelectItem>
+                    <SelectItem value="л">л</SelectItem>
+                    <SelectItem value="кг">кг</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Мін. залишок</Label>
+                <Input
+                  type="number"
+                  value={editForm.min_stock_level}
+                  onChange={(e) => setEditForm({ ...editForm, min_stock_level: e.target.value })}
+                  placeholder="0"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Опис</Label>
+              <Textarea
+                value={editForm.description}
+                onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditing(false)}>
+              Скасувати
+            </Button>
+            <Button onClick={handleSaveEdit} disabled={!editForm.name || editLoading}>
+              {editLoading ? 'Збереження...' : 'Зберегти'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Movement Dialog */}
+      <Dialog open={showMovementDialog} onOpenChange={setShowMovementDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {movementType === 'incoming' ? 'Прийняти товар' :
+               movementType === 'write_off' ? 'Списати товар' :
+               movementType === 'sale' ? 'Продаж товару' :
+               'Рух товару'}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Тип операції</Label>
               <Select value={movementType} onValueChange={setMovementType}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="incoming">Приход (закупка)</SelectItem>
-                  <SelectItem value="outgoing">Витрата (використання)</SelectItem>
-                  <SelectItem value="sale">Продаж</SelectItem>
+                  <SelectItem value="incoming">Прийняти товар (закупка)</SelectItem>
+                  <SelectItem value="outgoing">Витратити (використання)</SelectItem>
+                  <SelectItem value="sale">Продати</SelectItem>
                   <SelectItem value="adjustment">Коригування (інвентаризація)</SelectItem>
-                  <SelectItem value="write_off">Списання</SelectItem>
+                  <SelectItem value="write_off">Списати (зіпсовано, прострочено)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label>Кількість *</Label>
+              <Label>{movementType === 'incoming' ? 'Скільки прийшло *' : 'Кількість *'}</Label>
               <Input
                 type="number"
                 min="1"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
-                placeholder="Введіть кількість"
+                placeholder={movementType === 'incoming' ? 'Скільки одиниць прийшло' : 'Введіть кількість'}
               />
             </div>
 
             {movementType === 'incoming' && (
               <>
                 <div className="space-y-2">
-                  <Label>Номер партії</Label>
+                  <Label>За якою ціною купили (за одиницю)</Label>
                   <Input
-                    value={batchNumber}
-                    onChange={(e) => setBatchNumber(e.target.value)}
-                    placeholder="ABC-2024-001"
+                    type="number"
+                    step="0.01"
+                    value={unitPrice}
+                    onChange={(e) => setUnitPrice(e.target.value)}
+                    placeholder="0.00 грн"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label>Термін придатності</Label>
-                  <Input
-                    type="date"
-                    value={expiryDate}
-                    onChange={(e) => setExpiryDate(e.target.value)}
-                  />
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label>Номер партії</Label>
+                    <Input
+                      value={batchNumber}
+                      onChange={(e) => setBatchNumber(e.target.value)}
+                      placeholder="напр. LOT-2024-03"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Термін придатності</Label>
+                    <Input
+                      type="date"
+                      value={expiryDate}
+                      onChange={(e) => setExpiryDate(e.target.value)}
+                    />
+                  </div>
                 </div>
               </>
             )}
 
             <div className="space-y-2">
-              <Label>Примітка</Label>
+              <Label>
+                {movementType === 'write_off' ? 'Причина списання' :
+                 movementType === 'outgoing' ? 'На що витрачено' :
+                 'Примітка'}
+              </Label>
               <Input
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Додаткова інформація"
+                placeholder={
+                  movementType === 'write_off' ? 'Прострочено, зіпсовано...' :
+                  movementType === 'outgoing' ? 'Використано для процедури...' :
+                  'Додаткова інформація'
+                }
               />
             </div>
           </div>
@@ -626,7 +914,10 @@ export default function InventoryItemPage() {
               Скасувати
             </Button>
             <Button onClick={handleCreateMovement} disabled={!quantity || movementLoading}>
-              {movementLoading ? 'Збереження...' : 'Зберегти'}
+              {movementLoading ? 'Збереження...' :
+               movementType === 'incoming' ? 'Прийняти' :
+               movementType === 'write_off' ? 'Списати' :
+               'Зберегти'}
             </Button>
           </DialogFooter>
         </DialogContent>

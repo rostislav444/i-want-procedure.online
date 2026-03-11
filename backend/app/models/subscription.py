@@ -62,6 +62,10 @@ class Subscription(Base):
     current_period_start: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     current_period_end: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
+    # Monobank card tokenization for recurring payments
+    card_token: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)  # walletData.cardToken
+    wallet_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)  # walletId for merchant
+
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(

@@ -42,6 +42,17 @@ class Settings(BaseSettings):
     # CORS
     CORS_ORIGINS: list[str] = ["http://localhost:3000"]
 
+    # Monobank Acquiring
+    MONOBANK_TOKEN: Optional[str] = None
+
+    # Subscription pricing (in kopecks, e.g. 29900 = 299.00 UAH)
+    SUBSCRIPTION_PRICE_INDIVIDUAL: int = 29900  # 299 UAH/month
+    SUBSCRIPTION_PRICE_COMPANY_SMALL: int = 59900  # 599 UAH/month
+    SUBSCRIPTION_PRICE_COMPANY_LARGE: int = 99900  # 999 UAH/month
+
+    # Trial: number of confirmed unique clients before billing starts
+    TRIAL_CLIENT_LIMIT: int = 10
+
     # Redis
     REDIS_URL: Optional[str] = None
 

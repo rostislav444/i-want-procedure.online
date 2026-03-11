@@ -15,6 +15,7 @@ from app.models.inventory import (
     InventoryItem,
     InventoryItemAttribute,
     StockMovement,
+    StockBatch,
     CategoryAttributeGroup,
     ServiceInventoryItem,
     MovementType,
@@ -54,6 +55,8 @@ from app.schemas.inventory import (
     # Service Items
     ServiceInventoryItemCreate,
     ServiceInventoryItemResponse,
+    # Batches
+    StockBatchResponse,
     # Stats
     InventoryStats,
     # Pagination
@@ -935,6 +938,8 @@ async def get_items(
     is_low_stock: Optional[bool] = Query(None),
     search: Optional[str] = Query(None),
     is_active: Optional[bool] = Query(None),
+    sort_by: Optional[str] = Query(None, description="Поле сортування: name, total_stock, purchase_price, sale_price"),
+    sort_dir: Optional[str] = Query("asc", description="Напрямок: asc або desc"),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
 ):
@@ -997,10 +1002,24 @@ async def get_items(
             selectinload(InventoryItem.children),
         )
         .where(*base_filter)
-        .order_by(InventoryItem.order, InventoryItem.name)
-        .offset(skip)
-        .limit(page_size)
     )
+
+    # Серверне сортування
+    if sort_by == 'name':
+        order_col = InventoryItem.name.desc() if sort_dir == 'desc' else InventoryItem.name.asc()
+    elif sort_by == 'purchase_price':
+        order_col = InventoryItem.purchase_price.desc() if sort_dir == 'desc' else InventoryItem.purchase_price.asc()
+    elif sort_by == 'sale_price':
+        order_col = InventoryItem.sale_price.desc() if sort_dir == 'desc' else InventoryItem.sale_price.asc()
+    else:
+        order_col = None
+
+    if order_col is not None:
+        query = query.order_by(order_col)
+    else:
+        query = query.order_by(InventoryItem.order, InventoryItem.name)
+
+    query = query.offset(skip).limit(page_size)
     result = await db.execute(query)
     items = result.scalars().all()
 
@@ -1146,6 +1165,17 @@ async def create_item(
 
     # Створюємо початковий приход якщо вказано
     if data.initial_stock and data.initial_stock > 0:
+        batch = StockBatch(
+            company_id=current_user.company_id,
+            item_id=item.id,
+            purchase_price=data.purchase_price,
+            quantity_received=data.initial_stock,
+            quantity_remaining=data.initial_stock,
+            notes="Початковий залишок",
+        )
+        db.add(batch)
+        await db.flush()
+
         movement = StockMovement(
             company_id=current_user.company_id,
             item_id=item.id,
@@ -1154,6 +1184,7 @@ async def create_item(
             unit_price=data.purchase_price,
             performed_by=current_user.id,
             notes="Початковий залишок",
+            batch_id=batch.id,
         )
         db.add(movement)
 
@@ -1187,14 +1218,27 @@ async def create_item(
 
             # Створюємо початковий приход для варіанту
             if variant_data.initial_stock and variant_data.initial_stock > 0:
+                v_price = variant_data.purchase_price or data.purchase_price
+                v_batch = StockBatch(
+                    company_id=current_user.company_id,
+                    item_id=variant.id,
+                    purchase_price=v_price,
+                    quantity_received=variant_data.initial_stock,
+                    quantity_remaining=variant_data.initial_stock,
+                    notes="Початковий залишок",
+                )
+                db.add(v_batch)
+                await db.flush()
+
                 v_movement = StockMovement(
                     company_id=current_user.company_id,
                     item_id=variant.id,
                     movement_type=MovementType.INCOMING.value,
                     quantity=variant_data.initial_stock,
-                    unit_price=variant_data.purchase_price or data.purchase_price,
+                    unit_price=v_price,
                     performed_by=current_user.id,
                     notes="Початковий залишок",
+                    batch_id=v_batch.id,
                 )
                 db.add(v_movement)
 
@@ -1669,6 +1713,23 @@ async def create_movement(
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
 
+    # For INCOMING movements, auto-create a StockBatch
+    batch_id = None
+    if data.movement_type == MovementType.INCOMING.value and data.quantity > 0:
+        batch = StockBatch(
+            company_id=current_user.company_id,
+            item_id=data.item_id,
+            batch_number=data.batch_number,
+            purchase_price=data.unit_price,
+            quantity_received=data.quantity,
+            quantity_remaining=data.quantity,
+            expiry_date=data.expiry_date,
+            notes=data.notes,
+        )
+        db.add(batch)
+        await db.flush()
+        batch_id = batch.id
+
     movement = StockMovement(
         company_id=current_user.company_id,
         item_id=data.item_id,
@@ -1680,6 +1741,7 @@ async def create_movement(
         notes=data.notes,
         batch_number=data.batch_number,
         expiry_date=data.expiry_date,
+        batch_id=batch_id,
     )
     db.add(movement)
     await db.commit()
@@ -1776,7 +1838,10 @@ async def get_service_inventory_items(
             service_id=si.service_id,
             item_id=si.item_id,
             item_name=si.item.name if si.item else "",
+            manufacturer=si.item.manufacturer if si.item else None,
             quantity=si.quantity,
+            is_required=si.is_required,
+            notes=si.notes,
             current_stock=stock,
             unit=si.item.unit if si.item else "шт",
             created_at=si.created_at,
@@ -1808,6 +1873,8 @@ async def add_service_inventory_item(
         service_id=service_id,
         item_id=data.item_id,
         quantity=data.quantity,
+        is_required=data.is_required,
+        notes=data.notes,
     )
     db.add(si)
     await db.commit()
@@ -1820,7 +1887,10 @@ async def add_service_inventory_item(
         service_id=si.service_id,
         item_id=si.item_id,
         item_name=item.name,
+        manufacturer=item.manufacturer,
         quantity=si.quantity,
+        is_required=si.is_required,
+        notes=si.notes,
         current_stock=stock,
         unit=item.unit,
         created_at=si.created_at,
@@ -1964,3 +2034,48 @@ async def get_low_stock_items(current_user: CurrentUser, db: DbSession):
             ))
 
     return response
+
+
+# === Batches ===
+
+@router.get("/items/{item_id}/batches", response_model=list[StockBatchResponse])
+async def get_item_batches(
+    item_id: int,
+    current_user: CurrentUser,
+    db: DbSession,
+    include_empty: bool = Query(False, description="Include batches with 0 remaining"),
+):
+    """Отримати партії товару"""
+    query = (
+        select(StockBatch)
+        .options(selectinload(StockBatch.item))
+        .where(
+            StockBatch.item_id == item_id,
+            StockBatch.company_id == current_user.company_id,
+        )
+    )
+    if not include_empty:
+        query = query.where(StockBatch.quantity_remaining > 0)
+
+    query = query.order_by(StockBatch.received_at.asc())
+    result = await db.execute(query)
+    batches = result.scalars().all()
+
+    return [
+        StockBatchResponse(
+            id=b.id,
+            company_id=b.company_id,
+            item_id=b.item_id,
+            item_name=b.item.name if b.item else "",
+            batch_number=b.batch_number,
+            purchase_price=b.purchase_price,
+            quantity_received=b.quantity_received,
+            quantity_remaining=b.quantity_remaining,
+            supplier=b.supplier,
+            expiry_date=b.expiry_date,
+            received_at=b.received_at,
+            notes=b.notes,
+            created_at=b.created_at,
+        )
+        for b in batches
+    ]

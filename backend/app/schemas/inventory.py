@@ -457,6 +457,8 @@ class StockMovementResponse(BaseModel):
 class ServiceInventoryItemCreate(BaseModel):
     item_id: int
     quantity: int = 1
+    is_required: bool = True
+    notes: Optional[str] = None
 
 
 class ServiceInventoryItemResponse(BaseModel):
@@ -464,9 +466,43 @@ class ServiceInventoryItemResponse(BaseModel):
     service_id: int
     item_id: int
     item_name: str = ""
+    manufacturer: Optional[str] = None
     quantity: int
+    is_required: bool = True
+    notes: Optional[str] = None
     current_stock: int = 0
     unit: str = "шт"
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# === Stock Batch Schemas ===
+
+class StockBatchCreate(BaseModel):
+    item_id: int
+    batch_number: Optional[str] = None
+    purchase_price: Optional[Decimal] = None
+    quantity_received: int
+    supplier: Optional[str] = None
+    expiry_date: Optional[datetime] = None
+    notes: Optional[str] = None
+
+
+class StockBatchResponse(BaseModel):
+    id: int
+    company_id: int
+    item_id: int
+    item_name: str = ""
+    batch_number: Optional[str] = None
+    purchase_price: Optional[Decimal] = None
+    quantity_received: int
+    quantity_remaining: int
+    supplier: Optional[str] = None
+    expiry_date: Optional[datetime] = None
+    received_at: datetime
+    notes: Optional[str] = None
     created_at: datetime
 
     class Config:

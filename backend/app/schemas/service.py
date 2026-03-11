@@ -23,6 +23,8 @@ class ServiceCategoryResponse(BaseModel):
     id: int
     company_id: int
     parent_id: Optional[int] = None
+    global_category_id: Optional[int] = None
+    is_custom: bool = False
     name: str
     description: Optional[str] = None
     order: int
@@ -36,6 +38,8 @@ class ServiceCategoryTreeResponse(BaseModel):
     id: int
     company_id: int
     parent_id: Optional[int] = None
+    global_category_id: Optional[int] = None
+    is_custom: bool = False
     name: str
     description: Optional[str] = None
     order: int
@@ -134,6 +138,8 @@ class ServiceCreate(BaseModel):
     specialty_id: Optional[int] = None
     position_id: Optional[int] = None
     doctor_id: Optional[int] = None
+    global_template_id: Optional[int] = None
+    is_custom: bool = False
     steps: Optional[list[ServiceStepCreate]] = None
     products: Optional[list[ServiceProductCreate]] = None
     price_options: Optional[list[ServicePriceOptionCreate]] = None
@@ -174,6 +180,8 @@ class ServiceResponse(BaseModel):
     specialty_id: Optional[int] = None
     position_id: Optional[int] = None
     doctor_id: Optional[int] = None
+    global_template_id: Optional[int] = None
+    is_custom: bool = False
     name: str
     description: Optional[str] = None
     duration_minutes: int

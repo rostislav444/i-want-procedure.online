@@ -125,7 +125,10 @@ async def get_my_company(current_user: CurrentUser, db: DbSession):
     result = await db.execute(
         select(Company).where(Company.id == company_id)
     )
-    return result.scalar_one()
+    company = result.scalar_one()
+    response = CompanyResponse.model_validate(company)
+    response.has_monobank_token = bool(company.monobank_token)
+    return response
 
 
 @router.patch("/me", response_model=CompanyResponse)

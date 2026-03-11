@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { ProtocolTemplateEditor } from '@/components/protocols/ProtocolTemplateEditor'
-import { servicesApi, positionsApi, inventoryApi, Service, ServiceStep, ServiceProduct, Position, ServiceInventoryItem, InventoryItemListItem } from '@/lib/api'
+import { servicesApi, positionsApi, inventoryApi, Service, ServiceStep, Position, ServiceInventoryItem, InventoryItemListItem } from '@/lib/api'
 import {
   Select,
   SelectContent,
@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useCompany } from '@/contexts/CompanyContext'
+import { cn } from '@/lib/utils'
 
 export default function ServiceDetailPage() {
   const params = useParams()
@@ -33,12 +34,14 @@ export default function ServiceDetailPage() {
   const [availableInventoryItems, setAvailableInventoryItems] = useState<InventoryItemListItem[]>([])
   const [showNewInventoryItem, setShowNewInventoryItem] = useState(false)
   const [newInventoryItem, setNewInventoryItem] = useState({ item_id: 0, quantity: 1 })
+  const [inventorySearchQuery, setInventorySearchQuery] = useState('')
+  const [inventorySearchResults, setInventorySearchResults] = useState<InventoryItemListItem[]>([])
+  const [editingQuantityItemId, setEditingQuantityItemId] = useState<number | null>(null)
+  const [editingQuantityValue, setEditingQuantityValue] = useState('')
 
-  // New step/product forms
+  // New step/price option forms
   const [showNewStep, setShowNewStep] = useState(false)
   const [newStep, setNewStep] = useState({ title: '', description: '', duration_minutes: 0 })
-  const [showNewProduct, setShowNewProduct] = useState(false)
-  const [newProduct, setNewProduct] = useState({ name: '', description: '', manufacturer: '' })
   const [showNewPriceOption, setShowNewPriceOption] = useState(false)
   const [newPriceOption, setNewPriceOption] = useState({ name: '', price: '', duration_minutes: '' })
 
@@ -117,27 +120,6 @@ export default function ServiceDetailPage() {
     }
   }
 
-  const handleAddProduct = async () => {
-    if (!newProduct.name) return
-    try {
-      await servicesApi.addProduct(serviceId, newProduct)
-      await loadData()
-      setNewProduct({ name: '', description: '', manufacturer: '' })
-      setShowNewProduct(false)
-    } catch (error) {
-      console.error('Error adding product:', error)
-    }
-  }
-
-  const handleDeleteProduct = async (productId: number) => {
-    try {
-      await servicesApi.deleteProduct(serviceId, productId)
-      await loadData()
-    } catch (error) {
-      console.error('Error deleting product:', error)
-    }
-  }
-
   const handleAddPriceOption = async () => {
     if (!newPriceOption.name || !newPriceOption.price) return
     try {
@@ -183,6 +165,44 @@ export default function ServiceDetailPage() {
       await loadData()
     } catch (error) {
       console.error('Error removing inventory item:', error)
+    }
+  }
+
+  // Search inventory items with debounce
+  useEffect(() => {
+    if (!inventorySearchQuery || inventorySearchQuery.length < 2) {
+      setInventorySearchResults([])
+      return
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const res = await inventoryApi.getItems({ search: inventorySearchQuery, page_size: 15 })
+        // Filter out already-added items
+        setInventorySearchResults(
+          res.items.filter(item => !serviceInventoryItems.some(si => si.item_id === item.id))
+        )
+      } catch (e) {
+        console.error(e)
+      }
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [inventorySearchQuery, serviceInventoryItems])
+
+  const handleSelectSearchItem = (itemId: number) => {
+    setNewInventoryItem({ ...newInventoryItem, item_id: itemId })
+    setInventorySearchQuery('')
+    setInventorySearchResults([])
+  }
+
+  const handleUpdateQuantity = async (itemId: number, newQty: number) => {
+    if (newQty < 1) return
+    try {
+      await inventoryApi.removeServiceItem(serviceId, itemId)
+      await inventoryApi.addServiceItem(serviceId, { item_id: itemId, quantity: newQty })
+      await loadData()
+      setEditingQuantityItemId(null)
+    } catch (error) {
+      console.error('Error updating quantity:', error)
     }
   }
 
@@ -410,86 +430,13 @@ export default function ServiceDetailPage() {
         </CardContent>
       </Card>
 
-      {/* Products */}
+      {/* Products / Inventory Items — unified */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Package className="h-5 w-5" />
-            Препарати та продукти
-          </CardTitle>
-          <Button variant="outline" size="sm" onClick={() => setShowNewProduct(true)}>
-            <Plus className="mr-1 h-4 w-4" />
-            Додати препарат
-          </Button>
-        </CardHeader>
-        <CardContent>
-          {showNewProduct && (
-            <div className="mb-4 p-4 border rounded-lg bg-muted/50">
-              <div className="grid gap-3">
-                <Input
-                  placeholder="Назва препарату"
-                  value={newProduct.name}
-                  onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-                />
-                <Input
-                  placeholder="Виробник (необов'язково)"
-                  value={newProduct.manufacturer}
-                  onChange={(e) => setNewProduct({ ...newProduct, manufacturer: e.target.value })}
-                />
-                <textarea
-                  className="w-full px-3 py-2 border rounded-md text-sm bg-background"
-                  placeholder="Опис (необов'язково)"
-                  value={newProduct.description}
-                  onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
-                />
-                <div className="flex gap-2">
-                  <Button size="sm" onClick={handleAddProduct}>Додати</Button>
-                  <Button size="sm" variant="ghost" onClick={() => setShowNewProduct(false)}>Скасувати</Button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {service.products && service.products.length > 0 ? (
-            <div className="grid gap-3">
-              {service.products.map((product) => (
-                <div key={product.id} className="flex items-start gap-3 p-3 border rounded-lg">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-violet-500/10 text-violet-500 dark:bg-violet-400/20 dark:text-violet-400">
-                    <Package className="h-4 w-4" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-medium">{product.name}</h4>
-                    {product.manufacturer && (
-                      <p className="text-sm text-muted-foreground">{product.manufacturer}</p>
-                    )}
-                    {product.description && (
-                      <p className="text-sm text-muted-foreground/70 mt-1">{product.description}</p>
-                    )}
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-muted-foreground hover:text-red-500"
-                    onClick={() => product.id && handleDeleteProduct(product.id)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-muted-foreground text-center py-4">Препарати не додано</p>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Inventory Items for Auto-Deduction */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Package className="h-5 w-5 text-lime-500" />
-            Товари зі складу
-            <span className="text-xs font-normal text-muted-foreground">(автосписання)</span>
+            Товари для процедури
+            <span className="text-xs font-normal text-muted-foreground">(автосписання зі складу)</span>
           </CardTitle>
           <Button variant="outline" size="sm" onClick={() => setShowNewInventoryItem(true)}>
             <Plus className="mr-1 h-4 w-4" />
@@ -500,23 +447,51 @@ export default function ServiceDetailPage() {
           {showNewInventoryItem && (
             <div className="mb-4 p-4 border rounded-lg bg-muted/50">
               <div className="grid gap-3">
-                <Select
-                  value={newInventoryItem.item_id ? newInventoryItem.item_id.toString() : ''}
-                  onValueChange={(v) => setNewInventoryItem({ ...newInventoryItem, item_id: parseInt(v) })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Оберіть товар зі складу" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableInventoryItems
-                      .filter(item => !serviceInventoryItems.some(si => si.item_id === item.id))
-                      .map(item => (
-                        <SelectItem key={item.id} value={item.id.toString()}>
-                          {item.name} ({item.current_stock} {item.unit})
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
+                {!newInventoryItem.item_id ? (
+                  <div className="relative">
+                    <Input
+                      value={inventorySearchQuery}
+                      onChange={(e) => setInventorySearchQuery(e.target.value)}
+                      placeholder="Пошук товару за назвою..."
+                      autoFocus
+                    />
+                    {inventorySearchResults.length > 0 && (
+                      <div className="absolute z-10 w-full mt-1 border rounded-lg bg-background shadow-lg max-h-48 overflow-y-auto">
+                        {inventorySearchResults.map(item => (
+                          <div
+                            key={item.id}
+                            className="flex items-center justify-between p-2 hover:bg-muted cursor-pointer text-sm"
+                            onClick={() => handleSelectSearchItem(item.id)}
+                          >
+                            <span className="font-medium">{item.name}</span>
+                            <span className={cn(
+                              'text-xs px-1.5 py-0.5 rounded-full',
+                              item.total_stock === 0
+                                ? 'bg-red-100 text-red-700'
+                                : 'text-muted-foreground'
+                            )}>
+                              {item.total_stock} {item.unit}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {inventorySearchQuery.length >= 2 && inventorySearchResults.length === 0 && (
+                      <p className="text-xs text-muted-foreground mt-1">Нічого не знайдено</p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 p-2 bg-background rounded border">
+                    <span className="flex-1 text-sm font-medium">
+                      {inventorySearchResults.find(i => i.id === newInventoryItem.item_id)?.name ||
+                       availableInventoryItems.find(i => i.id === newInventoryItem.item_id)?.name ||
+                       `Товар #${newInventoryItem.item_id}`}
+                    </span>
+                    <Button size="sm" variant="ghost" onClick={() => setNewInventoryItem({ ...newInventoryItem, item_id: 0 })}>
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                )}
                 <div className="flex items-center gap-2">
                   <Input
                     type="number"
@@ -529,8 +504,8 @@ export default function ServiceDetailPage() {
                   <span className="text-sm text-muted-foreground">на процедуру</span>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" onClick={handleAddInventoryItem}>Додати</Button>
-                  <Button size="sm" variant="ghost" onClick={() => setShowNewInventoryItem(false)}>Скасувати</Button>
+                  <Button size="sm" onClick={handleAddInventoryItem} disabled={!newInventoryItem.item_id}>Додати</Button>
+                  <Button size="sm" variant="ghost" onClick={() => { setShowNewInventoryItem(false); setInventorySearchQuery(''); setNewInventoryItem({ item_id: 0, quantity: 1 }) }}>Скасувати</Button>
                 </div>
               </div>
             </div>
@@ -540,16 +515,55 @@ export default function ServiceDetailPage() {
             <div className="grid gap-3">
               {serviceInventoryItems.map((item) => (
                 <div key={item.id} className="flex items-start gap-3 p-3 border rounded-lg">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-lime-500/10 text-lime-500 dark:bg-lime-400/20 dark:text-lime-400">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-violet-500/10 text-violet-500 dark:bg-violet-400/20 dark:text-violet-400">
                     <Package className="h-4 w-4" />
                   </div>
                   <div className="flex-1">
                     <h4 className="font-medium">{item.item_name}</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {item.quantity} {item.unit} на процедуру
-                    </p>
-                    <p className="text-xs text-muted-foreground/70">
-                      На складі: {item.current_stock} {item.unit}
+                    {item.manufacturer && (
+                      <p className="text-sm text-muted-foreground">{item.manufacturer}</p>
+                    )}
+                    <div className="text-sm text-muted-foreground">
+                      {editingQuantityItemId === item.item_id ? (
+                        <div className="flex items-center gap-1">
+                          <Input
+                            type="number"
+                            min="1"
+                            className="w-16 h-6 text-xs"
+                            value={editingQuantityValue}
+                            onChange={(e) => setEditingQuantityValue(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleUpdateQuantity(item.item_id, parseInt(editingQuantityValue) || 1)
+                              if (e.key === 'Escape') setEditingQuantityItemId(null)
+                            }}
+                            autoFocus
+                          />
+                          <span>{item.unit} на процедуру</span>
+                        </div>
+                      ) : (
+                        <span
+                          className="cursor-pointer hover:text-primary hover:underline"
+                          onClick={() => { setEditingQuantityItemId(item.item_id); setEditingQuantityValue(item.quantity.toString()) }}
+                          title="Натисніть для зміни"
+                        >
+                          {item.quantity} {item.unit} на процедуру
+                        </span>
+                      )}
+                    </div>
+                    {item.notes && (
+                      <p className="text-xs text-muted-foreground/70 mt-0.5">{item.notes}</p>
+                    )}
+                    <p className="text-xs mt-0.5">
+                      <span className={cn(
+                        'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full font-medium',
+                        item.current_stock === 0
+                          ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                          : item.current_stock <= item.quantity
+                            ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                            : 'text-muted-foreground/70'
+                      )}>
+                        {item.current_stock === 0 ? 'Немає на складі!' : `На складі: ${item.current_stock} ${item.unit}`}
+                      </span>
                     </p>
                   </div>
                   <Button
@@ -565,9 +579,9 @@ export default function ServiceDetailPage() {
             </div>
           ) : (
             <div className="text-center py-4">
-              <p className="text-muted-foreground">Товари не прив'язані</p>
+              <p className="text-muted-foreground">Товари не додано</p>
               <p className="text-xs text-muted-foreground/70 mt-1">
-                Додайте товари зі складу, які будуть автоматично списуватися при завершенні процедури
+                Додайте товари з каталогу, які автоматично списуються зі складу при завершенні процедури
               </p>
             </div>
           )}

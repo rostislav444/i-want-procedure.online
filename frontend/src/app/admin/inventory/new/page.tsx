@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Save } from 'lucide-react'
+import { ArrowLeft, Save, ChevronDown, ChevronUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -17,12 +17,14 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
+import { toast } from 'sonner'
 import { inventoryApi, InventoryCategory } from '@/lib/api'
 
 export default function NewInventoryItemPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [categories, setCategories] = useState<InventoryCategory[]>([])
+  const [showAdvanced, setShowAdvanced] = useState(false)
 
   // Form state
   const [name, setName] = useState('')
@@ -72,7 +74,7 @@ export default function NewInventoryItemPage() {
 
     setLoading(true)
     try {
-      await inventoryApi.createItem({
+      const createdItem = await inventoryApi.createItem({
         name: name.trim(),
         sku: sku.trim() || undefined,
         barcode: barcode.trim() || undefined,
@@ -87,10 +89,11 @@ export default function NewInventoryItemPage() {
         is_available_for_sale: isAvailableForSale,
         initial_stock: initialStock ? parseInt(initialStock) : undefined,
       })
-      router.push('/admin/inventory')
+      toast.success('Товар створено')
+      router.push(`/admin/inventory/${createdItem.id}`)
     } catch (error) {
       console.error('Error creating item:', error)
-      alert('Помилка при створенні товару')
+      toast.error('Помилка при створенні товару')
     } finally {
       setLoading(false)
     }
@@ -111,22 +114,110 @@ export default function NewInventoryItemPage() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Basic Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Основна інформація</CardTitle>
-            </CardHeader>
+      <form onSubmit={handleSubmit} className="max-w-2xl space-y-6">
+        {/* Essential fields */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Основне</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Назва товару *</Label>
+              <Input
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Наприклад: Botox 100 од"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="category">Категорія</Label>
+              <Select
+                value={categoryId?.toString() || 'none'}
+                onValueChange={(v) => setCategoryId(v === 'none' ? undefined : parseInt(v))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Оберіть категорію" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Без категорії</SelectItem>
+                  {flatCategories.map(cat => (
+                    <SelectItem key={cat.id} value={cat.id.toString()}>
+                      {'  '.repeat(cat.level)}{cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="unit">Одиниця</Label>
+                <Select value={unit} onValueChange={setUnit}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="шт">шт</SelectItem>
+                    <SelectItem value="мл">мл</SelectItem>
+                    <SelectItem value="г">г</SelectItem>
+                    <SelectItem value="упак">упак</SelectItem>
+                    <SelectItem value="л">л</SelectItem>
+                    <SelectItem value="кг">кг</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="purchasePrice">Ціна закупки</Label>
+                <Input
+                  id="purchasePrice"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={purchasePrice}
+                  onChange={(e) => setPurchasePrice(e.target.value)}
+                  placeholder="0.00 грн"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="initialStock">Є на складі</Label>
+                <Input
+                  id="initialStock"
+                  type="number"
+                  min="0"
+                  value={initialStock}
+                  onChange={(e) => setInitialStock(e.target.value)}
+                  placeholder="0"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Advanced fields (collapsed by default) */}
+        <Card>
+          <CardHeader className="cursor-pointer" onClick={() => setShowAdvanced(!showAdvanced)}>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base">Додатково</CardTitle>
+              <Button variant="ghost" size="sm" type="button">
+                {showAdvanced ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                <span className="ml-1 text-sm font-normal">
+                  {showAdvanced ? 'Згорнути' : 'Показати більше'}
+                </span>
+              </Button>
+            </div>
+          </CardHeader>
+          {showAdvanced && (
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Назва товару *</Label>
+                <Label htmlFor="manufacturer">Виробник</Label>
                 <Input
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Введіть назву товару"
-                  required
+                  id="manufacturer"
+                  value={manufacturer}
+                  onChange={(e) => setManufacturer(e.target.value)}
+                  placeholder="Назва виробника"
                 />
               </div>
 
@@ -163,147 +254,63 @@ export default function NewInventoryItemPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="manufacturer">Виробник</Label>
-                <Input
-                  id="manufacturer"
-                  value={manufacturer}
-                  onChange={(e) => setManufacturer(e.target.value)}
-                  placeholder="Назва виробника"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="category">Категорія</Label>
-                <Select
-                  value={categoryId?.toString() || 'none'}
-                  onValueChange={(v) => setCategoryId(v === 'none' ? undefined : parseInt(v))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Оберіть категорію" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Без категорії</SelectItem>
-                    {flatCategories.map(cat => (
-                      <SelectItem key={cat.id} value={cat.id.toString()}>
-                        {'  '.repeat(cat.level)}{cat.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Pricing & Stock */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Ціни та залишки</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="usageType">Тип використання</Label>
+                <Label htmlFor="usageType">Як використовується</Label>
                 <Select value={usageType} onValueChange={setUsageType}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="internal">Для внутрішнього використання</SelectItem>
-                    <SelectItem value="sale">Для продажу</SelectItem>
-                    <SelectItem value="both">Універсальний</SelectItem>
+                    <SelectItem value="internal">Тільки для процедур (внутрішній)</SelectItem>
+                    <SelectItem value="sale">Тільки для продажу клієнтам</SelectItem>
+                    <SelectItem value="both">І для процедур, і для продажу</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               {(usageType === 'sale' || usageType === 'both') && (
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="isAvailableForSale"
-                    checked={isAvailableForSale}
-                    onCheckedChange={(checked) => setIsAvailableForSale(checked === true)}
-                  />
-                  <Label htmlFor="isAvailableForSale" className="text-sm font-normal">
-                    Показувати у публічному каталозі
-                  </Label>
-                </div>
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="salePrice">Ціна продажу (грн)</Label>
+                    <Input
+                      id="salePrice"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={salePrice}
+                      onChange={(e) => setSalePrice(e.target.value)}
+                      placeholder="0.00"
+                    />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="isAvailableForSale"
+                      checked={isAvailableForSale}
+                      onCheckedChange={(checked) => setIsAvailableForSale(checked === true)}
+                    />
+                    <Label htmlFor="isAvailableForSale" className="text-sm font-normal">
+                      Показувати у публічному каталозі
+                    </Label>
+                  </div>
+                </>
               )}
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="purchasePrice">Ціна закупки (грн)</Label>
-                  <Input
-                    id="purchasePrice"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={purchasePrice}
-                    onChange={(e) => setPurchasePrice(e.target.value)}
-                    placeholder="0.00"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="salePrice">Ціна продажу (грн)</Label>
-                  <Input
-                    id="salePrice"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={salePrice}
-                    onChange={(e) => setSalePrice(e.target.value)}
-                    placeholder="0.00"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="unit">Одиниця виміру</Label>
-                  <Select value={unit} onValueChange={setUnit}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="шт">шт</SelectItem>
-                      <SelectItem value="мл">мл</SelectItem>
-                      <SelectItem value="г">г</SelectItem>
-                      <SelectItem value="упак">упак</SelectItem>
-                      <SelectItem value="л">л</SelectItem>
-                      <SelectItem value="кг">кг</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="minStockLevel">Мінімальний залишок</Label>
-                  <Input
-                    id="minStockLevel"
-                    type="number"
-                    min="0"
-                    value={minStockLevel}
-                    onChange={(e) => setMinStockLevel(e.target.value)}
-                    placeholder="5"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Сповіщення коли залишок нижче цього рівня
-                  </p>
-                </div>
-              </div>
-
               <div className="space-y-2">
-                <Label htmlFor="initialStock">Початковий залишок</Label>
+                <Label htmlFor="minStockLevel">Мінімальний залишок</Label>
                 <Input
-                  id="initialStock"
+                  id="minStockLevel"
                   type="number"
                   min="0"
-                  value={initialStock}
-                  onChange={(e) => setInitialStock(e.target.value)}
-                  placeholder="0"
+                  value={minStockLevel}
+                  onChange={(e) => setMinStockLevel(e.target.value)}
+                  placeholder="5"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Буде створено початковий приход
+                  Ви побачите попередження коли залишок впаде нижче цього рівня
                 </p>
               </div>
             </CardContent>
-          </Card>
-        </div>
+          )}
+        </Card>
 
         {/* Actions */}
         <div className="flex justify-end gap-4">

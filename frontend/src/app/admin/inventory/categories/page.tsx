@@ -33,6 +33,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { toast } from 'sonner'
 import { inventoryApi, InventoryCategory } from '@/lib/api'
 
 export default function InventoryCategoriesPage() {
@@ -108,7 +109,7 @@ export default function InventoryCategoriesPage() {
       loadCategories()
     } catch (error) {
       console.error('Error saving category:', error)
-      alert('Помилка при збереженні категорії')
+      toast.error('Помилка при збереженні категорії')
     } finally {
       setSaving(false)
     }
@@ -124,7 +125,7 @@ export default function InventoryCategoriesPage() {
       loadCategories()
     } catch (error) {
       console.error('Error deleting category:', error)
-      alert('Помилка при видаленні категорії')
+      toast.error('Помилка при видаленні категорії')
     }
   }
 

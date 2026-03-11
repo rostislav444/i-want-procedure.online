@@ -25,11 +25,14 @@ from app.models.inventory import (
     InventoryItemAttribute,
     StockMovement,
     ServiceInventoryItem,
+    StockBatch,
     UsageType,
     MovementType,
     SelectionType,
     ValueType,
 )
+from app.models.expense import Expense, ExpenseFrequency
+from app.models.global_catalog import GlobalServiceCategory, GlobalServiceTemplate
 
 __all__ = [
     "Company",
@@ -66,8 +69,15 @@ __all__ = [
     "InventoryItemAttribute",
     "StockMovement",
     "ServiceInventoryItem",
+    "StockBatch",
     "UsageType",
     "MovementType",
     "SelectionType",
     "ValueType",
+    # Expenses
+    "Expense",
+    "ExpenseFrequency",
+    # Global catalog
+    "GlobalServiceCategory",
+    "GlobalServiceTemplate",
 ]

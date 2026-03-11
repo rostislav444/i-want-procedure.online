@@ -2,9 +2,10 @@
 
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Plus, Package, Search, AlertTriangle, ArrowDownUp, FolderTree, Tags, ChevronLeft, ChevronRight, ChevronDown, LayoutGrid, List, ArrowUp, ArrowDown } from 'lucide-react'
+import { Plus, Package, Search, AlertTriangle, ArrowDownUp, FolderTree, Tags, ChevronLeft, ChevronRight, ChevronDown, LayoutGrid, List, ArrowUp, ArrowDown, PackagePlus, PackageMinus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -14,8 +15,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 import { TableSkeleton, CardsSkeleton, FadeIn } from '@/components/ui/loader'
+import { toast } from 'sonner'
 import { inventoryApi, InventoryItemListItem, InventoryCategory, InventoryStats, Brand, getFileUrl } from '@/lib/api'
 
 const USAGE_TYPE_LABELS: Record<string, string> = {
@@ -135,14 +144,38 @@ export default function InventoryPage() {
   const [totalItems, setTotalItems] = useState(0)
   const pageSize = 20
 
+  // Quick action dialogs
+  const [showReceiveDialog, setShowReceiveDialog] = useState(false)
+  const [showWriteOffDialog, setShowWriteOffDialog] = useState(false)
+  const [quickSearchQuery, setQuickSearchQuery] = useState('')
+  const [quickSearchResults, setQuickSearchResults] = useState<InventoryItemListItem[]>([])
+  const [quickSelectedItemId, setQuickSelectedItemId] = useState<number | null>(null)
+  const [quickQuantity, setQuickQuantity] = useState('')
+  const [quickUnitPrice, setQuickUnitPrice] = useState('')
+  const [quickBatchNumber, setQuickBatchNumber] = useState('')
+  const [quickExpiryDate, setQuickExpiryDate] = useState('')
+  const [quickNotes, setQuickNotes] = useState('')
+  const [quickLoading, setQuickLoading] = useState(false)
+
+  // Debounced search
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery)
+      setCurrentPage(1)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
+
   useEffect(() => {
     loadData()
-  }, [selectedCategoryId, selectedBrandId, selectedCollectionId, usageTypeFilter, showLowStock, currentPage])
+  }, [selectedCategoryId, selectedBrandId, selectedCollectionId, usageTypeFilter, showLowStock, currentPage, debouncedSearch, sortBy, sortDir])
 
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1)
-  }, [selectedCategoryId, selectedBrandId, selectedCollectionId, usageTypeFilter, showLowStock, searchQuery])
+  }, [selectedCategoryId, selectedBrandId, selectedCollectionId, usageTypeFilter, showLowStock])
 
   // Expand parent categories and the selected category itself when selected
   useEffect(() => {
@@ -180,6 +213,9 @@ export default function InventoryPage() {
           collection_id: selectedCollectionId,
           usage_type: usageTypeFilter,
           is_low_stock: showLowStock || undefined,
+          search: debouncedSearch || undefined,
+          sort_by: sortBy || undefined,
+          sort_dir: sortDir || undefined,
           page: currentPage,
           page_size: pageSize,
         }),
@@ -200,33 +236,8 @@ export default function InventoryPage() {
     }
   }
 
-  const filteredItems = items.filter(item =>
-    !searchQuery ||
-    item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.sku?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.barcode?.toLowerCase().includes(searchQuery.toLowerCase())
-  )
-
-  const sortedItems = viewMode === 'table'
-    ? [...filteredItems].sort((a, b) => {
-        let cmp = 0
-        switch (sortBy) {
-          case 'name':
-            cmp = a.name.localeCompare(b.name, 'uk')
-            break
-          case 'total_stock':
-            cmp = a.total_stock - b.total_stock
-            break
-          case 'purchase_price':
-            cmp = (Number(a.purchase_price) || Number(a.min_variant_price) || 0) - (Number(b.purchase_price) || Number(b.min_variant_price) || 0)
-            break
-          case 'sale_price':
-            cmp = (Number(a.sale_price) || Number(a.min_variant_price) || 0) - (Number(b.sale_price) || Number(b.min_variant_price) || 0)
-            break
-        }
-        return sortDir === 'asc' ? cmp : -cmp
-      })
-    : filteredItems
+  // Items are already filtered and sorted server-side
+  const sortedItems = items
 
   const handleSort = (field: SortField) => {
     if (sortBy === field) {
@@ -289,6 +300,84 @@ export default function InventoryPage() {
     return brands.reduce((sum, brand) => sum + (brand.items_count || 0), 0)
   }
 
+  // Quick action: search items for receive/write-off dialogs
+  useEffect(() => {
+    if (!quickSearchQuery || quickSearchQuery.length < 2) {
+      setQuickSearchResults([])
+      return
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const res = await inventoryApi.getItems({ search: quickSearchQuery, page_size: 10 })
+        setQuickSearchResults(res.items)
+      } catch (e) {
+        console.error(e)
+      }
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [quickSearchQuery])
+
+  const resetQuickForm = () => {
+    setQuickSearchQuery('')
+    setQuickSearchResults([])
+    setQuickSelectedItemId(null)
+    setQuickQuantity('')
+    setQuickUnitPrice('')
+    setQuickBatchNumber('')
+    setQuickExpiryDate('')
+    setQuickNotes('')
+  }
+
+  const handleQuickReceive = async () => {
+    if (!quickSelectedItemId || !quickQuantity) return
+    setQuickLoading(true)
+    try {
+      await inventoryApi.createMovement({
+        item_id: quickSelectedItemId,
+        movement_type: 'incoming',
+        quantity: Math.abs(parseInt(quickQuantity)),
+        unit_price: quickUnitPrice ? parseFloat(quickUnitPrice) : undefined,
+        batch_number: quickBatchNumber || undefined,
+        expiry_date: quickExpiryDate || undefined,
+        notes: quickNotes || undefined,
+      })
+      toast.success('Товар прийнято на склад')
+      setShowReceiveDialog(false)
+      resetQuickForm()
+      loadData()
+    } catch (error) {
+      console.error(error)
+      toast.error('Помилка при прийомі товару')
+    } finally {
+      setQuickLoading(false)
+    }
+  }
+
+  const handleQuickWriteOff = async () => {
+    if (!quickSelectedItemId || !quickQuantity) return
+    setQuickLoading(true)
+    try {
+      await inventoryApi.createMovement({
+        item_id: quickSelectedItemId,
+        movement_type: 'write_off',
+        quantity: -Math.abs(parseInt(quickQuantity)),
+        notes: quickNotes || undefined,
+      })
+      toast.success('Товар списано')
+      setShowWriteOffDialog(false)
+      resetQuickForm()
+      loadData()
+    } catch (error) {
+      console.error(error)
+      toast.error('Помилка при списанні товару')
+    } finally {
+      setQuickLoading(false)
+    }
+  }
+
+  const selectedQuickItem = quickSearchResults.find(i => i.id === quickSelectedItemId) ||
+    items.find(i => i.id === quickSelectedItemId)
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -325,6 +414,14 @@ export default function InventoryPage() {
               Рух товарів
             </Button>
           </Link>
+          <Button variant="outline" size="sm" onClick={() => { resetQuickForm(); setShowReceiveDialog(true) }}>
+            <PackagePlus className="mr-2 h-4 w-4" />
+            Прийняти товар
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => { resetQuickForm(); setShowWriteOffDialog(true) }}>
+            <PackageMinus className="mr-2 h-4 w-4" />
+            Списати
+          </Button>
           <Link href="/admin/inventory/new">
             <Button size="sm">
               <Plus className="mr-2 h-4 w-4" />
@@ -643,15 +740,17 @@ export default function InventoryPage() {
                               <td className="p-3 text-muted-foreground">{item.brand_name || '—'}</td>
                               <td className="p-3 text-right">
                                 <span className={cn(
-                                  'font-semibold',
-                                  item.is_low_stock ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'
+                                  'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold',
+                                  item.total_stock === 0
+                                    ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                                    : item.is_low_stock
+                                      ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                                      : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                                 )}>
-                                  {item.total_stock}
+                                  {item.total_stock === 0 && <AlertTriangle className="h-3 w-3" />}
+                                  {item.is_low_stock && item.total_stock > 0 && <AlertTriangle className="h-3 w-3" />}
+                                  {item.total_stock} {item.unit}
                                 </span>
-                                <span className="text-muted-foreground ml-1 text-xs">{item.unit}</span>
-                                {item.is_low_stock && (
-                                  <AlertTriangle className="inline-block ml-1 h-3.5 w-3.5 text-red-500" />
-                                )}
                               </td>
                               <td className="p-3 text-right text-muted-foreground">
                                 {hasVariants
@@ -699,14 +798,16 @@ export default function InventoryPage() {
                                 <td className="p-3"></td>
                                 <td className="p-3 text-right">
                                   <span className={cn(
-                                    'font-semibold',
-                                    variant.is_low_stock ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'
+                                    'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold',
+                                    variant.current_stock === 0
+                                      ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                                      : variant.is_low_stock
+                                        ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                                        : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                                   )}>
+                                    {(variant.current_stock === 0 || variant.is_low_stock) && <AlertTriangle className="h-3 w-3" />}
                                     {variant.current_stock}
                                   </span>
-                                  {variant.is_low_stock && (
-                                    <AlertTriangle className="inline-block ml-1 h-3 w-3 text-red-500" />
-                                  )}
                                 </td>
                                 <td className="p-3 text-right text-muted-foreground">
                                   {variant.purchase_price ? `${variant.purchase_price} грн` : '—'}
@@ -729,7 +830,7 @@ export default function InventoryPage() {
             ) : (
               /* ===== GRID VIEW ===== */
               <FadeIn className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredItems.map(item => (
+                {sortedItems.map(item => (
                   <Link key={item.id} href={`/admin/inventory/${item.id}`}>
                     <Card className="hover:shadow-md transition-shadow cursor-pointer h-full flex flex-col">
                       {/* Image */}
@@ -804,9 +905,17 @@ export default function InventoryPage() {
                         )}
                       </CardContent>
 
-                      <CardFooter className="px-4 py-3 border-t bg-muted/30 flex justify-between mt-auto">
-                        <span className="text-sm">
-                          Залишок: <strong>{item.total_stock} {item.unit}</strong>
+                      <CardFooter className="px-4 py-3 border-t bg-muted/30 flex justify-between items-center mt-auto">
+                        <span className={cn(
+                          'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold',
+                          item.total_stock === 0
+                            ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                            : item.is_low_stock
+                              ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                              : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                        )}>
+                          {(item.total_stock === 0 || item.is_low_stock) && <AlertTriangle className="h-3 w-3" />}
+                          {item.total_stock} {item.unit}
                         </span>
                         {/* Show price range for items with variants, or single price */}
                         {item.min_variant_price && item.max_variant_price ? (
@@ -900,6 +1009,188 @@ export default function InventoryPage() {
           )}
         </div>
       </div>
+
+      {/* Quick Receive Dialog */}
+      <Dialog open={showReceiveDialog} onOpenChange={setShowReceiveDialog}>
+        <DialogContent className="sm:max-w-[450px]">
+          <DialogHeader>
+            <DialogTitle>Прийняти товар</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {!quickSelectedItemId ? (
+              <div className="space-y-2">
+                <Label>Знайти товар</Label>
+                <Input
+                  value={quickSearchQuery}
+                  onChange={(e) => setQuickSearchQuery(e.target.value)}
+                  placeholder="Введіть назву товару..."
+                  autoFocus
+                />
+                {quickSearchResults.length > 0 && (
+                  <div className="border rounded-lg max-h-48 overflow-y-auto">
+                    {quickSearchResults.map(item => (
+                      <div
+                        key={item.id}
+                        className="flex items-center justify-between p-2 hover:bg-muted cursor-pointer text-sm"
+                        onClick={() => setQuickSelectedItemId(item.id)}
+                      >
+                        <span className="font-medium">{item.name}</span>
+                        <span className="text-muted-foreground">{item.total_stock} {item.unit}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {quickSearchQuery.length >= 2 && quickSearchResults.length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-3">Товар не знайдено</p>
+                )}
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                  <div>
+                    <p className="font-medium">{selectedQuickItem?.name}</p>
+                    <p className="text-xs text-muted-foreground">На складі: {selectedQuickItem?.total_stock} {selectedQuickItem?.unit}</p>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={() => setQuickSelectedItemId(null)}>
+                    Змінити
+                  </Button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label>Скільки прийшло *</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      value={quickQuantity}
+                      onChange={(e) => setQuickQuantity(e.target.value)}
+                      placeholder="10"
+                      autoFocus
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Ціна за одиницю</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={quickUnitPrice}
+                      onChange={(e) => setQuickUnitPrice(e.target.value)}
+                      placeholder="0.00 грн"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label>Номер партії</Label>
+                    <Input
+                      value={quickBatchNumber}
+                      onChange={(e) => setQuickBatchNumber(e.target.value)}
+                      placeholder="LOT-2024-03"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Термін придатності</Label>
+                    <Input
+                      type="date"
+                      value={quickExpiryDate}
+                      onChange={(e) => setQuickExpiryDate(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowReceiveDialog(false)}>Скасувати</Button>
+            <Button onClick={handleQuickReceive} disabled={!quickSelectedItemId || !quickQuantity || quickLoading}>
+              {quickLoading ? 'Збереження...' : 'Прийняти'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Quick Write-Off Dialog */}
+      <Dialog open={showWriteOffDialog} onOpenChange={setShowWriteOffDialog}>
+        <DialogContent className="sm:max-w-[450px]">
+          <DialogHeader>
+            <DialogTitle>Списати товар</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {!quickSelectedItemId ? (
+              <div className="space-y-2">
+                <Label>Знайти товар</Label>
+                <Input
+                  value={quickSearchQuery}
+                  onChange={(e) => setQuickSearchQuery(e.target.value)}
+                  placeholder="Введіть назву товару..."
+                  autoFocus
+                />
+                {quickSearchResults.length > 0 && (
+                  <div className="border rounded-lg max-h-48 overflow-y-auto">
+                    {quickSearchResults.map(item => (
+                      <div
+                        key={item.id}
+                        className="flex items-center justify-between p-2 hover:bg-muted cursor-pointer text-sm"
+                        onClick={() => setQuickSelectedItemId(item.id)}
+                      >
+                        <span className="font-medium">{item.name}</span>
+                        <span className="text-muted-foreground">{item.total_stock} {item.unit}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {quickSearchQuery.length >= 2 && quickSearchResults.length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-3">Товар не знайдено</p>
+                )}
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                  <div>
+                    <p className="font-medium">{selectedQuickItem?.name}</p>
+                    <p className="text-xs text-muted-foreground">На складі: {selectedQuickItem?.total_stock} {selectedQuickItem?.unit}</p>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={() => setQuickSelectedItemId(null)}>
+                    Змінити
+                  </Button>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Скільки списати *</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={quickQuantity}
+                    onChange={(e) => setQuickQuantity(e.target.value)}
+                    placeholder="Кількість"
+                    autoFocus
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Причина списання</Label>
+                  <Input
+                    value={quickNotes}
+                    onChange={(e) => setQuickNotes(e.target.value)}
+                    placeholder="Прострочено, зіпсовано, використано..."
+                  />
+                </div>
+              </>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowWriteOffDialog(false)}>Скасувати</Button>
+            <Button
+              variant="destructive"
+              onClick={handleQuickWriteOff}
+              disabled={!quickSelectedItemId || !quickQuantity || quickLoading}
+            >
+              {quickLoading ? 'Списання...' : 'Списати'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

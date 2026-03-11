@@ -4,8 +4,8 @@ set -e
 
 # Configuration
 PROJECT_DIR="/var/www/procedure"
-DOMAIN="i-want-procedure.online"
-EMAIL="admin@i-want-procedure.online"
+DOMAIN="beautica.pro"
+EMAIL="admin@beautica.pro"
 COMPOSE_FILES="-f docker-compose.prod.yml -f docker-compose.frontend.yml -f docker-compose.nginx.yml"
 
 # Set explicit project name to avoid conflicts
@@ -49,7 +49,7 @@ show_help() {
     echo "Examples:"
     echo "  ./deploy.sh deploy"
     echo "  ./deploy.sh logs api"
-    echo "  ./deploy.sh setup i-want-procedure.online admin@example.com"
+    echo "  ./deploy.sh setup beautica.pro admin@example.com"
 }
 
 # Create docker network and volumes

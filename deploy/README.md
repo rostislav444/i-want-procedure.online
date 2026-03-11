@@ -78,7 +78,7 @@ sudo mkdir -p /var/www
 cd /var/www
 
 # Clone repository
-sudo git clone https://github.com/rostislav444/i-want-procedure.online.git procedure
+sudo git clone https://github.com/rostislav444/beautica.pro.git procedure
 cd procedure
 ```
 
@@ -115,14 +115,14 @@ DOCTOR_BOT_NAME=doctor_i_want_procedure_bot
 # Google OAuth
 GOOGLE_CLIENT_ID=<your-google-client-id>
 GOOGLE_CLIENT_SECRET=<your-google-client-secret>
-GOOGLE_REDIRECT_URI=https://i-want-procedure.online/api/v1/auth/google/callback
+GOOGLE_REDIRECT_URI=https://beautica.pro/api/v1/auth/google/callback
 
 # API & Frontend
-API_URL=https://i-want-procedure.online
-FRONTEND_URL=https://i-want-procedure.online
+API_URL=https://beautica.pro
+FRONTEND_URL=https://beautica.pro
 
 # CORS
-CORS_ORIGINS=["https://i-want-procedure.online"]
+CORS_ORIGINS=["https://beautica.pro"]
 
 # Redis
 REDIS_URL=redis://redis:6379/0
@@ -138,7 +138,7 @@ DEBUG=False
 chmod +x deploy/deploy.sh
 
 # Run setup (generates SSL certificates)
-sudo ./deploy/deploy.sh setup i-want-procedure.online admin@i-want-procedure.online
+sudo ./deploy/deploy.sh setup beautica.pro admin@beautica.pro
 ```
 
 This will:
@@ -167,7 +167,7 @@ docker ps
 # - procedure_nginx
 
 # Check site is accessible
-curl -I https://i-want-procedure.online
+curl -I https://beautica.pro
 
 # View logs
 sudo ./deploy/deploy.sh logs
@@ -303,10 +303,10 @@ nginx: [emerg] cannot load certificate
 **Solution:**
 ```bash
 # Check if certificates exist
-ls -la certbot/letsencrypt/live/i-want-procedure.online/
+ls -la certbot/letsencrypt/live/beautica.pro/
 
 # If missing, run initial setup
-./deploy/deploy.sh setup i-want-procedure.online admin@i-want-procedure.online
+./deploy/deploy.sh setup beautica.pro admin@beautica.pro
 ```
 
 ### Build Failures
@@ -432,7 +432,7 @@ docker image prune -a
 ### View Logs
 
 **Dozzle Web UI:**
-https://i-want-procedure.online/dozzle/
+https://beautica.pro/dozzle/
 
 **Command Line:**
 ```bash
@@ -463,10 +463,10 @@ docker stats
 
 ```bash
 # Check site is up
-curl -I https://i-want-procedure.online
+curl -I https://beautica.pro
 
 # Check API health
-curl https://i-want-procedure.online/api/v1/health
+curl https://beautica.pro/api/v1/health
 
 # Check database connection
 docker exec procedure_db pg_isready -U postgres
@@ -488,4 +488,4 @@ For deployment issues:
 1. Check this README
 2. Review deployment logs: `./deploy/deploy.sh logs`
 3. Check GitHub Actions logs
-4. Report issues: https://github.com/rostislav444/i-want-procedure.online/issues
+4. Report issues: https://github.com/rostislav444/beautica.pro/issues

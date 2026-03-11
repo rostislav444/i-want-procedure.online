@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from app.models.company_member import MemberService
     from app.models.position import Position
     from app.models.inventory import ServiceInventoryItem
+    from app.models.global_catalog import GlobalServiceCategory, GlobalServiceTemplate
 
 
 class ServiceCategory(Base):
@@ -26,15 +27,20 @@ class ServiceCategory(Base):
     parent_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey("service_categories.id", ondelete="CASCADE"), nullable=True
     )
+    global_category_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("global_service_categories.id", ondelete="SET NULL"), nullable=True
+    )
     name: Mapped[str] = mapped_column(String(255))
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     order: Mapped[int] = mapped_column(Integer, default=0)
+    is_custom: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
 
     # Relationships
     company: Mapped["Company"] = relationship(back_populates="service_categories")
+    global_category: Mapped[Optional["GlobalServiceCategory"]] = relationship()
     parent: Mapped[Optional["ServiceCategory"]] = relationship(
         back_populates="children", remote_side=[id]
     )
@@ -59,11 +65,15 @@ class Service(Base):
         ForeignKey("positions.id", ondelete="SET NULL"), nullable=True
     )
     doctor_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
+    global_template_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("global_service_templates.id", ondelete="SET NULL"), nullable=True
+    )
     name: Mapped[str] = mapped_column(String(255))
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     duration_minutes: Mapped[int] = mapped_column(Integer, default=60)
     price: Mapped[Decimal] = mapped_column(Numeric(10, 2))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_custom: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -71,6 +81,7 @@ class Service(Base):
     # Relationships
     company: Mapped["Company"] = relationship(back_populates="services")
     category: Mapped[Optional["ServiceCategory"]] = relationship(back_populates="services")
+    global_template: Mapped[Optional["GlobalServiceTemplate"]] = relationship()
     specialty: Mapped[Optional["Specialty"]] = relationship(back_populates="services")
     position: Mapped[Optional["Position"]] = relationship(back_populates="services")
     doctor: Mapped[Optional["User"]] = relationship(back_populates="services")

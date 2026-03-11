@@ -199,7 +199,7 @@ export default function CompaniesPage() {
                           variant="ghost"
                           size="sm"
                           className="text-slate-400 hover:text-white"
-                          onClick={() => window.open(`https://i-want-procedure.online/${company.slug}`, '_blank')}
+                          onClick={() => window.open(`https://beautica.pro/${company.slug}`, '_blank')}
                           title="View public page"
                         >
                           <ExternalLink className="w-4 h-4" />
@@ -398,7 +398,7 @@ export default function CompaniesPage() {
                           variant="outline"
                           size="sm"
                           className="ml-auto border-amber-500/50 text-amber-400 hover:bg-amber-500/20"
-                          onClick={() => window.open(`https://i-want-procedure.online/${company.slug}`, '_blank')}
+                          onClick={() => window.open(`https://beautica.pro/${company.slug}`, '_blank')}
                         >
                           <ExternalLink className="w-4 h-4 mr-2" />
                           View Public Page

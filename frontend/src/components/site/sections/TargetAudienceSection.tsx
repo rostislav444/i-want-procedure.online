@@ -29,14 +29,12 @@ export default function TargetAudienceSection() {
   ]
 
   return (
-    <section className="py-12 sm:py-16 relative overflow-hidden">
-      <div className="absolute w-96 h-96 bg-yellow-200 dark:bg-yellow-500/15 -top-40 -right-48 rounded-full blur-3xl opacity-30 animate-blob" />
-
+    <section className="py-8 sm:py-10 relative overflow-hidden">
       <div className="max-w-6xl mx-auto px-4 relative">
         {/* Header */}
-        <div className="text-center mb-10 sm:mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-500/15 dark:to-pink-500/15 text-purple-600 dark:text-purple-400 text-sm font-medium mb-4">
-            <Heart className="w-4 h-4" />
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-500/15 dark:to-pink-500/15 text-purple-600 dark:text-purple-400 text-xs font-medium mb-3">
+            <Heart className="w-3.5 h-3.5" />
             <span>Для кого</span>
           </div>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold dark:text-white">
@@ -45,24 +43,24 @@ export default function TargetAudienceSection() {
         </div>
 
         {/* Segments Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {segments.map((segment, i) => (
             <div
               key={i}
-              className="group p-6 rounded-2xl bg-card dark:bg-white/5 border border-pink-100 dark:border-pink-500/20 shadow-soft hover:shadow-xl transition-all hover:-translate-y-2"
+              className="group p-4 rounded-xl bg-card dark:bg-white/5 border border-pink-100 dark:border-pink-500/20 shadow-soft hover:shadow-lg transition-all hover:-translate-y-1"
             >
               {/* Icon */}
-              <div className="mb-4">
+              <div className="mb-3">
                 <div
-                  className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${segment.color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}
+                  className={`w-10 h-10 rounded-xl bg-gradient-to-br ${segment.color} flex items-center justify-center shadow-md group-hover:scale-110 transition-transform`}
                 >
-                  <segment.icon className="w-8 h-8 text-white" />
+                  <segment.icon className="w-5 h-5 text-white" />
                 </div>
               </div>
 
               {/* Content */}
-              <h3 className="text-xl font-bold mb-2 dark:text-white">{segment.title}</h3>
-              <p className="text-muted-foreground dark:text-gray-400 text-sm leading-relaxed">
+              <h3 className="text-sm font-bold mb-1 dark:text-white">{segment.title}</h3>
+              <p className="text-muted-foreground dark:text-gray-400 text-xs leading-relaxed">
                 {segment.desc}
               </p>
             </div>

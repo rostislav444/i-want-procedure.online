@@ -1,0 +1,2393 @@
+stop_reason: end_turn
+input_tokens: 12827
+output_tokens: 31219
+source_type: url
+content: https://lumenis.com.ua/tsiny-kosm-oblichchya.html
+---RAW RESPONSE---
+```json
+{
+  "categories": [
+    "Чистки",
+    "Массаж лица",
+    "Уходы",
+    "Маски для лица",
+    "Пилинги поверхностные",
+    "Пилинги срединные",
+    "Мультипилинги",
+    "Ретиноловые пилинги",
+    "Коралловые пилинги",
+    "Пилинги Retix C",
+    "Пилинги Smart 4 Derma",
+    "Криолифтинг",
+    "Микротоковая терапия",
+    "Микроигольчатый RF лифтинг",
+    "SMAS-лифтинг",
+    "RF-лифтинг",
+    "Безинъекционная мезотерапия",
+    "Фракционная мезотерапия Dermapen",
+    "Мезороллер",
+    "Безинъекционная карбокситерапия",
+    "Дерматокосметология Plazma Pix",
+    "Безинъекционная ревитализация",
+    "Аппаратный уход Geneo+",
+    "Гидродермабразия HydroLuxx",
+    "Лазерный карбоновый пилинг",
+    "Лазерное карбоновое удаление пигментации",
+    "LED терапия",
+    "Консультации и диагностика"
+  ],
+  "services": [
+    {
+      "name": "Комбинированная чистка лица (женская)",
+      "description": "Комбинированная чистка лица для женщин",
+      "duration_minutes": 60,
+      "price": 1300,
+      "category_name": "Чистки",
+      "price_options": []
+    },
+    {
+      "name": "Комбинированная чистка спины (женская)",
+      "description": "Комбинированная чистка спины для женщин",
+      "duration_minutes": 60,
+      "price": 1700,
+      "category_name": "Чистки",
+      "price_options": []
+    },
+    {
+      "name": "Атравматичная чистка лица (женская)",
+      "description": "Атравматичная чистка лица для женщин",
+      "duration_minutes": 60,
+      "price": 1300,
+      "category_name": "Чистки",
+      "price_options": []
+    },
+    {
+      "name": "Удаление милиума",
+      "description": "Удаление милиума (просяных зёрен)",
+      "duration_minutes": 30,
+      "price": 150,
+      "category_name": "Чистки",
+      "price_options": []
+    },
+    {
+      "name": "Комбинированная чистка шеи и декольте (женская)",
+      "description": "Комбинированная чистка шеи и декольте для женщин",
+      "duration_minutes": 45,
+      "price": 1300,
+      "category_name": "Чистки",
+      "price_options": []
+    },
+    {
+      "name": "Ультразвуковая чистка лица и шеи (женская)",
+      "description": "Ультразвуковая чистка лица и шеи для женщин",
+      "duration_minutes": 60,
+      "price": 1300,
+      "category_name": "Чистки",
+      "price_options": []
+    },
+    {
+      "name": "Ультразвуковая чистка лица, шеи и декольте (женская)",
+      "description": "Ультразвуковая чистка лица, шеи и декольте для женщин",
+      "duration_minutes": 75,
+      "price": 1800,
+      "category_name": "Чистки",
+      "price_options": []
+    },
+    {
+      "name": "Ультразвуковая чистка лица (женская)",
+      "description": "Ультразвуковая чистка лица для женщин",
+      "duration_minutes": 45,
+      "price": 1000,
+      "category_name": "Чистки",
+      "price_options": []
+    },
+    {
+      "name": "Ультразвуковая чистка спины (женская)",
+      "description": "Ультразвуковая чистка спины для женщин",
+      "duration_minutes": 60,
+      "price": 1300,
+      "category_name": "Чистки",
+      "price_options": []
+    },
+    {
+      "name": "Ультразвуковая чистка декольте (женская)",
+      "description": "Ультразвуковая чистка декольте для женщин",
+      "duration_minutes": 45,
+      "price": 1000,
+      "category_name": "Чистки",
+      "price_options": []
+    },
+    {
+      "name": "Механическая чистка лица (женская)",
+      "description": "Механическая чистка лица для женщин",
+      "duration_minutes": 60,
+      "price": 1200,
+      "category_name": "Чистки",
+      "price_options": []
+    },
+    {
+      "name": "Механическая чистка спины (женская)",
+      "description": "Механическая чистка спины для женщин",
+      "duration_minutes": 60,
+      "price": 1700,
+      "category_name": "Чистки",
+      "price_options": []
+    },
+    {
+      "name": "Комбинированная чистка лица (мужская)",
+      "description": "Комбинированная чистка лица для мужчин",
+      "duration_minutes": 60,
+      "price": 1400,
+      "category_name": "Чистки",
+      "price_options": []
+    },
+    {
+      "name": "Комбинированная чистка спины (мужская)",
+      "description": "Комбинированная чистка спины для мужчин",
+      "duration_minutes": 60,
+      "price": 1800,
+      "category_name": "Чистки",
+      "price_options": []
+    },
+    {
+      "name": "Атравматичная чистка лица (мужская)",
+      "description": "Атравматичная чистка лица для мужчин",
+      "duration_minutes": 60,
+      "price": 1400,
+      "category_name": "Чистки",
+      "price_options": []
+    },
+    {
+      "name": "Механическая чистка лица (мужская)",
+      "description": "Механическая чистка лица для мужчин",
+      "duration_minutes": 60,
+      "price": 1400,
+      "category_name": "Чистки",
+      "price_options": []
+    },
+    {
+      "name": "Механическая чистка спины (мужская)",
+      "description": "Механическая чистка спины для мужчин",
+      "duration_minutes": 60,
+      "price": 1800,
+      "category_name": "Чистки",
+      "price_options": []
+    },
+    {
+      "name": "Ультразвуковая чистка лица (мужская)",
+      "description": "Ультразвуковая чистка лица для мужчин",
+      "duration_minutes": 45,
+      "price": 1100,
+      "category_name": "Чистки",
+      "price_options": []
+    },
+    {
+      "name": "Ультразвуковая чистка спины (мужская)",
+      "description": "Ультразвуковая чистка спины для мужчин",
+      "duration_minutes": 60,
+      "price": 1400,
+      "category_name": "Чистки",
+      "price_options": []
+    },
+    {
+      "name": "Ультразвуковая чистка лица и шеи (мужская)",
+      "description": "Ультразвуковая чистка лица и шеи для мужчин",
+      "duration_minutes": 60,
+      "price": 1400,
+      "category_name": "Чистки",
+      "price_options": []
+    },
+    {
+      "name": "Микрошлифовка лица",
+      "description": "Микродермабразия лица для нежной эксфолиации кожи",
+      "duration_minutes": 60,
+      "price": 1200,
+      "category_name": "Чистки",
+      "price_options": []
+    },
+    {
+      "name": "Микрошлифовка спины",
+      "description": "Микродермабразия спины для нежной эксфолиации кожи",
+      "duration_minutes": 60,
+      "price": 1700,
+      "category_name": "Чистки",
+      "price_options": []
+    },
+    {
+      "name": "Микрошлифовка лица, шеи и декольте",
+      "description": "Микродермабразия лица, шеи и декольте",
+      "duration_minutes": 75,
+      "price": 1600,
+      "category_name": "Чистки",
+      "price_options": []
+    },
+    {
+      "name": "Микрошлифовка лица и шеи",
+      "description": "Микродермабразия лица и шеи",
+      "duration_minutes": 60,
+      "price": 1400,
+      "category_name": "Чистки",
+      "price_options": []
+    },
+    {
+      "name": "Ультразвуковой фонофорез",
+      "description": "Ультразвуковой фонофорез для глубокого проникновения активных веществ",
+      "duration_minutes": 45,
+      "price": 800,
+      "category_name": "Чистки",
+      "price_options": []
+    },
+    {
+      "name": "Массаж по авторской методике Touch Gold",
+      "description": "Авторский массаж лица по методике Touch Gold",
+      "duration_minutes": 60,
+      "price": 1200,
+      "category_name": "Массаж лица",
+      "price_options": []
+    },
+    {
+      "name": "Массаж авторский лимфодренажный",
+      "description": "Авторский лимфодренажный массаж лица",
+      "duration_minutes": 45,
+      "price": 950,
+      "category_name": "Массаж лица",
+      "price_options": []
+    },
+    {
+      "name": "Мышечно-структурный хиромассаж лица",
+      "description": "Мышечно-структурный хиромассаж лица для улучшения контуров",
+      "duration_minutes": 60,
+      "price": 1200,
+      "category_name": "Массаж лица",
+      "price_options": []
+    },
+    {
+      "name": "Фейс лифтинг",
+      "description": "Массаж лица с лифтинг-эффектом",
+      "duration_minutes": 60,
+      "price": 1100,
+      "category_name": "Массаж лица",
+      "price_options": []
+    },
+    {
+      "name": "3D Массаж",
+      "description": "3D массаж лица для комплексного омоложения",
+      "duration_minutes": 60,
+      "price": 1100,
+      "category_name": "Массаж лица",
+      "price_options": []
+    },
+    {
+      "name": "Дарсонваль",
+      "description": "Дарсонвализация лица для стимуляции кровообращения",
+      "duration_minutes": 30,
+      "price": 750,
+      "category_name": "Массаж лица",
+      "price_options": []
+    },
+    {
+      "name": "Классический массаж",
+      "description": "Классический массаж лица",
+      "duration_minutes": 45,
+      "price": 900,
+      "category_name": "Массаж лица",
+      "price_options": []
+    },
+    {
+      "name": "Пластический массаж",
+      "description": "Пластический массаж лица для улучшения контуров",
+      "duration_minutes": 45,
+      "price": 800,
+      "category_name": "Массаж лица",
+      "price_options": []
+    },
+    {
+      "name": "Массаж по Жаке",
+      "description": "Массаж лица по методике Жаке",
+      "duration_minutes": 45,
+      "price": 700,
+      "category_name": "Массаж лица",
+      "price_options": []
+    },
+    {
+      "name": "Испанский массаж",
+      "description": "Испанский массаж лица для омоложения",
+      "duration_minutes": 45,
+      "price": 1050,
+      "category_name": "Массаж лица",
+      "price_options": []
+    },
+    {
+      "name": "Дарсонваль головы с сывороткой",
+      "description": "Дарсонвализация волосистой части головы с применением сыворотки",
+      "duration_minutes": 30,
+      "price": 850,
+      "category_name": "Массаж лица",
+      "price_options": []
+    },
+    {
+      "name": "Джим массаж",
+      "description": "Джим массаж лица",
+      "duration_minutes": 45,
+      "price": 900,
+      "category_name": "Массаж лица",
+      "price_options": []
+    },
+    {
+      "name": "Массаж по маске + к процедуре",
+      "description": "Дополнительный массаж по маске к основной процедуре",
+      "duration_minutes": 15,
+      "price": 400,
+      "category_name": "Массаж лица",
+      "price_options": []
+    },
+    {
+      "name": "Лимфодренажный массаж",
+      "description": "Лимфодренажный массаж лица",
+      "duration_minutes": 45,
+      "price": 900,
+      "category_name": "Массаж лица",
+      "price_options": []
+    },
+    {
+      "name": "Массаж лица Гуаша",
+      "description": "Массаж лица с использованием инструмента Гуаша",
+      "duration_minutes": 45,
+      "price": 950,
+      "category_name": "Массаж лица",
+      "price_options": []
+    },
+    {
+      "name": "Ферментотерапия (лицо, шея)",
+      "description": "Ферментотерапия на основе косметики Danne Montague-King для лица и шеи",
+      "duration_minutes": 75,
+      "price": 2100,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Ферментотерапия (лицо, шея, декольте)",
+      "description": "Ферментотерапия на основе косметики Danne Montague-King для лица, шеи и декольте",
+      "duration_minutes": 90,
+      "price": 2400,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Атравматическая чистка жирной кожи",
+      "description": "Атравматическая чистка жирной кожи по методике DMK",
+      "duration_minutes": 60,
+      "price": 1650,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Чистка всех типов кожи",
+      "description": "Универсальная чистка для всех типов кожи по методике DMK",
+      "duration_minutes": 60,
+      "price": 1700,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Глубокое очищение жирной кожи с воспалёнными участками",
+      "description": "Специальный уход для глубокого очищения жирной кожи с акне по методике DMK",
+      "duration_minutes": 60,
+      "price": 1400,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Очищение кожи ферментами и кислотами",
+      "description": "Комбинированный уход с использованием ферментов и кислот",
+      "duration_minutes": 60,
+      "price": 1700,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Очищение кожи щелочами",
+      "description": "Специальный уход для очищения кожи с использованием щелочей",
+      "duration_minutes": 60,
+      "price": 1900,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Тройная маска для лица",
+      "description": "Комплексный уход с применением трёх масок",
+      "duration_minutes": 75,
+      "price": 2100,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Маска Быстрая красота",
+      "description": "Экспресс-уход маской Быстрая красота для быстрого улучшения внешнего вида",
+      "duration_minutes": 45,
+      "price": 1400,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Процедура Мама невесты",
+      "description": "Специальный интенсивный уход для подготовки к важному мероприятию",
+      "duration_minutes": 60,
+      "price": 1500,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Тренировка сосудов и улучшение кровообращения",
+      "description": "Процедура для тренировки сосудов и активизации кровообращения",
+      "duration_minutes": 60,
+      "price": 1600,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Тренировка сосудов, улучшение кровообращения и уплотнение рогового слоя, лифтинг",
+      "description": "Комплексная процедура для сосудов, кровообращения и лифтинг-эффекта",
+      "duration_minutes": 75,
+      "price": 1900,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Процедура MELANOTECH для лечения гиперпигментации",
+      "description": "Специализированная процедура для лечения пигментных пятен",
+      "duration_minutes": 60,
+      "price": 1900,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Процедура Bihaku - осветление кожи",
+      "description": "Процедура осветления и выравнивания тона кожи",
+      "duration_minutes": 60,
+      "price": 1700,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Ферментативный уход Smart 4Derma",
+      "description": "Авторский ферментативный уход на основе косметики Smart 4Derma",
+      "duration_minutes": 75,
+      "price": 2300,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Клеточная антистресс-терапия Stress Control System Nad+ Balance для чувствительной и обезвоженной кожи Smart 4Derma",
+      "description": "Специализированный уход для чувствительной и обезвоженной кожи с использованием NAD+ Balance",
+      "duration_minutes": 75,
+      "price": 2500,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Моделирующая лифтинг процедура Renaissnce (CEF lab)",
+      "description": "Лифтинг-процедура для лица с моделирующим эффектом",
+      "duration_minutes": 75,
+      "price": 2300,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Ферментативный уход Medik8 - анализатор кожи и массаж",
+      "description": "Уход с анализом кожи и ферментативной обработкой",
+      "duration_minutes": 75,
+      "price": 2400,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Уход Institut Esthederm Intensive Hyaluronic - омоложение, увлажнение, тонизация и упругость",
+      "description": "Премиум-уход для омоложения и интенсивного увлажнения",
+      "duration_minutes": 90,
+      "price": 3200,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Уход Institut Esthederm Osmoclean - очищение, осветление, увлажнение и защита",
+      "description": "Комплексный уход для очищения и осветления кожи",
+      "duration_minutes": 75,
+      "price": 2400,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Уход аппаратный Бьюти-сет",
+      "description": "Комплексный аппаратный уход для лица",
+      "duration_minutes": 75,
+      "price": 2100,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Осветляющий уход",
+      "description": "Уход для осветления и выравнивания тона кожи",
+      "duration_minutes": 60,
+      "price": 2000,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Лифтинг",
+      "description": "Уход с лифтинг-эффектом для подтяжки кожи",
+      "duration_minutes": 60,
+      "price": 1900,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Уход за жирной кожей",
+      "description": "Специализированный уход для жирной кожи",
+      "duration_minutes": 60,
+      "price": 1900,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Уход за проблемной кожей",
+      "description": "Уход для кожи с акне и воспалениями",
+      "duration_minutes": 60,
+      "price": 2000,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Уход за чувствительной кожей",
+      "description": "Деликатный уход для чувствительной и реактивной кожи",
+      "duration_minutes": 60,
+      "price": 1900,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Уход Anti-Age",
+      "description": "Антивозрастной уход для омоложения кожи",
+      "duration_minutes": 60,
+      "price": 1900,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Уход для мужчин",
+      "description": "Специализированный уход для мужской кожи",
+      "duration_minutes": 60,
+      "price": 2000,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Питательная маска",
+      "description": "Питательная маска для сухой кожи",
+      "duration_minutes": 20,
+      "price": 500,
+      "category_name": "Маски для лица",
+      "price_options": []
+    },
+    {
+      "name": "Увлажняющая маска",
+      "description": "Увлажняющая маска для обезвоженной кожи",
+      "duration_minutes": 20,
+      "price": 500,
+      "category_name": "Маски для лица",
+      "price_options": []
+    },
+    {
+      "name": "Альгинатная маска",
+      "description": "Альгинатная маска для подтяжки и упругости",
+      "duration_minutes": 25,
+      "price": 700,
+      "category_name": "Маски для лица",
+      "price_options": []
+    },
+    {
+      "name": "Абсорбирующая маска",
+      "description": "Абсорбирующая маска для жирной кожи",
+      "duration_minutes": 20,
+      "price": 500,
+      "category_name": "Маски для лица",
+      "price_options": []
+    },
+    {
+      "name": "Успокаивающая маска",
+      "description": "Успокаивающая маска для раздраженной кожи",
+      "duration_minutes": 20,
+      "price": 500,
+      "category_name": "Маски для лица",
+      "price_options": []
+    },
+    {
+      "name": "Витаминная маска",
+      "description": "Витаминная маска для восстановления кожи",
+      "duration_minutes": 20,
+      "price": 500,
+      "category_name": "Маски для лица",
+      "price_options": []
+    },
+    {
+      "name": "Питательная, осветляющая и смягчающая маска",
+      "description": "Комбинированная маска с тройным эффектом",
+      "duration_minutes": 20,
+      "price": 500,
+      "category_name": "Маски для лица",
+      "price_options": []
+    },
+    {
+      "name": "Термоактивная гипсовая маска",
+      "description": "Гипсовая маска с термо-активацией для лифтинга",
+      "duration_minutes": 25,
+      "price": 550,
+      "category_name": "Маски для лица",
+      "price_options": []
+    },
+    {
+      "name": "Себорегулирующая маска с успокаивающим эффектом",
+      "description": "Маска для нормализации работы сальных желез",
+      "duration_minutes": 20,
+      "price": 500,
+      "category_name": "Маски для лица",
+      "price_options": []
+    },
+    {
+      "name": "LED лампа дополнительно к процедурам",
+      "description": "Дополнительная обработка лицо LED-лампой после процедур",
+      "duration_minutes": 15,
+      "price": 450,
+      "category_name": "Маски для лица",
+      "price_options": []
+    },
+    {
+      "name": "Мануальная чистка Is Clinical",
+      "description": "Мануальная чистка лица с использованием косметики Is Clinical",
+      "duration_minutes": 75,
+      "price": 2400,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Уход Огонь и лед",
+      "description": "Контрастный уход с использованием косметики Is Clinical",
+      "duration_minutes": 75,
+      "price": 2400,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Очищающий ферментативный уход Is Clinical",
+      "description": "Ферментативный уход для глубокого очищения",
+      "duration_minutes": 60,
+      "price": 2200,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Омолаживающий и увлажняющий уход Гармония Is Clinical",
+      "description": "Комплексный уход для омоложения и увлажнения",
+      "duration_minutes": 60,
+      "price": 2200,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Уход вокруг глаз Is Clinical",
+      "description": "Специализированный уход для чувствительной зоны вокруг глаз",
+      "duration_minutes": 45,
+      "price": 1700,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Мануальная чистка Zein Obagi",
+      "description": "Мануальная чистка лица с использованием косметики Zein Obagi",
+      "duration_minutes": 75,
+      "price": 2400,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Пилинг Zein Obagi",
+      "description": "Пилинг на основе косметики Zein Obagi",
+      "duration_minutes": 60,
+      "price": 1900,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Процедура осветления Zein Obagi",
+      "description": "Процедура для осветления и выравнивания тона кожи",
+      "duration_minutes": 75,
+      "price": 2400,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Процедура анти-акне Zein Obagi",
+      "description": "Специализированная процедура для лечения акне",
+      "duration_minutes": 75,
+      "price": 2400,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Очищающий Detox уход HydroTepide с тыквенным пилингом",
+      "description": "Detox-уход для глубокого очищения с пилингом",
+      "duration_minutes": 75,
+      "price": 2500,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Освежающий и омолаживающий черничный уход HydroTepide",
+      "description": "Уход с антиоксидантным эффектом на основе черники",
+      "duration_minutes": 75,
+      "price": 2700,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Очищающий и восстанавливающий уход с витамином С и выравнивающей маской HydroTepide",
+      "description": "Комплексный уход с витамином С и маской",
+      "duration_minutes": 75,
+      "price": 2700,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Экспресс уход с двухфазным пилингом HydroTepide",
+      "description": "Быстрый интенсивный уход с двухфазным пилингом",
+      "duration_minutes": 60,
+      "price": 2100,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Ферментотерапия Circadia (лицо и шея)",
+      "description": "Ферментотерапия на основе косметики Circadia",
+      "duration_minutes": 75,
+      "price": 2100,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Ферментотерапия Circadia (лицо, шея, декольте)",
+      "description": "Ферментотерапия для лица, шеи и зоны декольте",
+      "duration_minutes": 90,
+      "price": 2400,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Пептидная терапия Circadia (лицо + шея)",
+      "description": "Пептидная терапия для лица и шеи",
+      "duration_minutes": 75,
+      "price": 2000,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Пептидная терапия Circadia (лицо + шея + декольте)",
+      "description": "Пептидная терапия для лица, шеи и декольте",
+      "duration_minutes": 90,
+      "price": 2300,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Лифтинговый уход Pumpkin with Bakuchiol Circadia (лицо + шея + декольте)",
+      "description": "Лифтинг-уход с тыквой и бакучиолом",
+      "duration_minutes": 90,
+      "price": 2300,
+      "category_name": "Уходы",
+      "price_options": []
+    },
+    {
+      "name": "Миндальный пилинг (спина)",
+      "description": "Поверхностный миндальный пилинг для спины",
+      "duration_minutes": 60,
+      "price": 2000,
+      "category_name": "Пилинги поверхностные",
+      "price_options": []
+    },
+    {
+      "name": "Экспресс-пилинг лица Enerpeel",
+      "description": "Быстрый поверхностный пилинг для лица",
+      "duration_minutes": 45,
+      "price": 2100,
+      "category_name": "Пилинги поверхностные",
+      "price_options": []
+    },
+    {
+      "name": "Экспресс-пилинг для рук Enerpeel",
+      "description": "Поверхностный пилинг для кожи рук",
+      "duration_minutes": 45,
+      "price": 1600,
+      "category_name": "Пилинги поверхностные",
+      "price_options": []
+    },
+    {
+      "name": "Экспресс-пилинг зоны вокруг глаз Enerpeel",
+      "description": "Нежный пилинг для чувствительной зоны вокруг глаз",
+      "duration_minutes": 30,
+      "price": 1500,
+      "category_name": "Пилинги поверхностные",
+      "price_options": []
+    },
+    {
+      "name": "Экспресс-пилинг зоны вокруг губ Enerpeel",
+      "description": "Пилинг для область вокруг губ",
+      "duration_minutes": 20,
+      "price": 1000,
+      "category_name": "Пилинги поверхностные",
+      "price_options": []
+    },
+    {
+      "name": "Пировиноградный пилинг (лицо)",
+      "description": "Поверхностный пилинг пировиноградной кислотой для лица",
+      "duration_minutes": 45,
+      "price": 1500,
+      "category_name": "Пилинги поверхностные",
+      "price_options": []
+    },
+    {
+      "name": "Пировиноградный пилинг (лицо и шея)",
+      "description": "Поверхностный пилинг пировиноградной кислотой для лица и шеи",
+      "duration_minutes": 60,
+      "price": 1600,
+      "category_name": "Пилинги поверхностные",
+      "price_options": []
+    },
+    {
+      "name": "Пировиноградный пилинг (лицо, шея и декольте)",
+      "description": "Поверхностный пилинг пировиноградной кислотой для лица, шеи и декольте",
+      "duration_minutes": 75,
+      "price": 2000,
+      "category_name": "Пилинги поверхностные",
+      "price_options": []
+    },
+    {
+      "name": "Феруловый пилинг (лицо)",
+      "description": "Поверхностный пилинг феруловой кислотой для лица",
+      "duration_minutes": 45,
+      "price": 2200,
+      "category_name": "Пилинги поверхностные",
+      "price_options": []
+    },
+    {
+      "name": "Салициловый пилинг 25% (лицо)",
+      "description": "Поверхностный салициловый пилинг для лица",
+      "duration_minutes": 45,
+      "price": 1500,
+      "category_name": "Пилинги поверхностные",
+      "price_options": []
+    },
+    {
+      "name": "Салициловый пилинг 25% (шея и декольте)",
+      "description": "Салициловый пилинг для шеи и зоны декольте",
+      "duration_minutes": 45,
+      "price": 1600,
+      "category_name": "Пилинги поверхностные",
+      "price_options": []
+    },
+    {
+      "name": "Салициловый пилинг 25% (спина)",
+      "description": "Салициловый пилинг для спины",
+      "duration_minutes": 60,
+      "price": 2000,
+      "category_name": "Пилинги поверхностные",
+      "price_options": []
+    },
+    {
+      "name": "Молочный пилинг (лицо)",
+      "description": "Мягкий молочный пилинг для всех типов кожи",
+      "duration_minutes": 45,
+      "price": 1400,
+      "category_name": "Пилинги поверхностные",
+      "price_options": []
+    },
+    {
+      "name": "Азелаиновый пилинг (лицо)",
+      "description": "Поверхностный азелаиновый пилинг для лица",
+      "duration_minutes": 45,
+      "price": 1500,
+      "category_name": "Пилинги поверхностные",
+      "price_options": []
+    },
+    {
+      "name": "Азелаиновый пилинг (лицо и шея)",
+      "description": "Азелаиновый пилинг для лица и шеи",
+      "duration_minutes": 60,
+      "price": 1600,
+      "category_name": "Пилинги поверхностные",
+      "price_options": []
+    },
+    {
+      "name": "Миндальный пилинг (лицо)",
+      "description": "Поверхностный миндальный пилинг для лица",
+      "duration_minutes": 45,
+      "price": 1500,
+      "category_name": "Пилинги поверхностные",
+      "price_options": []
+    },
+    {
+      "name": "Миндальный пилинг (лицо и шея)",
+      "description": "Миндальный пилинг для лица и шеи",
+      "duration_minutes": 60,
+      "price": 1600,
+      "category_name": "Пилинги поверхностные",
+      "price_options": []
+    },
+    {
+      "name": "Миндальный пилинг (лицо, шея и декольте)",
+      "description": "Миндальный пилинг для лица, шеи и зоны декольте",
+      "duration_minutes": 75,
+      "price": 2000,
+      "category_name": "Пилинги поверхностные",
+      "price_options": []
+    },
+    {
+      "name": "Пилинг ABR (Holy Land) лицо",
+      "description": "Поверхностный пилинг ABR для лица",
+      "duration_minutes": 45,
+      "price": 1500,
+      "category_name": "Пилинги поверхностные",
+      "price_options": []
+    },
+    {
+      "name": "Пилинг ABR (Holy Land) спина",
+      "description": "Поверхностный пилинг ABR для спины",
+      "duration_minutes": 60,
+      "price": 1960,
+      "category_name": "Пилинги поверхностные",
+      "price_options": []
+    },
+    {
+      "name": "Азелаиновый пилинг (спина)",
+      "description": "Азелаиновый пилинг для спины",
+      "duration_minutes": 60,
+      "price": 2000,
+      "category_name": "Пилинги поверхностные",
+      "price_options": []
+    },
+    {
+      "name": "Пировиноградный пилинг (спина)",
+      "description": "Пировиноградный пилинг для спины",
+      "duration_minutes": 60,
+      "price": 2000,
+      "category_name": "Пилинги поверхностные",
+      "price_options": []
+    },
+    {
+      "name": "Энзимный пилинг",
+      "description": "Мягкий энзимный пилинг для нежной эксфолиации",
+      "duration_minutes": 45,
+      "price": 1300,
+      "category_name": "Пилинги поверхностные",
+      "price_options": []
+    },
+    {
+      "name": "DNA Sesderma пилинг (лицо)",
+      "description": "Поверхностный пилинг DNA для лица",
+      "duration_minutes": 45,
+      "price": 1500,
+      "category_name": "Пилинги поверхностные",
+      "price_options": []
+    },
+    {
+      "name": "DNA Sesderma пилинг (шея и декольте)",
+      "description": "Пилинг DNA для шеи и зоны декольте",
+      "duration_minutes": 45,
+      "price": 2000,
+      "category_name": "Пилинги поверхностные",
+      "price_options": []
+    },
+    {
+      "name": "Mesoestetic MesoPeel салициловый пилинг 30% pH 1.8",
+      "description": "Поверхностный пилинг Mesoestetic MesoPeel",
+      "duration_minutes": 45,
+      "price": 1000,
+      "category_name": "Пилинги поверхностные",
+      "price_options": []
+    },
+    {
+      "name": "Азелаиновый пилинг (лицо, шея и декольте)",
+      "description": "Азелаиновый пилинг для полного ухода лица",
+      "duration_minutes": 75,
+      "price": 2000,
+      "category_name": "Пилинги поверхностные",
+      "price_options": []
+    },
+    {
+      "name": "Коррекция растяжек TCA 25%-35% (живот)",
+      "description": "Срединный пилинг для коррекции растяжек на животе",
+      "duration_minutes": 60,
+      "price": 2700,
+      "category_name": "Пилинги срединные",
+      "price_options": []
+    },
+    {
+      "name": "Коррекция растяжек TCA 25%-35% (бедра)",
+      "description": "Срединный пилинг для коррекции растяжек на бёдрах",
+      "duration_minutes": 60,
+      "price": 3200,
+      "category_name": "Пилинги срединные",
+      "price_options": []
+    },
+    {
+      "name": "Коррекция растяжек TCA 25%-35% (поясница)",
+      "description": "Срединный пилинг для коррекции растяжек на пояснице",
+      "duration_minutes": 60,
+      "price": 3000,
+      "category_name": "Пилинги срединные",
+      "price_options": []
+    },
+    {
+      "name": "Коррекция растяжек TCA 25%-35% (задняя поверхность голеней)",
+      "description": "Срединный пилинг для коррекции растяжек на голенях",
+      "duration_minutes": 45,
+      "price": 2100,
+      "category_name": "Пилинги срединные",
+      "price_options": []
+    },
+    {
+      "name": "Коррекция растяжек TCA 25%-35% (предплечье)",
+      "description": "Срединный пилинг для коррекции растяжек на предплечье",
+      "duration_minutes": 45,
+      "price": 2100,
+      "category_name": "Пилинги срединные",
+      "price_options": []
+    },
+    {
+      "name": "Ретинол дополнительное покрытие (1 зона)",
+      "description": "Дополнительное нанесение ретинола на одну зону",
+      "duration_minutes": 10,
+      "price": 900,
+      "category_name": "Пилинги срединные",
+      "price_options": []
+    },
+    {
+      "name": "Пилинг Джесснера поверхностный (лицо)",
+      "description": "Поверхностный пилинг Джесснера для лица",
+      "duration_minutes": 45,
+      "price": 1700,
+      "category_name": "Пилинги срединные",
+      "price_options": []
+    },
+    {
+      "name": "Пилинг Джесснера поверхностный (лицо и шея)",
+      "description": "Поверхностный пилинг Джесснера для лица и шеи",
+      "duration_minutes": 60,
+      "price": 2000,
+      "category_name": "Пилинги срединные",
+      "price_options": []
+    },
+    {
+      "name": "Пилинг Джесснера поверхностный (декольте)",
+      "description": "Поверхностный пилинг Джесснера для зоны декольте",
+      "duration_minutes": 45,
+      "price": 1700,
+      "category_name": "Пилинги срединные",
+      "price_options": []
+    },
+    {
+      "name": "Пилинг Джесснера поверхностно-срединный (лицо)",
+      "description": "Поверхностно-срединный пилинг Джесснера для лица",
+      "duration_minutes": 60,
+      "price": 1900,
+      "category_name": "Пилинги срединные",
+      "price_options": []
+    },
+    {
+      "name": "Пилинг Джесснера поверхностно-срединный (лицо и шея)",
+      "description": "Поверхностно-срединный пилинг Джесснера для лица и шеи",
+      "duration_minutes": 75,
+      "price": 2200,
+      "category_name": "Пилинги срединные",
+      "price_options": []
+    },
+    {
+      "name": "Пилинг Джесснера поверхностно-срединный (декольте)",
+      "description": "Поверхностно-срединный пилинг Джесснера для декольте",
+      "duration_minutes": 60,
+      "price": 2100,
+      "category_name": "Пилинги срединные",
+      "price_options": []
+    },
+    {
+      "name": "ТСА лайт 15%-25% (лицо)",
+      "description": "Срединный пилинг ТСА лайт для лица",
+      "duration_minutes": 60,
+      "price": 2300,
+      "category_name": "Пилинги срединные",
+      "price_options": []
+    },
+    {
+      "name": "ТСА лайт 15%-25% (лицо и шея)",
+      "description": "Срединный пилинг ТСА лайт для лица и шеи",
+      "duration_minutes": 75,
+      "price": 2500,
+      "category_name": "Пилинги срединные",
+      "price_options": []
+    },
+    {
+      "name": "ТСА дип 35%",
+      "description": "Глубокий срединный пилинг ТСА дип",
+      "duration_minutes": 75,
+      "price": 2400,
+      "category_name": "Пилинги срединные",
+      "price_options": []
+    },
+    {
+      "name": "Пилинг Джесснера срединный (лицо)",
+      "description": "Срединный пилинг Джесснера для лица",
+      "duration_minutes": 60,
+      "price": 2100,
+      "category_name": "Пилинги срединные",
+      "price_options": []
+    },
+    {
+      "name": "Пилинг Джесснера срединный (лицо и шея)",
+      "description": "Срединный пилинг Джесснера для лица и шеи",
+      "duration_minutes": 75,
+      "price": 2400,
+      "category_name": "Пилинги срединные",
+      "price_options": []
+    },
+    {
+      "name": "Пилинг Джесснера срединный (лицо, шея и декольте)",
+      "description": "Срединный пилинг Джесснера для полного ухода",
+      "duration_minutes": 90,
+      "price": 2600,
+      "category_name": "Пилинги срединные",
+      "price_options": []
+    },
+    {
+      "name": "Пилинг Джесснера срединный (спина)",
+      "description": "Срединный пилинг Джесснера для спины",
+      "duration_minutes": 75,
+      "price": 2800,
+      "category_name": "Пилинги срединные",
+      "price_options": []
+    },
+    {
+      "name": "Очищающий пилинг Clarifying Hyalual",
+      "description": "Мультипилинг Hyalual для очищения кожи",
+      "duration_minutes": 60,
+      "price": 1600,
+      "category_name": "Мультипилинги",
+      "price_options": []
+    },
+    {
+      "name": "Осветляющий пилинг Glow Enhancing Hyalual",
+      "description": "Мультипилинг Hyalual для осветления кожи",
+      "duration_minutes": 60,
+      "price": 1600,
+      "category_name": "Мультипилинги",
+      "price_options": []
+    },
+    {
+      "name": "Anti Age пилинг Advanced Resurfacing Hyalual",
+      "description": "Мультипилинг Hyalual для антивозрастного ухода",
+      "duration_minutes": 60,
+      "price": 1600,
+      "category_name": "Мультипилинги",
+      "price_options": []
+    },
+    {
+      "name": "Пилинг-депигментация, выравнивающий тон Brightening Hyalual",
+      "description": "Мультипилинг Hyalual для депигментации и выравнивания тона",
+      "duration_minutes": 60,
+      "price": 1600,
+      "category_name": "Мультипилинги",
+      "price_options": []
+    },
+    {
+      "name": "Пилинг ретинолово-резорциновый 01 ME LINE CAUCASIAN SKIN",
+      "description": "Ретиноловый пилинг для кавказской кожи",
+      "duration_minutes": 60,
+      "price": 2400,
+      "category_name": "Ретиноловые пилинги",
+      "price_options": []
+    },
+    {
+      "name": "Пилинг 01 ME LINE CAUCASIAN SKIN против пигментации",
+      "description": "Ретиноловый пилинг против пигментации",
+      "duration_minutes": 60,
+      "price": 2400,
+      "category_name": "Ретиноловые пилинги",
+      "price_options": []
+    },
+    {
+      "name": "Усиленный Retises Forte 10%",
+      "description": "Усиленный ретиноловый пилинг высокой концентрации",
+      "duration_minutes": 75,
+      "price": 3700,
+      "category_name": "Ретиноловые пилинги",
+      "price_options": []
+    },
+    {
+      "name": "Ретиноловый пилинг периорбитальной зоны",
+      "description": "Ретиноловый пилинг для чувствительной зоны вокруг глаз",
+      "duration_minutes": 45,
+      "price": 1800,
+      "category_name": "Ретиноловые пилинги",
+      "price_options": []
+    },
+    {
+      "name": "Ретиноловый пилинг лица",
+      "description": "Ретиноловый пилинг для лица",
+      "duration_minutes": 60,
+      "price": 2200,
+      "category_name": "Ретиноловые пилинги",
+      "price_options": []
+    },
+    {
+      "name": "Ретиноловый пилинг лица и шеи",
+      "description": "Ретиноловый пилинг для лица и шеи",
+      "duration_minutes": 75,
+      "price": 2600,
+      "category_name": "Ретиноловые пилинги",
+      "price_options": []
+    },
+    {
+      "name": "Ретиноловый пилинг лица, шеи и декольте",
+      "description": "Ретиноловый пилинг для полного ухода",
+      "duration_minutes": 90,
+      "price": 3200,
+      "category_name": "Ретиноловые пилинги",
+      "price_options": []
+    },
+    {
+      "name": "Коралловый пилинг лица (лёгкой эксфолиации)",
+      "description": "Коралловый пилинг с лёгкой эксфолиацией для лица",
+      "duration_minutes": 45,
+      "price": 1400,
+      "category_name": "Коралловые пилинги",
+      "price_options": []
+    },
+    {
+      "name": "Коралловый пилинг шея и декольте (лёгкой эксфолиации)",
+      "description": "Коралловый пилинг с лёгкой эксфолиацией для шеи и декольте",
+      "duration_minutes": 45,
+      "price": 1500,
+      "category_name": "Коралловые пилинги",
+      "price_options": []
+    },
+    {
+      "name": "Коралловый пилинг спины (лёгкой эксфолиации)",
+      "description": "Коралловый пилинг с лёгкой эксфолиацией для спины",
+      "duration_minutes": 60,
+      "price": 1700,
+      "category_name": "Коралловые пилинги",
+      "price_options": []
+    },
+    {
+      "name": "Коралловый пилинг лицо (срединной эксфолиации)",
+      "description": "Коралловый пилинг со срединной эксфолиацией для лица",
+      "duration_minutes": 60,
+      "price": 1500,
+      "category_name": "Коралловые пилинги",
+      "price_options": []
+    },
+    {
+      "name": "Коралловый пилинг спины (срединной эксфолиации)",
+      "description": "Коралловый пилинг со срединной эксфолиацией для спины",
+      "duration_minutes": 75,
+      "price": 2000,
+      "category_name": "Коралловые пилинги",
+      "price_options": []
+    },
+    {
+      "name": "Retix C антивозрастной уход вокруг глаз",
+      "description": "Специализированный антивозрастной уход для периорбитальной зоны",
+      "duration_minutes": 45,
+      "price": 2800,
+      "category_name": "Пилинги Retix C",
+      "price_options": []
+    },
+    {
+      "name": "Retix C Retibooster с ретинолом и активатором TGF",
+      "description": "Уход с ретинолом и активатором трансформирующего фактора роста",
+      "duration_minutes": 60,
+      "price": 3330,
+      "category_name": "Пилинги Retix C",
+      "price_options": []
+    },
+    {
+      "name": "Peptiglow кислотный коктейль з трипептидом и L аскорбиновой кислотой",
+      "description": "Пилинг с трипептидом и витамином С",
+      "duration_minutes": 60,
+      "price": 1600,
+      "category_name": "Пилинги Retix C",
+      "price_options": []
+    },
+    {
+      "name": "Лавандовый пилинг для чувствительной кожи (лицо)",
+      "description": "Мягкий пилинг Smart 4 Derma для чувствительной кожи",
+      "duration_minutes": 45,
+      "price": 1400,
+      "category_name": "Пилинги Smart 4 Derma",
+      "price_options": []
+    },
+    {
+      "name": "Лавандовый пилинг для чувствительной кожи (лицо + шея)",
+      "description": "Пилинг Smart 4 Derma для лица и шеи",
+      "duration_minutes": 60,
+      "price": 1500,
+      "category_name": "Пилинги Smart 4 Derma",
+      "price_options": []
+    },
+    {
+      "name": "Лавандовый пилинг для чувствительной кожи (лицо + шея + декольте)",
+      "description": "Пилинг Smart 4 Derma для полного ухода",
+      "duration_minutes": 75,
+      "price": 1700,
+      "category_name": "Пилинги Smart 4 Derma",
+      "price_options": []
+    },
+    {
+      "name": "Энзимный пилинг с мякотью моркови Pro-Enzyme (лицо)",
+      "description": "Энзимный пилинг для лица",
+      "duration_minutes": 45,
+      "price": 1400,
+      "category_name": "Пилинги Smart 4 Derma",
+      "price_options": []
+    },
+    {
+      "name": "Энзимный пилинг с мякотью моркови Pro-Enzyme (лицо + шея)",
+      "description": "Энзимный пилинг для лица и шеи",
+      "duration_minutes": 60,
+      "price": 1500,
+      "category_name": "Пилинги Smart 4 Derma",
+      "price_options": []
+    },
+    {
+      "name": "Энзимный пилинг с мякотью моркови Pro-Enzyme (лицо + шея + декольте)",
+      "description": "Энзимный пилинг для полного ухода",
+      "duration_minutes": 75,
+      "price": 1700,
+      "category_name": "Пилинги Smart 4 Derma",
+      "price_options": []
+    },
+    {
+      "name": "Осветляющий пилинг-репарант с меристемными клетками буддлеи и 25% витамином С (лицо)",
+      "description": "Осветляющий пилинг с витамином С для лица",
+      "duration_minutes": 45,
+      "price": 1400,
+      "category_name": "Пилинги Smart 4 Derma",
+      "price_options": []
+    },
+    {
+      "name": "Осветляющий пилинг-репарант с меристемными клетками буддлеи и 25% витамином С (лицо+ шея)",
+      "description": "Осветляющий пилинг для лица и шеи",
+      "duration_minutes": 60,
+      "price": 1500,
+      "category_name": "Пилинги Smart 4 Derma",
+      "price_options": []
+    },
+    {
+      "name": "Осветляющий пилинг-репарант с меристемными клетками буддлеи и 25% витамином С (лицо + шея + декольте)",
+      "description": "Осветляющий пилинг для полного ухода",
+      "duration_minutes": 75,
+      "price": 1700,
+      "category_name": "Пилинги Smart 4 Derma",
+      "price_options": []
+    },
+    {
+      "name": "Пилинг мезолифтинг ALL-Q (лицо)",
+      "description": "Мезолифтинг пилинг для лица",
+      "duration_minutes": 45,
+      "price": 1400,
+      "category_name": "Пилинги Smart 4 Derma",
+      "price_options": []
+    },
+    {
+      "name": "Пилинг мезолифтинг ALL-Q (лицо + шея)",
+      "description": "Мезолифтинг пилинг для лица и шеи",
+      "duration_minutes": 60,
+      "price": 1500,
+      "category_name": "Пилинги Smart 4 Derma",
+      "price_options": []
+    },
+    {
+      "name": "Пилинг мезолифтинг ALL-Q (лицо + шея + декольте)",
+      "description": "Мезолифтинг пилинг для полного ухода",
+      "duration_minutes": 75,
+      "price": 1700,
+      "category_name": "Пилинги Smart 4 Derma",
+      "price_options": []
+    },
+    {
+      "name": "Осветляющий мультипилинг с транексамовой кислотой (лицо)",
+      "description": "Мультипилинг с транексамовой кислотой для лица",
+      "duration_minutes": 45,
+      "price": 1400,
+      "category_name": "Пилинги Smart 4 Derma",
+      "price_options": []
+    },
+    {
+      "name": "Осветляющий мультипилинг с транексамовой кислотой (лицо + шея)",
+      "description": "Мультипилинг для лица и шеи",
+      "duration_minutes": 60,
+      "price": 1500,
+      "category_name": "Пилинги Smart 4 Derma",
+      "price_options": []
+    },
+    {
+      "name": "Осветляющий мультипилинг с транексамовой кислотой (лицо + шея + декольте)",
+      "description": "Мультипилинг для полного ухода",
+      "duration_minutes": 75,
+      "price": 1700,
+      "category_name": "Пилинги Smart 4 Derma",
+      "price_options": []
+    },
+    {
+      "name": "Лактобионово-миндальный пилинг с яблоком (лицо)",
+      "description": "Пилинг с лактобионовой и миндальной кислотами для лица",
+      "duration_minutes": 45,
+      "price": 1400,
+      "category_name": "Пилинги Smart 4 Derma",
+      "price_options": []
+    },
+    {
+      "name": "Лактобионово-миндальный пилинг с яблоком (лицо + шея)",
+      "description": "Пилинг для лица и шеи",
+      "duration_minutes": 60,
+      "price": 1500,
+      "category_name": "Пилинги Smart 4 Derma",
+      "price_options": []
+    },
+    {
+      "name": "Лактобионово-миндальный пилинг с яблоком (лицо + шея + декольте)",
+      "description": "Пилинг для полного ухода",
+      "duration_minutes": 75,
+      "price": 1700,
+      "category_name": "Пилинги Smart 4 Derma",
+      "price_options": []
+    },
+    {
+      "name": "Мультифункциональный пилинг Инста Лук (лицо)",
+      "description": "Мультипилинг для быстрого эффекта на лице",
+      "duration_minutes": 45,
+      "price": 1400,
+      "category_name": "Пилинги Smart 4 Derma",
+      "price_options": []
+    },
+    {
+      "name": "Мультифункциональный пилинг Инста Лук (лицо + шея)",
+      "description": "Мультипилинг для лица и шеи",
+      "duration_minutes": 60,
+      "price": 1500,
+      "category_name": "Пилинги Smart 4 Derma",
+      "price_options": []
+    },
+    {
+      "name": "Мультифункциональный пилинг Инста Лук (лицо + шея + декольте)",
+      "description": "Мультипилинг для полного ухода",
+      "duration_minutes": 75,
+      "price": 1700,
+      "category_name": "Пилинги Smart 4 Derma",
+      "price_options": []
+    },
+    {
+      "name": "Азелаиновый фитопилинг 30% (лицо)",
+      "description": "Растительный пилинг с азелаиновой кислотой для лица",
+      "duration_minutes": 45,
+      "price": 1600,
+      "category_name": "Пилинги Smart 4 Derma",
+      "price_options": []
+    },
+    {
+      "name": "Жёлтый пилинг с ретинолом (лицо)",
+      "description": "Пилинг с ретинолом для лица",
+      "duration_minutes": 45,
+      "price": 1600,
+      "category_name": "Пилинги Smart 4 Derma",
+      "price_options": []
+    },
+    {
+      "name": "Жёлтый пилинг с ретинолом (лицо + шея)",
+      "description": "Ретиноловый пилинг для лица и шеи",
+      "duration_minutes": 60,
+      "price": 1700,
+      "category_name": "Пилинги Smart 4 Derma",
+      "price_options": []
+    },
+    {
+      "name": "Жёлтый пилинг с ретинолом (лицо + шея + декольте)",
+      "description": "Ретиноловый пилинг для полного ухода",
+      "duration_minutes": 75,
+      "price": 1900,
+      "category_name": "Пилинги Smart 4 Derma",
+      "price_options": []
+    },
+    {
+      "name": "Модифицированный пилинг Джесснера с лактобионовой кислотой (лицо)",
+      "description": "Модифицированный пилинг Джесснера для лица",
+      "duration_minutes": 60,
+      "price": 1600,
+      "category_name": "Пилинги Smart 4 Derma",
+      "price_options": []
+    },
+    {
+      "name": "Криолифтинг (лицо)",
+      "description": "Криотерапия для лифтинга кожи лица",
+      "duration_minutes": 45,
+      "price": 1300,
+      "category_name": "Криолифтинг",
+      "price_options": []
+    },
+    {
+      "name": "Криолифтинг (лицо и шея)",
+      "description": "Криотерапия для лифтинга лица и шеи",
+      "duration_minutes": 60,
+      "price": 1400,
+      "category_name": "Криолифтинг",
+      "price_options": []
+    },
+    {
+      "name": "Криолифтинг (лицо, шея и декольте)",
+      "description": "Криотерапия для полного лифтинга",
+      "duration_minutes": 75,
+      "price": 1500,
+      "category_name": "Криолифтинг",
+      "price_options": []
+    },
+    {
+      "name": "Микротоковая терапия (лицо)",
+      "description": "Микротоковая терапия для тонизирования кожи лица",
+      "duration_minutes": 45,
+      "price": 1000,
+      "category_name": "Микротоковая терапия",
+      "price_options": []
+    },
+    {
+      "name": "Микротоковая терапия (лицо и шея)",
+      "description": "Микротоковая терапия для лица и шеи",
+      "duration_minutes": 60,
+      "price": 1200,
+      "category_name": "Микротоковая терапия",
+      "price_options": []
+    },
+    {
+      "name": "Микротоковая терапия (лицо, шея и декольте)",
+      "description": "Микротоковая терапия для полного ухода",
+      "duration_minutes": 75,
+      "price": 1400,
+      "category_name": "Микротоковая терапия",
+      "price_options": []
+    },
+    {
+      "name": "Микроигольчатый RF лифтинг (лицо)",
+      "description": "Радиочастотный микроигольчатый лифтинг для лица",
+      "duration_minutes": 60,
+      "price": 7000,
+      "category_name": "Микроигольчатый RF лифтинг",
+      "price_options": [
+        {"name": "Лицо", "price": 7000},
+        {"name": "Шея", "price": 4500},
+        {"name": "Лицо + шея (акционная цена)", "price": 9000},
+        {"name": "Лицо + шея + декольте (акционная цена)", "price": 14000},
+        {"name": "Руки полностью", "price": 10000},
+        {"name": "Колени", "price": 4000},
+        {"name": "Нижняя треть лица + подбородок", "price": 5000},
+        {"name": "Лоб и межбровье", "price": 4500},
+        {"name": "Периорбитальная зона (глаза)", "price": 4500},
+        {"name": "Щеки", "price": 4500},
+        {"name": "Декольте", "price": 5500},
+        {"name": "Второй подбородок + шея", "price": 4500},
+        {"name": "Кисти рук", "price": 4000},
+        {"name": "Колени + передняя часть бедра (акционная цена)", "price": 5000},
+        {"name": "Живот", "price": 5500},
+        {"name": "Внутренняя часть бедра", "price": 5000},
+        {"name": "Боковая часть бедра", "price": 5000},
+        {"name": "Задняя часть бедра", "price": 5000},
+        {"name": "Бедра полностью + колени (акционная цена)", "price": 7000},
+        {"name": "Складки спины (зона 20 см спины)", "price": 5000},
+        {"name": "Спина полностью", "price": 7500},
+        {"name": "Ягодицы", "price": 5500},
+        {"name": "Растяжки/рубцы (10х10 см)", "price": 4000},
+        {"name": "Комплекс 4 зоны", "price": 20000}
+      ]
+    },
+    {
+      "name": "Обезболивание микроигольчатого RF лифтинга",
+      "description": "Дополнительное обезболивание для процедуры",
+      "duration_minutes": 10,
+      "price": 100,
+      "category_name": "Микроигольчатый RF лифтинг",
+      "price_options": []
+    },
+    {
+      "name": "SMAS-лифтинг (средняя часть лица)",
+      "description": "SMAS-лифтинг для подтяжки средней части лица",
+      "duration_minutes": 90,
+      "price": 18000,
+      "category_name": "SMAS-лифтинг",
+      "price_options": [
+        {"name": "Средняя часть лица", "price": 18000},
+        {"name": "Лицо + шея", "price": 30000},
+        {"name": "Лицо", "price": 25000},
+        {"name": "Лицо + шея + декольте", "price": 40000},
+        {"name": "Лоб", "price": 12000},
+        {"name": "Зона вокруг глаз", "price": 13000},
+        {"name": "Декольте", "price": 14000},
+        {"name": "Подбородок", "price": 14000},
+        {"name": "Нижняя часть лица", "price": 20000},
+        {"name": "Шея", "price": 12000},
+        {"name": "Тело (1 зона 10X20)", "price": 10000}
+      ]
+    },
+    {
+      "name": "RF-лифтинг (лицо полностью)",
+      "description": "Радиочастотный лифтинг всей поверхности лица",
+      "duration_minutes": 60,
+      "price": 1300,
+      "category_name": "RF-лифтинг",
+      "price_options": [
+        {"name": "Лицо полностью", "price": 1300},
+        {"name": "Лицо + шея", "price": 1500},
+        {"name": "Шея + декольте", "price": 1200},
+        {"name": "Лицо + шея + декольте", "price": 1800},
+        {"name": "1 зона (подбородок или скулы, или щеки)", "price": 900}
+      ]
+    },
+    {
+      "name": "Безинъекционная мезотерапия (лицо)",
+      "description": "Безинъекционная мезотерапия для лица",
+      "duration_minutes": 45,
+      "price": 1500,
+      "category_name": "Безинъекционная мезотерапия",
+      "price_options": [
+        {"name": "Лицо", "price": 1500},
+        {"name": "Лицо и шея", "price": 1600},
+        {"name": "Лицо, шея и декольте", "price": 1800},
+        {"name": "Волосистая часть головы", "price": 1400},
+        {"name": "Зона вокруг глаз", "price": 1200}
+      ]
+    },
+    {
+      "name": "Фракционная мезотерапия Dermapen (губы)",
+      "description": "Фракционная мезотерапия на аппарате Dermapen для губ",
+      "duration_minutes": 30,
+      "price": 1200,
+      "category_name": "Фракционная мезотерапия Dermapen",
+      "price_options": [
+        {"name": "Губы", "price": 1200},
+        {"name": "Лицо", "price": 1600},
+        {"name": "Шея", "price": 1400},
+        {"name": "Декольте", "price": 1400},
+        {"name": "Лицо + шея", "price": 2500},
+        {"name": "Шея + декольте", "price": 2500},
+        {"name": "Лицо + шея + декольте", "price": 3600},
+        {"name": "Фракционная мезотерапия головы", "price": 1400},
+        {"name": "Зонально", "price": 1100}
+      ]
+    },
+    {
+      "name": "Мезороллер Perfoskin Hyalual 1,2 мм (с учетом мезороллера)",
+      "description": "Мезороллер процедура с инструментом Perfoskin Hyalual",
+      "duration_minutes": 60,
+      "price": 4200,
+      "category_name": "Мезороллер",
+      "price_options": []
+    },
+    {
+      "name": "Мезороллер 1-2 мм (с учетом мезороллера)",
+      "description": "Мезороллер процедура с использованием инструмента",
+      "duration_minutes": 45,
+      "price": 1400,
+      "category_name": "Мезороллер",
+      "price_options": []
+    },
+    {
+      "name": "Мезороллер 2 мм (с учетом мезороллера)",
+      "description": "Мезороллер процедура с инструментом 2 мм",
+      "duration_minutes": 45,
+      "price": 1500,
+      "category_name": "Мезороллер",
+      "price_options": []
+    },
+    {
+      "name": "Мезороллер последующие процедуры",
+      "description": "Повторная процедура мезороллера",
+      "duration_minutes": 45,
+      "price": 1100,
+      "category_name": "Мезороллер",
+      "price_options": []
+    },
+    {
+      "name": "Мезороллер по коже головы (против выпадения волос, стимуляция роста новых волосков)",
+      "description": "Мезороллер для стимуляции роста волос",
+      "duration_minutes": 45,
+      "price": 1200,
+      "category_name": "Мезороллер",
+      "price_options": []
+    },
+    {
+      "name": "Безинъекционная карбокситерапия (лицо)",
+      "description": "Безинъекционная карбокситерапия для лица",
+      "duration_minutes": 45,
+      "price": 1450,
+      "category_name": "Безинъекционная карбокситерапия",
+      "price_options": [
+        {"name": "Лицо", "price": 1450},
+        {"name": "Лицо и шея", "price": 1500},
+        {"name": "Лицо, шея и декольте", "price": 1700}
+      ]
+    },
+    {
+      "name": "Блефаропластика верхнего века Plazma Pix",
+      "description": "Плазменная дерматокосметология для подтяжки верхнего века",
+      "duration_minutes": 30,
+      "price": 3500,
+      "category_name": "Дерматокосметология Plazma Pix",
+      "price_options": []
+    },
+    {
+      "name": "Коррекция нижнего века Plazma Pix",
+      "description": "Плазменная дерматокосметология для нижнего века",
+      "duration_minutes": 30,
+      "price": 3000,
+      "category_name": "Дерматокосметология Plazma Pix",
+      "price_options": []
+    },
+    {
+      "name": "Коррекция горизонтальных морщин (лоб) Plazma Pix",
+      "description": "Плазменная дерматокосметология для морщин лба",
+      "duration_minutes": 30,
+      "price": 1500,
+      "category_name": "Дерматокосметология Plazma Pix",
+      "price_options": []
+    },
+    {
+      "name": "Коррекция морщин вокруг глаз (гусиные лапки) Plazma Pix",
+      "description": "Плазменная дерматокосметология для морщин вокруг глаз",
+      "duration_minutes": 30,
+      "price": 1800,
+      "category_name": "Дерматокосметология Plazma Pix",
+      "price_options": []
+    },
+    {
+      "name": "Коррекция межбровья Plazma Pix",
+      "description": "Плазменная дерматокосметология для коррекции межбровья",
+      "duration_minutes": 30,
+      "price": 1500,
+      "category_name": "Дерматокосметология Plazma Pix",
+      "price_options": []
+    },
+    {
+      "name": "Коррекция кисетных морщин (верхняя губа) Plazma Pix",
+      "description": "Плазменная дерматокосметология для морщин верхней губы",
+      "duration_minutes": 30,
+      "price": 2000,
+      "category_name": "Дерматокосметология Plazma Pix",
+      "price_options": []
+    },
+    {
+      "name": "Коррекция морщин около ушей Plazma Pix",
+      "description": "Плазменная дерматокосметология для морщин около ушей",
+      "duration_minutes": 30,
+      "price": 1500,
+      "category_name": "Дерматокосметология Plazma Pix",
+      "price_options": []
+    },
+    {
+      "name": "Коррекция кольца Венеры (шея) Plazma Pix",
+      "description": "Плазменная дерматокосметология для коррекции шеи",
+      "duration_minutes": 30,
+      "price": 2000,
+      "category_name": "Дерматокосметология Plazma Pix",
+      "price_options": []
+    },
+    {
+      "name": "Удаление плоских образований Plazma Pix",
+      "description": "Плазменная дерматокосметология для удаления плоских образований",
+      "duration_minutes": 30,
+      "price": 100,
+      "category_name": "Дерматокосметология Plazma Pix",
+      "price_options": []
+    },
+    {
+      "name": "Удаление ксантелазмы Plazma Pix",
+      "description": "Плазменная дерматокосметология для удаления ксантелазмы",
+      "duration_minutes": 30,
+      "price": 1000,
+      "category_name": "Дерматокосметология Plazma Pix",
+      "price_options": []
+    },
+    {
+      "name": "Удаление папиллом Plazma Pix",
+      "description": "Плазменная дерматокосметология для удаления папиллом",
+      "duration_minutes": 30,
+      "price": 50,
+      "category_name": "Дерматокосметология Plazma Pix",
+      "price_options": []
+    },
+    {
+      "name": "Коррекция пигментных пятен Plazma Pix",
+      "description": "Плазменная дерматокосметология для коррекции пигментации",
+      "duration_minutes": 30,
+      "price": 500,
+      "category_name": "Дерматокосметология Plazma Pix",
+      "price_options": []
+    },
+    {
+      "name": "Коррекция пост-акне Plazma Pix",
+      "description": "Плазменная дерматокосметология для коррекции пост-акне",
+      "duration_minutes": 30,
+      "price": 500,
+      "category_name": "Дерматокосметология Plazma Pix",
+      "price_options": []
+    },
+    {
+      "name": "Обезболивание Plazma Pix",
+      "description": "Дополнительное обезболивание для процедур Plazma Pix (+ 10% к стоимости)",
+      "duration_minutes": 10,
+      "price": 0,
+      "category_name": "Дерматокосметология Plazma Pix",
+      "price_options": []
+    },
+    {
+      "name": "Пилинг биоревитализант MCA 35 (лицо, шея и декольте)",
+      "description": "Биоревитализирующий пилинг MCA 35 для полного ухода",
+      "duration_minutes": 75,
+      "price": 2800,
+      "category_name": "Безинъекционная ревитализация",
+      "price_options": []
+    },
+    {
+      "name": "JALUPRO GLOW PEEL (Италия) - Лицо",
+      "description": "Биоревитализирующий пилинг для лица",
+      "duration_minutes": 60,
+      "price": 2400,
+      "category_name": "Безинъекционная ревитализация",
+      "price_options": []
+    },
+    {
+      "name": "JALUPRO GLOW PEEL (Италия) - Лицо и шея",
+      "description": "Биоревитализирующий пилинг для лица и шеи",
+      "duration_minutes": 75,
+      "price": 2700,
+      "category_name": "Безинъекционная ревитализация",
+      "price_options": []
+    },
+    {
+      "name": "JALUPRO GLOW PEEL (Италия) - Лицо, шея и декольте",
+      "description": "Биоревитализирующий пилинг для полного ухода",
+      "duration_minutes": 90,
+      "price": 2900,
+      "category_name": "Безинъекционная ревитализация",
+      "price_options": []
+    },
+    {
+      "name": "JALUPRO GLOW PEEL (Италия) - Тело",
+      "description": "Биоревитализирующий пилинг для тела",
+      "duration_minutes": 75,
+      "price": 3100,
+      "category_name": "Безинъекционная ревитализация",
+      "price_options": []
+    },
+    {
+      "name": "Пилинг биоревитализант MCA 35 (лицо)",
+      "description": "Биоревитализирующий пилинг MCA 35 для лица",
+      "duration_minutes": 60,
+      "price": 1800,
+      "category_name": "Безинъекционная ревитализация",
+      "price_options": []
+    },
+    {
+      "name": "Пилинг биоревитализант MCA 35 (лицо и шея)",
+      "description": "Биоревитализирующий пилинг MCA 35 для лица и шеи",
+      "duration_minutes": 75,
+      "price": 2100,
+      "category_name": "Безинъекционная ревитализация",
+      "price_options": []
+    },
+    {
+      "name": "Пилинг FSL биореконструктор 1 мл (лицо)",
+      "description": "Биоревитализирующий пилинг FSL для лица",
+      "duration_minutes": 60,
+      "price": 2200,
+      "category_name": "Безинъекционная ревитализация",
+      "price_options": []
+    },
+    {
+      "name": "Пилинг FSL биореконструктор (лицо, шея и декольте)",
+      "description": "Биоревитализирующий пилинг FSL для полного ухода",
+      "duration_minutes": 90,
+      "price": 3600,
+      "category_name": "Безинъекционная ревитализация",
+      "price_options": []
+    },
+    {
+      "name": "Пилинг PQAge (Promoitalia, Италия) - Лицо",
+      "description": "Биоревитализирующий пилинг PQAge для лица",
+      "duration_minutes": 60,
+      "price": 2600,
+      "category_name": "Безинъекционная ревитализация",
+      "price_options": []
+    },
+    {
+      "name": "Пилинг PQAge (Promoitalia, Италия) - Лицо и шея",
+      "description": "Биоревитализирующий пилинг PQAge для лица и шеи",
+      "duration_minutes": 75,
+      "price": 2800,
+      "category_name": "Безинъекционная ревитализация",
+      "price_options": []
+    },
+    {
+      "name": "Пилинг PQAge (Promoitalia, Италия) - Лицо, шея и декольте",
+      "description": "Биоревитализирующий пилинг PQAge для полного ухода",
+      "duration_minutes": 90,
+      "price": 3200,
+      "category_name": "Безинъекционная ревитализация",
+      "price_options": []
+    },
+    {
+      "name": "BioRePeelCl3 (MED Esthetics, Италия) - Лицо",
+      "description": "Биоревитализирующий пилинг BioRePeelCl3 для лица",
+      "duration_minutes": 60,
+      "price": 2400,
+      "category_name": "Безинъекционная ревитализация",
+      "price_options": []
+    },
+    {
+      "name": "BioRePeelCl3 (MED Esthetics, Италия) - Лицо и шея",
+      "description": "Биоревитализирующий пилинг BioRePeelCl3 для лица и шеи",
+      "duration_minutes": 75,
+      "price": 2700,
+      "category_name": "Безинъекционная ревитализация",
+      "price_options": []
+    },
+    {
+      "name": "BioRePeelCl3 (MED Esthetics, Италия) - Лицо, шея и декольте",
+      "description": "Биоревитализирующий пилинг BioRePeelCl3 для полного ухода",
+      "duration_minutes": 90,
+      "price": 2900,
+      "category_name": "Безинъекционная ревитализация",
+      "price_options": []
+    },
+    {
+      "name": "BioRePeelCl3 (MED Esthetics, Италия) - Тело",
+      "description": "Биоревитализирующий пилинг BioRePeelCl3 для тела",
+      "duration_minutes": 75,
+      "price": 3100,
+      "category_name": "Безинъекционная ревитализация",
+      "price_options": []
+    },
+    {
+      "name": "Пилинг PRX-T33 (WiQo Med, Италия) - Лицо",
+      "description": "Биоревитализирующий пилинг PRX-T33 для лица",
+      "duration_minutes": 60,
+      "price": 3000,
+      "category_name": "Безинъекционная ревитализация",
+      "price_options": []
+    },
+    {
+      "name": "Пилинг PRX-T33 (WiQo Med, Италия) - Лицо и шея",
+      "description": "Биоревитализирующий пилинг PRX-T33 для лица и шеи",
+      "duration_minutes": 75,
+      "price": 3800,
+      "category_name": "Безинъекционная ревитализация",
+      "price_options": []
+    },
+    {
+      "name": "Пилинг PRX-T33 (WiQo Med, Италия) - Лицо, шея и декольте",
+      "description": "Биоревитализирующий пилинг PRX-T33 для полного ухода",
+      "duration_minutes": 90,
+      "price": 4800,
+      "category_name": "Безинъекционная ревитализация",
+      "price_options": []
+    },
+    {
+      "name": "Пилинг PRX-T33 (WiQo Med, Италия) - Руки",
+      "description": "Биоревитализирующий пилинг PRX-T33 для рук",
+      "duration_minutes": 45,
+      "price": 1800,
+      "category_name": "Безинъекционная ревитализация",
+      "price_options": []
+    },
+    {
+      "name": "Пилинг Kemikum (Aerazen Lab, Италия) - Лицо",
+      "description": "Биоревитализирующий пилинг Kemikum для лица",
+      "duration_minutes": 60,
+      "price": 2100,
+      "category_name": "Безинъекционная ревитализация",
+      "price_options": []
+    },
+    {
+      "name": "Пилинг Kemikum (Aerazen Lab, Италия) - Лицо и шея",
+      "description": "Биоревитализирующий пилинг Kemikum для лица и шеи",
+      "duration_minutes": 75,
+      "price": 2600,
+      "category_name": "Безинъекционная ревитализация",
+      "price_options": []
+    },
+    {
+      "name": "Пилинг Kemikum (Aerazen Lab, Италия) - Лицо, шея и декольте",
+      "description": "Биоревитализирующий пилинг Kemikum для полного ухода",
+      "duration_minutes": 90,
+      "price": 3100,
+      "category_name": "Безинъекционная ревитализация",
+      "price_options": []
+    },
+    {
+      "name": "Аппаратный уход Geneo+ (лицо + шея + декольте)",
+      "description": "Комплексный аппаратный уход на аппарате Geneo+ для полного ухода",
+      "duration_minutes": 60,
+      "price": 3000,
+      "category_name": "Аппаратный уход Geneo+",
+      "price_options": []
+    },
+    {
+      "name": "Аппаратный уход Geneo+ (лицо + шея)",
+      "description": "Аппаратный уход на аппарате Geneo+ для лица и шеи",
+      "duration_minutes": 45,
+      "price": 2800,
+      "category_name": "Аппаратный уход Geneo+",
+      "price_options": []
+    },
+    {
+      "name": "Аппаратный уход Geneo+ (лицо)",
+      "description": "Аппаратный уход на аппарате Geneo+ для лица",
+      "duration_minutes": 45,
+      "price": 2600,
+      "category_name": "Аппаратный уход Geneo+",
+      "price_options": []
+    },
+    {
+      "name": "Комплексный антивозрастной уход Hydro Luxx (лицо + шея + декольте)",
+      "description": "Гидродермабразия с полным антивозрастным уходом",
+      "duration_minutes": 75,
+      "price": 2900,
+      "category_name": "Гидродермабразия HydroLuxx",
+      "price_options": []
+    },
+    {
+      "name": "Гидродермабразия лица",
+      "description": "Гидродермабразия для глубокого очищения и увлажнения лица",
+      "duration_minutes": 45,
+      "price": 1300,
+      "category_name": "Гидродермабразия HydroLuxx",
+      "price_options": []
+    },
+    {
+      "name": "Гидродермабразия лица и шеи",
+      "description": "Гидродермабразия для лица и шеи",
+      "duration_minutes": 60,
+      "price": 1400,
+      "category_name": "Гидродермабразия HydroLuxx",
+      "price_options": []
+    },
+    {
+      "name": "Гидродермабразия лица + шеи + декольте",
+      "description": "Гидродермабразия для полного ухода",
+      "duration_minutes": 75,
+      "price": 1500,
+      "category_name": "Гидродермабразия HydroLuxx",
+      "price_options": []
+    },
+    {
+      "name": "Безинъекционная кислородная мезотерапия лица",
+      "description": "Кислородная мезотерапия для лица",
+      "duration_minutes": 45,
+      "price": 1300,
+      "category_name": "Гидродермабразия HydroLuxx",
+      "price_options": []
+    },
+    {
+      "name": "Безинъекционная кислородная мезотерапия лица и шеи",
+      "description": "Кислородная мезотерапия для лица и шеи",
+      "duration_minutes": 60,
+      "price": 1400,
+      "category_name": "Гидродермабразия HydroLuxx",
+      "price_options": []
+    },
+    {
+      "name": "Безинъекционная кислородная мезотерапия лица + шеи + декольте",
+      "description": "Кислородная мезотерапия для полного ухода",
+      "duration_minutes": 75,
+      "price": 1500,
+      "category_name": "Гидродермабразия HydroLuxx",
+      "price_options": []
+    },
+    {
+      "name": "Комплексная процедура Hydro Luxx (лицо)",
+      "description": "Комплексная процедура гидродермабразии для лица",
+      "duration_minutes": 60,
+      "price": 1700,
+      "category_name": "Гидродермабразия HydroLuxx",
+      "price_options": []
+    },
+    {
+      "name": "Комплексная процедура Hydro Luxx (лицо + шея)",
+      "description": "Комплексная процедура гидродермабразии для лица и шеи",
+      "duration_minutes": 75,
+      "price": 1800,
+      "category_name": "Гидродермабразия HydroLuxx",
+      "price_options": []
+    },
+    {
+      "name": "Комплексная процедура Hydro Luxx (лицо + шея + декольте)",
+      "description": "Комплексная процедура гидродермабразии для полного ухода",
+      "duration_minutes": 90,
+      "price": 2000,
+      "category_name": "Гидродермабразия HydroLuxx",
+      "price_options": []
+    },
+    {
+      "name": "Микротоковая терапия Zemits Adrinox 2.0 (лицо и шея)",
+      "description": "Микротоковая терапия технологией BioTok для лица и шеи",
+      "duration_minutes": 60,
+      "price": 1700,
+      "category_name": "Микротоковая терапия",
+      "price_options": []
+    },
+    {
+      "name": "Микротоковая терапия Zemits Adrinox 2.0 (лицо, шея и декольте)",
+      "description": "Микротоковая терапия технологией BioTok для полного ухода",
+      "duration_minutes": 75,
+      "price": 1800,
+      "category_name": "Микротоковая терапия",
+      "price_options": []
+    },
+    {
+      "name": "Мезопил (лицо)",
+      "description": "Средний химический пилинг Мезопил для лица",
+      "duration_minutes": 60,
+      "price": 2400,
+      "category_name": "Безинъекционная ревитализация",
+      "price_options": []
+    },
+    {
+      "name": "Мезопил (лицо и шея)",
+      "description": "Средний химический пилинг Мезопил для лица и шеи",
+      "duration_minutes": 75,
+      "price": 2800,
+      "category_name": "Безинъекционная ревитализация",
+      "price_options": []
+    },
+    {
+      "name": "Мезопил (лицо, шея и декольте)",
+      "description": "Средний химический пилинг Мезопил для полного ухода",
+      "duration_minutes": 90,
+      "price": 3000,
+      "category_name": "Безинъекционная ревитализация",
+      "price_options": []
+    },
+    {
+      "name": "Карбоновый пилинг лица",
+      "description": "Лазерный карбоновый пилинг для лица",
+      "duration_minutes": 45,
+      "price": 1300,
+      "category_name": "Лазерный карбоновый пилинг",
+      "price_options": []
+    },
+    {
+      "name": "Карбоновый пилинг декольте",
+      "description": "Лазерный карбоновый пилинг для зоны декольте",
+      "duration_minutes": 30,
+      "price": 1150,
+      "category_name": "Лазерный карбоновый пилинг",
+      "price_options": []
+    },
+    {
+      "name": "Карбоновый пилинг шеи",
+      "description": "Лазерный карбоновый пилинг для шеи",
+      "duration_minutes": 30,
+      "price": 1050,
+      "category_name": "Лазерный карбоновый пилинг",
+      "price_options": []
+    },
+    {
+      "name": "Карбоновый пилинг лица + шея + декольте",
+      "description": "Лазерный карбоновый пилинг для полного ухода",
+      "duration_minutes": 75,
+      "price": 2100,
+      "category_name": "Лазерный карбоновый пилинг",
+      "price_options": []
+    },
+    {
+      "name": "Карбоновый пилинг лица + шея",
+      "description": "Лазерный карбоновый пилинг для лица и шеи",
+      "duration_minutes": 60,
+      "price": 1650,
+      "category_name": "Лазерный карбоновый пилинг",
+      "price_options": []
+    },
+    {
+      "name": "Карбоновый пилинг спины",
+      "description": "Лазерный карбоновый пилинг для спины",
+      "duration_minutes": 60,
+      "price": 1800,
+      "category_name": "Лазерный карбоновый пилинг",
+      "price_options": []
+    },
+    {
+      "name": "Карбоновый пилинг + чистка лица",
+      "description": "Комбинированная процедура карбонового пилинга и чистки",
+      "duration_minutes": 75,
+      "price": 2000,
+      "category_name": "Лазерный карбоновый пилинг",
+      "price_options": []
+    },
+    {
+      "name": "Карбоновый пилинг + чистка спины",
+      "description": "Комбинированная процедура карбонового пилинга и чистки спины",
+      "duration_minutes": 90,
+      "price": 2400,
+      "category_name": "Лазерный карбоновый пилинг",
+      "price_options": []
+    },
+    {
+      "name": "Лазерное карбоновое удаление пигментации - Лоб",
+      "description": "Лазерное удаление пигментных пятен на лбу",
+      "duration_minutes": 30,
+      "price": 1200,
+      "category_name": "Лазерное карбоновое удаление пигментации",
+      "price_options": []
+    },
+    {
+      "name": "Лазерное карбоновое удаление пигментации - Щеки",
+      "description": "Лазерное удаление пигментных пятен на щеках",
+      "duration_minutes": 30,
+      "price": 1400,
+      "category_name": "Лазерное карбоновое удаление пигментации",
+      "price_options": []
+    },
+    {
+      "name": "Лазерное карбоновое удаление пигментации - Верхняя губа",
+      "description": "Лазерное удаление пигментных пятен на верхней губе",
+      "duration_minutes": 15,
+      "price": 900,
+      "category_name": "Лазерное карбоновое удаление пигментации",
+      "price_options": []
+    },
+    {
+      "name": "Лазерное карбоновое удаление пигментации - Подбородок",
+      "description": "Лазерное удаление пигментных пятен на подбородке",
+      "duration_minutes": 15,
+      "price": 1000,
+      "category_name": "Лазерное карбоновое удаление пигментации",
+      "price_options": []
+    },
+    {
+      "name": "Лазерное карбоновое удаление пигментации - Нос",
+      "description": "Лазерное удаление пигментных пятен на носе",
+      "duration_minutes": 15,
+      "price": 1000,
+      "category_name": "Лазерное карбоновое удаление пигментации",
+      "price_options": []
+    },
+    {
+      "name": "Лазерное карбоновое удаление пигментации - Предплечье",
+      "description": "Лазерное удаление пигментных пятен на предплечье",
+      "duration_minutes": 30,
+      "price": 1600,
+      "category_name": "Лазерное карбоновое удаление пигментации",
+      "price_options": []
+    },
+    {
+      "name": "Лазерное карбоновое удаление пигментации - Тыльная сторона кисти",
+      "description": "Лазерное удаление пигментных пятен на тыльной стороне кисти",
+      "duration_minutes": 30,
+      "price": 1400,
+      "category_name": "Лазерное карбоновое удаление пигментации",
+      "price_options": []
+    },
+    {
+      "name": "Лазерное карбоновое удаление пигментации - Декольте",
+      "description": "Лазерное удаление пигментных пятен на декольте",
+      "duration_minutes": 30,
+      "price": 1600,
+      "category_name": "Лазерное карбоновое удаление пигментации",
+      "price_options": []
+    },
+    {
+      "name": "Лазерное карбоновое удаление пигментации - Зона 1х1 см",
+      "description": "Лазерное удаление небольших пигментных пятен",
+      "duration_minutes": 15,
+      "price": 900,
+      "category_name": "Лазерное карбоновое удаление пигментации",
+      "price_options": []
+    },
+    {
+      "name": "Обезболивание при лазерном удалении пигментации",
+      "description": "Дополнительное обезболивание при процедуре (15% от стоимости)",
+      "duration_minutes": 10,
+      "price": 0,
+      "category_name": "Лазерное карбоновое удаление пигментации",
+      "price_options": []
+    },
+    {
+      "name": "Консультация косметолога",
+      "description": "Первичная консультация специалиста по косметологии",
+      "duration_minutes": 30,
+      "price": 400,
+      "category_name": "Консультации и диагностика",
+      "price_options": []
+    },
+    {
+      "name": "Компьютерная диагностика кожи",
+      "description": "Компьютеризированная диагностика состояния кожи лица",
+      "duration_minutes": 30,
+      "price": 1400,
+      "category_name": "Консультации и диагностика",
+      "price_options": []
+    },
+    {
+      "name": "Лазерная процедура Эндолифт (1 зона)",
+      "description": "Лазерная процедура для глубокого лифтинга тканей",
+      "duration_minutes": 60,
+      "price": 45000,
+      "category_name": "Лазерная косметология",
+      "price_options": []
+    },
+    {
+      "name": "LED терапия - Волосы и кожа головы",
+      "description": "Светолечение для стимуляции роста волос и лечения себореи",
+      "duration_minutes": 30,
+      "price": 800,
+      "category_name": "LED терапия",
+      "price_options": []
+    },
+    {
+      "name": "LED терапия - Лицо",
+      "description": "Светолечение для лечения акне, постакне, розацеи и омоложения",
+      "duration_minutes": 30,
+      "price": 1100,
+      "category_name": "LED терапия",
+      "price_options": []
+    },
+    {
+      "name": "LED терапия - Лицо + шея",
+      "description": "Светолечение для лица и шеи",
+      "duration_minutes": 45,
+      "price": 1400,
+      "category_name": "LED терапия",
+      "price_options": []
+    },
+    {
+      "name": "LED терапия - Тело (1 зона)",
+      "description": "Светолечение для тела (спина, плечи, живот, бедра, ягодицы, колени)",
+      "duration_minutes": 30,
+      "price": 1500,
+      "category_name": "LED терапия",
+      "price_options": []
+    },
+    {
+      "name": "LED терапия (после пилингов, инъекций, лазеров)",
+      "description": "Дополнительная LED терапия после аппаратных процедур",
+      "duration_minutes": 20,
+      "price": 600,
+      "category_name": "LED терапия",
+      "price_options": []
+    }
+  ]
+}
+```

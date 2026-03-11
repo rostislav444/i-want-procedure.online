@@ -102,6 +102,7 @@ class Company(Base):
     payment_recipient_name: Mapped[str | None] = mapped_column(String(200), nullable=True)
     payment_card_number: Mapped[str | None] = mapped_column(String(19), nullable=True)  # 16-19 digits with spaces
     payment_monobank_jar: Mapped[str | None] = mapped_column(String(200), nullable=True)  # Monobank jar link
+    monobank_token: Mapped[str | None] = mapped_column(String(200), nullable=True)  # Monobank Acquiring API token for client payments
 
     # AI-generated landing page HTML (full page)
     landing_html: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -174,6 +175,10 @@ class Company(Base):
         cascade="all, delete-orphan"
     )
     stock_movements: Mapped[list["StockMovement"]] = relationship(
+        back_populates="company",
+        cascade="all, delete-orphan"
+    )
+    expenses: Mapped[list["Expense"]] = relationship(
         back_populates="company",
         cascade="all, delete-orphan"
     )

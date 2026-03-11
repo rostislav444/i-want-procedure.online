@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { uk } from 'date-fns/locale'
 import {
@@ -13,6 +14,7 @@ import {
   Loader2,
   ClipboardList,
   ChevronDown,
+  ExternalLink,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -28,6 +30,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { DynamicProtocolForm } from '@/components/protocols/DynamicProtocolForm'
+import { ProcedureFinancialCard } from '@/components/appointments/ProcedureFinancialCard'
 import {
   Appointment,
   ProcedureProtocol,
@@ -64,6 +67,8 @@ export function AppointmentModal({
   onAppointmentUpdated,
   onProtocolSaved,
 }: AppointmentModalProps) {
+  const router = useRouter()
+
   // Status state
   const [currentStatus, setCurrentStatus] = useState<string>('')
   const [updatingStatus, setUpdatingStatus] = useState(false)
@@ -272,6 +277,18 @@ export function AppointmentModal({
                 {format(new Date(appointment.date), 'd MMMM yyyy', { locale: uk })} о {appointment.start_time.slice(0, 5)}
               </p>
             </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1 text-muted-foreground"
+              onClick={() => {
+                onOpenChange(false)
+                router.push(`/admin/appointments/${appointment.id}`)
+              }}
+            >
+              <ExternalLink className="h-4 w-4" />
+              Повна сторінка
+            </Button>
           </DialogTitle>
         </DialogHeader>
 
@@ -337,6 +354,13 @@ export function AppointmentModal({
             </div>
           </div>
         </div>
+
+        {/* Financials Section - only show when completed */}
+        {isCompleted && (
+          <div className="border-t pt-6 mt-6">
+            <ProcedureFinancialCard appointmentId={appointment.id} />
+          </div>
+        )}
 
         {/* Protocol Section - only show when completed */}
         {isCompleted && (

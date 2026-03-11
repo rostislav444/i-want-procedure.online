@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { User, Save, Calendar, Link2, Unlink, Building2, Users, ArrowRight } from 'lucide-react'
+import { User, Save, Calendar, Link2, Unlink, Building2, Users, ArrowRight, CreditCard, Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -18,6 +18,143 @@ interface UserData {
   last_name: string
   telegram_id: number | null
   role: string
+}
+
+function MonobankTokenCard() {
+  const { company, refreshCompany } = useCompany()
+  const [token, setToken] = useState('')
+  const [showToken, setShowToken] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [success, setSuccess] = useState(false)
+
+  const hasToken = (company as any)?.has_monobank_token || false
+
+  const handleSave = async () => {
+    if (!token.trim()) return
+    setSaving(true)
+    try {
+      await companyApi.updateCompany({ monobank_token: token.trim() } as any)
+      setSuccess(true)
+      setToken('')
+      setTimeout(() => setSuccess(false), 3000)
+      await refreshCompany()
+    } catch (error) {
+      console.error('Error saving Monobank token:', error)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleRemove = async () => {
+    if (!confirm('Видалити Monobank токен? Ви не зможете генерувати посилання на оплату для клієнтів.')) return
+    setSaving(true)
+    try {
+      await companyApi.updateCompany({ monobank_token: '' } as any)
+      await refreshCompany()
+    } catch (error) {
+      console.error('Error removing Monobank token:', error)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <CreditCard className="h-5 w-5" />
+          Monobank Acquiring
+        </CardTitle>
+        <CardDescription>
+          Налаштуйте токен Monobank для генерації посилань на оплату послуг клієнтами.
+          Отримайте токен на{' '}
+          <a
+            href="https://web.monobank.ua/acquiring"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary underline"
+          >
+            web.monobank.ua/acquiring
+          </a>
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {hasToken ? (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg border border-green-200">
+              <CreditCard className="h-5 w-5 text-green-600" />
+              <div className="flex-1">
+                <p className="font-medium text-green-800">Monobank підключено</p>
+                <p className="text-sm text-green-600">Ви можете генерувати посилання на оплату для клієнтів</p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRemove}
+                disabled={saving}
+                className="text-red-600 hover:text-red-700"
+              >
+                Видалити
+              </Button>
+            </div>
+            <div className="space-y-2">
+              <Label>Оновити токен</Label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Input
+                    type={showToken ? 'text' : 'password'}
+                    value={token}
+                    onChange={(e) => setToken(e.target.value)}
+                    placeholder="Вставте новий X-Token"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowToken(!showToken)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    {showToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                <Button onClick={handleSave} disabled={saving || !token.trim()}>
+                  {saving ? 'Збереження...' : 'Оновити'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Input
+                  type={showToken ? 'text' : 'password'}
+                  value={token}
+                  onChange={(e) => setToken(e.target.value)}
+                  placeholder="Вставте X-Token з Monobank Acquiring"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowToken(!showToken)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+              <Button onClick={handleSave} disabled={saving || !token.trim()}>
+                <CreditCard className="h-4 w-4 mr-2" />
+                {saving ? 'Збереження...' : 'Підключити'}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Після підключення ви зможете надсилати клієнтам посилання на оплату через Monobank.
+            </p>
+          </div>
+        )}
+        {success && (
+          <p className="text-sm text-green-600">Токен збережено!</p>
+        )}
+      </CardContent>
+    </Card>
+  )
 }
 
 export default function ProfilePage() {
@@ -426,6 +563,11 @@ export default function ProfilePage() {
             )}
           </CardContent>
         </Card>
+      )}
+
+      {/* Monobank Token for client payments */}
+      {userRole === 'owner' && (
+        <MonobankTokenCard />
       )}
 
       {/* Account Info */}

@@ -38,6 +38,7 @@ class CompanyUpdate(BaseModel):
     payment_recipient_name: str | None = None
     payment_card_number: str | None = None
     payment_monobank_jar: str | None = None
+    monobank_token: str | None = None  # Monobank Acquiring token for client payments
 
 
 class CompanyResponse(BaseModel):
@@ -74,6 +75,7 @@ class CompanyResponse(BaseModel):
     payment_recipient_name: str | None = None
     payment_card_number: str | None = None
     payment_monobank_jar: str | None = None
+    has_monobank_token: bool = False
 
     class Config:
         from_attributes = True
