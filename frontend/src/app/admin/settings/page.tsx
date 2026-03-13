@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useCompany } from '@/contexts/CompanyContext'
-import { companyApi, uploadApi, Company } from '@/lib/api'
+import { companyApi, uploadApi, citiesApi, Company, CitySearchResult, AddressSearchResult } from '@/lib/api'
 import {
   Settings,
   Users,
@@ -17,13 +17,16 @@ import {
   CreditCard,
   Phone,
   MapPin,
-  Banknote,
   Camera,
   Upload,
   Loader2,
   Save,
   ChevronRight,
+  Search,
+  X,
+  Navigation,
 } from 'lucide-react'
+
 
 export default function SettingsPage() {
   const router = useRouter()
@@ -32,7 +35,6 @@ export default function SettingsPage() {
   const [company, setCompany] = useState<Company | null>(null)
   const [loading, setLoading] = useState(true)
   const [savingCompany, setSavingCompany] = useState(false)
-  const [savingPayment, setSavingPayment] = useState(false)
   const [success, setSuccess] = useState<string | null>(null)
   const [uploadingLogo, setUploadingLogo] = useState(false)
   const logoInputRef = useRef<HTMLInputElement>(null)
@@ -45,13 +47,22 @@ export default function SettingsPage() {
     telegram: '',
   })
 
-  const [paymentData, setPaymentData] = useState({
-    payment_iban: '',
-    payment_bank_name: '',
-    payment_recipient_name: '',
-    payment_card_number: '',
-    payment_monobank_jar: '',
-  })
+  // City search state
+  const [selectedCity, setSelectedCity] = useState<{ id: number; name: string; oblast: string } | null>(null)
+  const [cityQuery, setCityQuery] = useState('')
+  const [cityResults, setCityResults] = useState<CitySearchResult[]>([])
+  const [showCityDropdown, setShowCityDropdown] = useState(false)
+  const [citySearching, setCitySearching] = useState(false)
+  const cityDropdownRef = useRef<HTMLDivElement>(null)
+  const cityInputRef = useRef<HTMLInputElement>(null)
+
+  // Address search state
+  const [addressQuery, setAddressQuery] = useState('')
+  const [addressResults, setAddressResults] = useState<AddressSearchResult[]>([])
+  const [showAddressDropdown, setShowAddressDropdown] = useState(false)
+  const [addressSearching, setAddressSearching] = useState(false)
+  const addressDropdownRef = useRef<HTMLDivElement>(null)
+  const addressDebounceRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     if (companyType && companyType !== 'clinic') {
@@ -60,6 +71,20 @@ export default function SettingsPage() {
     }
     loadData()
   }, [companyType])
+
+  // Close dropdowns on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (cityDropdownRef.current && !cityDropdownRef.current.contains(e.target as Node)) {
+        setShowCityDropdown(false)
+      }
+      if (addressDropdownRef.current && !addressDropdownRef.current.contains(e.target as Node)) {
+        setShowAddressDropdown(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const loadData = async () => {
     try {
@@ -72,13 +97,13 @@ export default function SettingsPage() {
         address: companyResponse.address || '',
         telegram: companyResponse.telegram || '',
       })
-      setPaymentData({
-        payment_iban: companyResponse.payment_iban || '',
-        payment_bank_name: companyResponse.payment_bank_name || '',
-        payment_recipient_name: companyResponse.payment_recipient_name || '',
-        payment_card_number: companyResponse.payment_card_number || '',
-        payment_monobank_jar: companyResponse.payment_monobank_jar || '',
-      })
+      if (companyResponse.city_info) {
+        setSelectedCity(companyResponse.city_info)
+        setCityQuery(companyResponse.city_info.name)
+      }
+      if (companyResponse.address) {
+        setAddressQuery(companyResponse.address)
+      }
     } catch (error) {
       console.error('Error loading settings:', error)
     } finally {
@@ -91,6 +116,92 @@ export default function SettingsPage() {
     setTimeout(() => setSuccess(null), 3000)
   }
 
+  // City search
+  const handleCitySearch = useCallback(async (query: string) => {
+    setCityQuery(query)
+    if (query.length < 1) {
+      // Show popular cities
+      setCitySearching(true)
+      try {
+        const results = await citiesApi.search('', 10)
+        setCityResults(results)
+        setShowCityDropdown(true)
+      } finally {
+        setCitySearching(false)
+      }
+      return
+    }
+    if (query.length < 2) {
+      setCityResults([])
+      setShowCityDropdown(false)
+      return
+    }
+    setCitySearching(true)
+    try {
+      const results = await citiesApi.search(query, 8)
+      setCityResults(results)
+      setShowCityDropdown(true)
+    } catch (error) {
+      console.error('City search error:', error)
+    } finally {
+      setCitySearching(false)
+    }
+  }, [])
+
+  const handleCitySelect = (city: CitySearchResult) => {
+    setSelectedCity({ id: city.id, name: city.name, oblast: city.oblast })
+    setCityQuery(city.name)
+    setShowCityDropdown(false)
+    // Clear address when city changes
+    setAddressQuery('')
+    setCompanyData(prev => ({ ...prev, address: '' }))
+  }
+
+  const handleClearCity = () => {
+    setSelectedCity(null)
+    setCityQuery('')
+    setCityResults([])
+    setAddressQuery('')
+    setCompanyData(prev => ({ ...prev, address: '' }))
+  }
+
+  // Address search with debounce
+  const handleAddressSearch = useCallback((query: string) => {
+    setAddressQuery(query)
+    setCompanyData(prev => ({ ...prev, address: query }))
+
+    if (addressDebounceRef.current) {
+      clearTimeout(addressDebounceRef.current)
+    }
+
+    if (query.length < 3) {
+      setAddressResults([])
+      setShowAddressDropdown(false)
+      return
+    }
+
+    addressDebounceRef.current = setTimeout(async () => {
+      setAddressSearching(true)
+      try {
+        const cityName = selectedCity?.name || undefined
+        const results = await citiesApi.searchAddress(query, cityName)
+        setAddressResults(results)
+        setShowAddressDropdown(results.length > 0)
+      } catch (error) {
+        console.error('Address search error:', error)
+      } finally {
+        setAddressSearching(false)
+      }
+    }, 500)
+  }, [selectedCity])
+
+  const handleAddressSelect = (result: AddressSearchResult) => {
+    const address = result.address || result.display_name
+    setAddressQuery(address)
+    setCompanyData(prev => ({ ...prev, address }))
+    setShowAddressDropdown(false)
+  }
+
   const handleSubmitCompany = async (e: React.FormEvent) => {
     e.preventDefault()
     setSavingCompany(true)
@@ -100,34 +211,16 @@ export default function SettingsPage() {
         description: companyData.description || undefined,
         phone: companyData.phone || undefined,
         address: companyData.address || undefined,
+        city_id: selectedCity?.id || undefined,
         telegram: companyData.telegram || undefined,
       })
       showSuccess('Дані клініки збережено!')
       await loadData()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating company:', error)
+      showSuccess('Помилка при збереженні: ' + (error?.response?.data?.detail || error?.message || 'невідома помилка'))
     } finally {
       setSavingCompany(false)
-    }
-  }
-
-  const handleSubmitPayment = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setSavingPayment(true)
-    try {
-      await companyApi.updateCompany({
-        payment_iban: paymentData.payment_iban || undefined,
-        payment_bank_name: paymentData.payment_bank_name || undefined,
-        payment_recipient_name: paymentData.payment_recipient_name || undefined,
-        payment_card_number: paymentData.payment_card_number || undefined,
-        payment_monobank_jar: paymentData.payment_monobank_jar || undefined,
-      })
-      showSuccess('Реквізити збережено!')
-      await loadData()
-    } catch (error) {
-      console.error('Error updating payment info:', error)
-    } finally {
-      setSavingPayment(false)
     }
   }
 
@@ -214,6 +307,24 @@ export default function SettingsPage() {
                   <h3 className="font-medium">Команда та посади</h3>
                   <p className="text-sm text-muted-foreground">
                     Управління спеціалістами
+                  </p>
+                </div>
+                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/admin/settings/payments">
+          <Card className="h-full transition-colors hover:border-primary/50 cursor-pointer">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <CreditCard className="h-5 w-5 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-medium">Налаштування оплат</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Прийом оплати від клієнтів
                   </p>
                 </div>
                 <ChevronRight className="h-5 w-5 text-muted-foreground" />
@@ -348,17 +459,161 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="address" className="flex items-center gap-1">
-                <MapPin className="h-4 w-4" /> Адреса
+            {/* City Selector */}
+            <div className="space-y-2" ref={cityDropdownRef}>
+              <Label className="flex items-center gap-1">
+                <Navigation className="h-4 w-4" /> Місто
               </Label>
-              <Input
-                id="address"
-                value={companyData.address}
-                onChange={(e) => setCompanyData({ ...companyData, address: e.target.value })}
-                placeholder="м. Київ, вул. Хрещатик, 1"
-              />
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  ref={cityInputRef}
+                  value={cityQuery}
+                  onChange={(e) => handleCitySearch(e.target.value)}
+                  onFocus={() => {
+                    if (cityResults.length > 0) {
+                      setShowCityDropdown(true)
+                    } else {
+                      handleCitySearch(cityQuery)
+                    }
+                  }}
+                  placeholder="Почніть вводити назву міста..."
+                  className="pl-9 pr-9"
+                />
+                {selectedCity && (
+                  <button
+                    type="button"
+                    onClick={handleClearCity}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+                {citySearching && (
+                  <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+                )}
+
+                {showCityDropdown && cityResults.length > 0 && (
+                  <div className="absolute z-50 top-full mt-1 w-full bg-background border rounded-md shadow-lg max-h-60 overflow-auto">
+                    {cityResults.map((city) => (
+                      <button
+                        key={city.id}
+                        type="button"
+                        onClick={() => handleCitySelect(city)}
+                        className={`w-full text-left px-3 py-2 hover:bg-accent flex items-center gap-2 text-sm ${
+                          selectedCity?.id === city.id ? 'bg-accent' : ''
+                        }`}
+                      >
+                        <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        <div>
+                          <span className="font-medium">{city.name}</span>
+                          <span className="text-muted-foreground ml-1">
+                            {city.oblast}
+                          </span>
+                        </div>
+                        {city.is_regional_center && (
+                          <span className="ml-auto text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded">
+                            обл. центр
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {selectedCity && (
+                <p className="text-sm text-muted-foreground">
+                  {selectedCity.name}, {selectedCity.oblast}
+                </p>
+              )}
             </div>
+
+            {/* Address with Autocomplete */}
+            <div className="space-y-2" ref={addressDropdownRef}>
+              <Label htmlFor="address" className="flex items-center gap-1">
+                <MapPin className="h-4 w-4" /> Адреса (вулиця, будинок)
+              </Label>
+              <div className="relative">
+                <Input
+                  id="address"
+                  value={addressQuery}
+                  onChange={(e) => handleAddressSearch(e.target.value)}
+                  onFocus={() => {
+                    if (addressResults.length > 0) setShowAddressDropdown(true)
+                  }}
+                  placeholder={selectedCity ? `Вулиця та будинок у м. ${selectedCity.name}` : "Спочатку оберіть місто"}
+                />
+                {addressSearching && (
+                  <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+                )}
+
+                {showAddressDropdown && addressResults.length > 0 && (
+                  <div className="absolute z-50 top-full mt-1 w-full bg-background border rounded-md shadow-lg max-h-60 overflow-auto">
+                    {addressResults.map((result, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => handleAddressSelect(result)}
+                        className="w-full text-left px-3 py-2 hover:bg-accent text-sm border-b last:border-b-0"
+                      >
+                        <div className="font-medium">
+                          {result.address || result.city}
+                        </div>
+                        <div className="text-xs text-muted-foreground truncate">
+                          {result.display_name}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Починайте вводити адресу — підказки з&apos;являться автоматично (OpenStreetMap)
+              </p>
+            </div>
+
+            {/* Map Preview - shown only when company has saved city */}
+            {company?.city_info && company.city_info.latitude && company.city_info.longitude && (
+              <div className="space-y-2">
+                <Label className="flex items-center gap-1 text-muted-foreground">
+                  <MapPin className="h-4 w-4" /> Місцезнаходження на карті
+                </Label>
+                <div className="rounded-lg overflow-hidden border h-[250px]">
+                  <iframe
+                    key={`${company.city_info.id}-${company.address || ''}`}
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    src={(() => {
+                      const lat = company.city_info!.latitude!
+                      const lon = company.city_info!.longitude!
+                      const d = 0.008
+                      const bbox = `${lon - d},${lat - d},${lon + d},${lat + d}`
+                      return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat},${lon}`
+                    })()}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-muted-foreground">
+                    {company.city_info.name}, {company.city_info.oblast}
+                    {company.address ? ` — ${company.address}` : ''}
+                  </p>
+                  <a
+                    href={`https://www.openstreetmap.org/search?query=${encodeURIComponent(
+                      (company.address ? `${company.address}, ` : '') +
+                      company.city_info.name + ', Україна'
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-primary hover:underline"
+                  >
+                    Відкрити на карті
+                  </a>
+                </div>
+              </div>
+            )}
 
             <div className="pt-2 space-y-2">
               <Label className="text-muted-foreground">Код запрошення для клієнтів</Label>
@@ -377,87 +632,6 @@ export default function SettingsPage() {
             <Button type="submit" disabled={savingCompany}>
               <Save className="mr-2 h-4 w-4" />
               {savingCompany ? 'Збереження...' : 'Зберегти'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-
-      {/* Payment Requisites */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5" />
-            Реквізити для оплати
-          </CardTitle>
-          <CardDescription>
-            Дані для прийому оплати від клієнтів
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmitPayment} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="payment_iban" className="flex items-center gap-1">
-                <Banknote className="h-4 w-4" /> IBAN
-              </Label>
-              <Input
-                id="payment_iban"
-                value={paymentData.payment_iban}
-                onChange={(e) => setPaymentData({ ...paymentData, payment_iban: e.target.value })}
-                placeholder="UA213223130000026007233566001"
-                maxLength={34}
-              />
-              <p className="text-xs text-muted-foreground">
-                Формат: UA + 27 цифр
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="payment_bank_name">Назва банку</Label>
-                <Input
-                  id="payment_bank_name"
-                  value={paymentData.payment_bank_name}
-                  onChange={(e) => setPaymentData({ ...paymentData, payment_bank_name: e.target.value })}
-                  placeholder="ПриватБанк"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="payment_recipient_name">ПІБ отримувача</Label>
-                <Input
-                  id="payment_recipient_name"
-                  value={paymentData.payment_recipient_name}
-                  onChange={(e) => setPaymentData({ ...paymentData, payment_recipient_name: e.target.value })}
-                  placeholder="Іванов Іван Іванович"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="payment_card_number" className="flex items-center gap-1">
-                <CreditCard className="h-4 w-4" /> Номер картки
-              </Label>
-              <Input
-                id="payment_card_number"
-                value={paymentData.payment_card_number}
-                onChange={(e) => setPaymentData({ ...paymentData, payment_card_number: e.target.value })}
-                placeholder="5375 4141 0000 0000"
-                maxLength={19}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="payment_monobank_jar">Monobank банка (посилання)</Label>
-              <Input
-                id="payment_monobank_jar"
-                value={paymentData.payment_monobank_jar}
-                onChange={(e) => setPaymentData({ ...paymentData, payment_monobank_jar: e.target.value })}
-                placeholder="https://send.monobank.ua/jar/..."
-              />
-            </div>
-
-            <Button type="submit" disabled={savingPayment}>
-              <Save className="mr-2 h-4 w-4" />
-              {savingPayment ? 'Збереження...' : 'Зберегти реквізити'}
             </Button>
           </form>
         </CardContent>

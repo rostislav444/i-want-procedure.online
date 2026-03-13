@@ -13,7 +13,7 @@ from app.api.deps import DbSession, CurrentUser, OptionalCurrentUser
 from app.core.config import settings
 from app.core.security import verify_password, get_password_hash, create_access_token, verify_telegram_auth
 from app.models.user import User
-from app.models.company import Company
+from app.models.company import Company, CompanyType
 from app.models.company_member import CompanyMember
 from app.schemas.auth import Token, UserCreate, UserLogin, TelegramAuthData
 from app.schemas.user import UserResponse, UserUpdate
@@ -53,7 +53,11 @@ async def get_unique_slug(db: DbSession, base_slug: str) -> str:
 
 
 @router.post("/register", response_model=UserResponse)
-async def register(user_data: UserCreate, db: DbSession):
+async def register(
+    user_data: UserCreate,
+    db: DbSession,
+    ref: Optional[str] = Query(None, description="Referral code from educator"),
+):
     # Check if email already exists
     result = await db.execute(select(User).where(User.email == user_data.email))
     if result.scalar_one_or_none():
@@ -66,13 +70,27 @@ async def register(user_data: UserCreate, db: DbSession):
     base_slug = generate_slug(user_data.company_name)
     slug = await get_unique_slug(db, base_slug)
 
+    # Auto-generate referral_code for educator accounts
+    referral_code = None
+    if user_data.company_type == CompanyType.EDUCATOR:
+        referral_code = secrets.token_urlsafe(8)
+
     company = Company(
         name=user_data.company_name,
         slug=slug,
         type=user_data.company_type,
+        referral_code=referral_code,
     )
     db.add(company)
     await db.flush()
+
+    # Resolve referrer if ref code provided
+    referrer_company = None
+    if ref:
+        ref_result = await db.execute(
+            select(Company).where(Company.referral_code == ref)
+        )
+        referrer_company = ref_result.scalar_one_or_none()
 
     # Create user
     user = User(
@@ -81,6 +99,7 @@ async def register(user_data: UserCreate, db: DbSession):
         first_name=user_data.first_name,
         last_name=user_data.last_name,
         telegram_id=user_data.telegram_id,
+        referred_by_company_id=referrer_company.id if referrer_company else None,
     )
     db.add(user)
     await db.flush()
@@ -95,6 +114,21 @@ async def register(user_data: UserCreate, db: DbSession):
         is_active=True,
     )
     db.add(member)
+
+    # Create referral record if there's a referrer
+    if referrer_company:
+        try:
+            from app.models.referral import Referral
+            referral = Referral(
+                referrer_company_id=referrer_company.id,
+                referred_user_id=user.id,
+                referred_company_id=company.id,
+                commission_pct=referrer_company.referral_commission_pct or 20,
+                is_active=True,
+            )
+            db.add(referral)
+        except Exception:
+            pass  # Don't fail registration if referral creation fails
 
     await db.commit()
     await db.refresh(user)
@@ -232,16 +266,13 @@ async def get_google_oauth_url(
         )
 
     state = secrets.token_urlsafe(32)
-    _google_oauth_states[state] = {
-        "action": action,
-        "user_id": current_user.id if current_user else None,
-        "redirect_uri": redirect_uri,
-        "created_at": datetime.utcnow(),
-    }
 
     # Clean old states (older than 10 minutes)
     cutoff = datetime.utcnow() - timedelta(minutes=10)
-    _google_oauth_states.clear()
+    stale = [k for k, v in _google_oauth_states.items() if v.get("created_at", datetime.utcnow()) < cutoff]
+    for k in stale:
+        del _google_oauth_states[k]
+
     _google_oauth_states[state] = {
         "action": action,
         "user_id": current_user.id if current_user else None,

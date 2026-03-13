@@ -4,7 +4,7 @@ from sqlalchemy.orm import selectinload
 
 from app.api.deps import DbSession, CurrentUser, SuperadminUser
 from app.models.global_catalog import GlobalServiceCategory, GlobalServiceTemplate
-from app.models.service import Service, ServiceCategory
+from app.models.service import Service
 from app.schemas.global_catalog import (
     GlobalCategoryResponse, GlobalCategoryTreeResponse,
     GlobalCategoryCreate, GlobalCategoryUpdate,
@@ -32,6 +32,7 @@ def _build_category_tree(categories: list[GlobalServiceCategory], parent_id: int
                 "icon": cat.icon,
                 "order": cat.order,
                 "is_active": cat.is_active,
+                "is_ai_created": cat.is_ai_created,
                 "children": children,
                 "templates": [
                     {
@@ -119,10 +120,9 @@ async def adopt_from_catalog(
     """Майстер обирає послуги з глобального каталогу та додає їх до своєї компанії.
     Автоматично створює відповідні категорії, якщо їх ще немає.
     """
-    # Load requested templates with categories
+    # Load requested templates
     result = await db.execute(
         select(GlobalServiceTemplate)
-        .options(selectinload(GlobalServiceTemplate.category))
         .where(GlobalServiceTemplate.id.in_(request.template_ids))
     )
     templates = result.scalars().all()
@@ -130,44 +130,7 @@ async def adopt_from_catalog(
     if not templates:
         raise HTTPException(status_code=400, detail="No valid templates found")
 
-    # Group by global category
-    category_map: dict[int, GlobalServiceCategory] = {}
-    for t in templates:
-        category_map[t.category_id] = t.category
-
-    # Find or create company categories linked to global categories
-    company_category_map: dict[int, int] = {}  # global_cat_id -> company_cat_id
-
-    for global_cat_id, global_cat in category_map.items():
-        # Check if company already has a category linked to this global one
-        existing = await db.execute(
-            select(ServiceCategory).where(
-                ServiceCategory.company_id == current_user.company_id,
-                ServiceCategory.global_category_id == global_cat_id,
-            )
-        )
-        company_cat = existing.scalar_one_or_none()
-
-        if not company_cat:
-            # Also check parent category
-            parent_company_cat_id = None
-            if global_cat.parent_id and global_cat.parent_id in category_map:
-                parent_company_cat_id = company_category_map.get(global_cat.parent_id)
-
-            company_cat = ServiceCategory(
-                company_id=current_user.company_id,
-                global_category_id=global_cat_id,
-                parent_id=parent_company_cat_id,
-                name=global_cat.name,
-                description=global_cat.description,
-                order=global_cat.order,
-            )
-            db.add(company_cat)
-            await db.flush()
-
-        company_category_map[global_cat_id] = company_cat.id
-
-    # Create services from templates
+    # Create services from templates, linking directly to global categories
     created = []
     for t in templates:
         # Check if service already exists from this template
@@ -182,7 +145,7 @@ async def adopt_from_catalog(
 
         service = Service(
             company_id=current_user.company_id,
-            category_id=company_category_map[t.category_id],
+            global_category_id=t.category_id,
             global_template_id=t.id,
             name=t.name,
             description=t.description,

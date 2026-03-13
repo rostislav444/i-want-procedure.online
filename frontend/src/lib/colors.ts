@@ -233,8 +233,8 @@ export function generateCssVariables(config: ColorConfig): string {
  * Default colors if company doesn't have custom ones
  */
 export const defaultColors: ColorConfig = {
-  primary: '#e91e63',
-  secondary: '#9c27b0',
+  primary: '#6366f1',
+  secondary: '#8b5cf6',
   background: '#ffffff',
   accentFont: 'Inter',
   bodyFont: 'Inter',

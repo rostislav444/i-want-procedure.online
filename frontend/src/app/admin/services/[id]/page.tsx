@@ -261,7 +261,7 @@ export default function ServiceDetailPage() {
         <div className="grid grid-cols-4 border-t border-border">
           <div className="flex items-center gap-2.5 px-6 py-3 border-r border-border">
             <Folder className="h-5 w-5 text-amber-500" />
-            <span>{service.category?.name || 'Без категорії'}</span>
+            <span>{service.global_category?.name || 'Без категорії'}</span>
           </div>
           <div className="flex items-center gap-2.5 px-6 py-3 border-r border-border">
             <Briefcase className="h-5 w-5 text-blue-500" />
@@ -592,7 +592,7 @@ export default function ServiceDetailPage() {
       <ProtocolTemplateEditor
         serviceId={serviceId}
         serviceName={service.name}
-        categoryName={service.category?.name}
+        categoryName={service.global_category?.name}
       />
     </div>
   )

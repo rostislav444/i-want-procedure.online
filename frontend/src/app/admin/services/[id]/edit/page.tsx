@@ -3,22 +3,14 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Plus, Folder, Briefcase, Save, X, Users } from 'lucide-react'
+import { ArrowLeft, Folder, Briefcase, Save, X, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from '@/components/ui/dialog'
-import { servicesApi, categoriesApi, positionsApi, specialistsApi, Service, ServiceCategory, Position, SpecialistListItem } from '@/lib/api'
+import { servicesApi, globalCatalogApi, positionsApi, specialistsApi, Service, GlobalCategory, Position, SpecialistListItem } from '@/lib/api'
 import { useCompany } from '@/contexts/CompanyContext'
 
 export default function ServiceEditPage() {
@@ -28,7 +20,7 @@ export default function ServiceEditPage() {
   const { companyType, selectedCompanyId } = useCompany()
 
   const [service, setService] = useState<Service | null>(null)
-  const [categories, setCategories] = useState<ServiceCategory[]>([])
+  const [categories, setCategories] = useState<GlobalCategory[]>([])
   const [positions, setPositions] = useState<Position[]>([])
   const [specialists, setSpecialists] = useState<SpecialistListItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -40,18 +32,9 @@ export default function ServiceEditPage() {
     description: '',
     duration_minutes: 60,
     price: 0,
-    category_id: null as number | null,
+    global_category_id: null as number | null,
     position_id: null as number | null,
   })
-
-  // Create category modal
-  const [createCategoryModalOpen, setCreateCategoryModalOpen] = useState(false)
-  const [newCategoryData, setNewCategoryData] = useState({
-    name: '',
-    description: '',
-    parent_id: null as number | null,
-  })
-  const [creatingCategory, setCreatingCategory] = useState(false)
 
   useEffect(() => {
     if (selectedCompanyId) {
@@ -64,7 +47,7 @@ export default function ServiceEditPage() {
       setLoading(true)
       const promises: Promise<any>[] = [
         servicesApi.getById(serviceId),
-        categoriesApi.getTree(),
+        globalCatalogApi.getCategoriesTree(),
       ]
 
       if (companyType === 'clinic') {
@@ -76,7 +59,7 @@ export default function ServiceEditPage() {
 
       const results = await Promise.all(promises)
       const serviceData = results[0] as Service
-      const categoriesData = results[1] as ServiceCategory[]
+      const categoriesData = results[1] as GlobalCategory[]
       const positionsData = results[2] as Position[] | undefined
       const specialistsData = results[3] as SpecialistListItem[] | undefined
 
@@ -90,7 +73,7 @@ export default function ServiceEditPage() {
         description: serviceData.description || '',
         duration_minutes: serviceData.duration_minutes,
         price: serviceData.price,
-        category_id: serviceData.category_id || null,
+        global_category_id: serviceData.global_category_id || null,
         position_id: serviceData.position_id || null,
       })
     } catch (error) {
@@ -102,10 +85,10 @@ export default function ServiceEditPage() {
   }
 
   // Flatten categories tree for dropdown
-  const getFlatCategories = (cats: ServiceCategory[], level = 0): { id: number; name: string; level: number }[] => {
-    const result: { id: number; name: string; level: number }[] = []
+  const getFlatCategories = (cats: GlobalCategory[], level = 0): { id: number; name: string; icon?: string; level: number }[] => {
+    const result: { id: number; name: string; icon?: string; level: number }[] = []
     cats.forEach(c => {
-      result.push({ id: c.id, name: c.name, level })
+      result.push({ id: c.id, name: c.name, icon: c.icon, level })
       if (c.children && c.children.length > 0) {
         result.push(...getFlatCategories(c.children, level + 1))
       }
@@ -123,7 +106,7 @@ export default function ServiceEditPage() {
         description: formData.description || undefined,
         duration_minutes: formData.duration_minutes,
         price: formData.price,
-        category_id: formData.category_id || undefined,
+        global_category_id: formData.global_category_id || undefined,
         position_id: formData.position_id,
       })
       router.push(`/admin/services/${serviceId}`)
@@ -131,31 +114,6 @@ export default function ServiceEditPage() {
       console.error('Error saving service:', error)
     } finally {
       setSaving(false)
-    }
-  }
-
-  const handleCreateCategory = async () => {
-    if (!newCategoryData.name.trim()) return
-
-    try {
-      setCreatingCategory(true)
-      const newCategory = await categoriesApi.create({
-        name: newCategoryData.name,
-        description: newCategoryData.description || undefined,
-        parent_id: newCategoryData.parent_id || undefined,
-      })
-
-      // Reload categories and select the new one
-      const updatedCategories = await categoriesApi.getTree()
-      setCategories(updatedCategories)
-      setFormData({ ...formData, category_id: newCategory.id })
-
-      setCreateCategoryModalOpen(false)
-      setNewCategoryData({ name: '', description: '', parent_id: null })
-    } catch (error) {
-      console.error('Error creating category:', error)
-    } finally {
-      setCreatingCategory(false)
     }
   }
 
@@ -277,24 +235,18 @@ export default function ServiceEditPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex gap-2">
-                <select
-                  value={formData.category_id || ''}
-                  onChange={(e) => setFormData({ ...formData, category_id: e.target.value ? Number(e.target.value) : null })}
-                  className="flex-1 h-10 px-3 border rounded-md bg-background text-sm"
-                >
-                  <option value="">Без категорії</option>
-                  {flatCategories.map(c => (
-                    <option key={c.id} value={c.id}>
-                      {'—'.repeat(c.level)} {c.name}
-                    </option>
-                  ))}
-                </select>
-                <Button variant="outline" onClick={() => setCreateCategoryModalOpen(true)}>
-                  <Plus className="h-4 w-4 mr-1" />
-                  Нова
-                </Button>
-              </div>
+              <select
+                value={formData.global_category_id || ''}
+                onChange={(e) => setFormData({ ...formData, global_category_id: e.target.value ? Number(e.target.value) : null })}
+                className="w-full h-10 px-3 border rounded-md bg-background text-sm"
+              >
+                <option value="">Без категорії</option>
+                {flatCategories.map(c => (
+                  <option key={c.id} value={c.id}>
+                    {c.icon ? `${c.icon} ` : ''}{'—'.repeat(c.level)} {c.name}
+                  </option>
+                ))}
+              </select>
             </CardContent>
           </Card>
 
@@ -392,65 +344,6 @@ export default function ServiceEditPage() {
         </div>
       </div>
 
-      {/* Create Category Modal */}
-      <Dialog open={createCategoryModalOpen} onOpenChange={setCreateCategoryModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Нова категорія</DialogTitle>
-            <DialogDescription>
-              Створіть нову категорію для організації послуг
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="categoryName">Назва категорії *</Label>
-              <Input
-                id="categoryName"
-                value={newCategoryData.name}
-                onChange={(e) => setNewCategoryData({ ...newCategoryData, name: e.target.value })}
-                placeholder="Наприклад: Косметологія"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="categoryDescription">Опис</Label>
-              <Textarea
-                id="categoryDescription"
-                value={newCategoryData.description}
-                onChange={(e) => setNewCategoryData({ ...newCategoryData, description: e.target.value })}
-                placeholder="Короткий опис категорії..."
-                rows={2}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="parentCategory">Батьківська категорія</Label>
-              <select
-                id="parentCategory"
-                value={newCategoryData.parent_id || ''}
-                onChange={(e) => setNewCategoryData({ ...newCategoryData, parent_id: e.target.value ? Number(e.target.value) : null })}
-                className="w-full h-10 px-3 border rounded-md bg-background text-sm"
-              >
-                <option value="">Без батьківської (верхній рівень)</option>
-                {flatCategories.map(c => (
-                  <option key={c.id} value={c.id}>
-                    {'—'.repeat(c.level)} {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateCategoryModalOpen(false)}>
-              Скасувати
-            </Button>
-            <Button
-              onClick={handleCreateCategory}
-              disabled={!newCategoryData.name.trim() || creatingCategory}
-            >
-              {creatingCategory ? 'Створення...' : 'Створити'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

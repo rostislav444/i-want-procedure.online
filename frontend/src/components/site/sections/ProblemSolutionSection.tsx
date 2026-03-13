@@ -43,7 +43,7 @@ export default function ProblemSolutionSection() {
           <div className="relative">
             <div className="mb-6">
               <h2 className="text-3xl font-bold">
-                <span className="gradient-text">Procedure</span> вирішує це за вас
+                <span className="gradient-text">Beautica</span> вирішує це за вас
               </h2>
             </div>
             <div className="space-y-4">

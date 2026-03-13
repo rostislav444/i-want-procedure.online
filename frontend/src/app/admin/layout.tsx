@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Calendar, Clock, Users, LogOut, Menu, X, LinkIcon, Copy, Check, Home, Scissors, ChevronLeft, ChevronRight, UsersRound, Settings, Package, Building2, ChevronsUpDown, Crown, Briefcase, Wrench, TrendingUp, CreditCard, AlertTriangle } from 'lucide-react'
+import { Calendar, Clock, Users, LogOut, Menu, X, LinkIcon, Copy, Check, Home, Scissors, ChevronLeft, ChevronRight, UsersRound, Settings, Package, Building2, ChevronsUpDown, Crown, Briefcase, Wrench, TrendingUp, CreditCard, AlertTriangle, GraduationCap, Share2, BookMarked } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ThemeSettings } from '@/components/theme-settings'
 import { CompanyProvider, useCompany } from '@/contexts/CompanyContext'
@@ -106,7 +106,9 @@ function CompanySwitcher({ collapsed = false }: { collapsed?: boolean }) {
         </div>
         <div className="flex-1 min-w-0 text-left">
           <p className="text-sm font-medium truncate">{currentMembership?.name}</p>
-          <p className="text-xs text-muted-foreground">{currentMembership?.type === 'clinic' ? 'Клініка' : 'ФОП'}</p>
+          <p className="text-xs text-muted-foreground">
+            {currentMembership?.type === 'clinic' ? 'Клініка' : currentMembership?.type === 'educator' ? 'Тренер' : 'ФОП'}
+          </p>
         </div>
         <ChevronsUpDown className="w-4 h-4 text-muted-foreground shrink-0" />
       </button>
@@ -157,6 +159,7 @@ const baseNavigation = [
   { name: 'Клієнти', href: '/admin/clients', icon: Users, iconColor: 'text-emerald-500' },
   { name: 'Склад', href: '/admin/inventory', icon: Package, iconColor: 'text-lime-500' },
   { name: 'Фінанси', href: '/admin/accounting', icon: TrendingUp, iconColor: 'text-green-500' },
+  { name: 'Мої курси', href: '/admin/my-courses', icon: BookMarked, iconColor: 'text-violet-400' },
   { name: 'Підписка', href: '/admin/billing', icon: CreditCard, iconColor: 'text-indigo-500' },
   { name: 'Посилання', href: '/admin/links', icon: LinkIcon, iconColor: 'text-cyan-500' },
 ]
@@ -167,8 +170,22 @@ const clinicNavigation = [
   { name: 'Налаштування', href: '/admin/settings', icon: Settings, iconColor: 'text-slate-500' },
 ]
 
+// Navigation for educators
+const educatorNavigation = [
+  { name: 'Навчання', href: '/education/admin', icon: GraduationCap, iconColor: 'text-amber-500' },
+  { name: 'Реферали', href: '/admin/referrals', icon: Share2, iconColor: 'text-teal-500' },
+  { name: 'Підписка', href: '/admin/billing', icon: CreditCard, iconColor: 'text-indigo-500' },
+  { name: 'Налаштування', href: '/admin/settings', icon: Settings, iconColor: 'text-slate-500' },
+]
+
 // Get navigation based on company type
-function getNavigation(companyType: 'solo' | 'clinic' | null) {
+function getNavigation(companyType: 'solo' | 'clinic' | 'educator' | null) {
+  if (companyType === 'educator') {
+    return [
+      { name: 'Головна', href: '/admin', icon: Home, iconColor: 'text-pink-500' },
+      ...educatorNavigation,
+    ]
+  }
   if (companyType === 'clinic') {
     return [
       baseNavigation[0],
@@ -272,7 +289,8 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   }, [user, company])
 
   // Determine if payment is required (blocks the app)
-  const needsPayment = billingOverview?.subscription
+  // Educators are always free — no subscription required
+  const needsPayment = company?.type !== 'educator' && billingOverview?.subscription
     ? (
         // Trial ended (reached client limit)
         (!billingOverview.subscription.trial_active && billingOverview.subscription.status === 'trial') ||
@@ -356,14 +374,14 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
             <div className="relative h-14 w-[160px]">
               <Image
                 src="/images/logo-orbit-light-new.png"
-                alt="Procedure"
+                alt="Beautica"
                 fill
                 className="object-contain object-left dark:hidden"
                 priority
               />
               <Image
                 src="/images/logo-orbit-dark-new.png"
-                alt="Procedure"
+                alt="Beautica"
                 fill
                 className="object-contain object-left hidden dark:block"
                 priority
@@ -424,7 +442,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       {/* Desktop sidebar */}
       <div className={`hidden lg:fixed lg:inset-y-0 lg:flex lg:flex-col transition-all duration-300 ${sidebarCollapsed ? 'lg:w-16' : 'lg:w-64'}`}>
         <div className="flex flex-col flex-1 bg-card border-r">
-          <div className={`flex h-20 items-center border-b ${sidebarCollapsed ? 'justify-center px-2' : 'px-4 justify-between'}`}>
+          <div className={`flex h-14 items-center border-b shrink-0 ${sidebarCollapsed ? 'justify-center px-2' : 'px-4 justify-between'}`}>
             {sidebarCollapsed ? (
               <button
                 onClick={toggleSidebarCollapsed}
@@ -435,17 +453,17 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
               </button>
             ) : (
               <>
-                <div className="relative h-14 w-[160px]">
+                <div className="relative h-10 w-[140px]">
                   <Image
                     src="/images/logo-orbit-light-new.png"
-                    alt="Procedure"
+                    alt="Beautica"
                     fill
                     className="object-contain object-left dark:hidden"
                     priority
                   />
                   <Image
                     src="/images/logo-orbit-dark-new.png"
-                    alt="Procedure"
+                    alt="Beautica"
                     fill
                     className="object-contain object-left hidden dark:block"
                     priority
@@ -462,7 +480,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
             )}
           </div>
           <CompanySwitcher collapsed={sidebarCollapsed} />
-          <nav className="flex-1">
+          <nav className="flex-1 overflow-y-auto min-h-0">
             {navigation.map((item) => {
               const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href))
               return (
@@ -487,11 +505,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
           {/* Invite Link Section */}
           {company && !sidebarCollapsed && (
-            <div className="border-t p-4">
-              <div className="mb-2 flex items-center text-sm font-medium text-foreground">
-                <LinkIcon className="mr-2 h-4 w-4" />
-                Посилання для клієнтів
-              </div>
+            <div className="border-t px-3 py-2 shrink-0">
               <div className="flex items-center gap-2">
                 <input
                   type="text"
@@ -499,13 +513,10 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
                   value={inviteLink}
                   className="flex-1 text-xs bg-muted border rounded px-2 py-1.5 truncate"
                 />
-                <Button variant="outline" size="icon" onClick={copyLink} className="shrink-0">
-                  {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                <Button variant="outline" size="icon" onClick={copyLink} className="shrink-0 h-8 w-8">
+                  {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
                 </Button>
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Поділіться цим посиланням з клієнтами
-              </p>
             </div>
           )}
 
@@ -519,11 +530,11 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
           )}
 
           {/* Theme Settings */}
-          <div className={`border-t ${sidebarCollapsed ? 'p-2' : 'p-4'}`}>
+          <div className={`border-t shrink-0 ${sidebarCollapsed ? 'p-2' : 'px-3 py-2'}`}>
             <ThemeSettings collapsed={sidebarCollapsed} />
           </div>
 
-          <div className={`border-t ${sidebarCollapsed ? 'p-2' : 'p-4'}`}>
+          <div className={`border-t shrink-0 ${sidebarCollapsed ? 'p-2' : 'px-3 py-2'}`}>
             {sidebarCollapsed ? (
               <div className="flex flex-col items-center gap-2">
                 <Link href="/admin/profile" title={`${user.first_name} ${user.last_name}`}>
@@ -560,14 +571,14 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
           <div className="relative h-10 w-[115px]">
             <Image
               src="/images/logo-orbit-light-new.png"
-              alt="Procedure"
+              alt="Beautica"
               fill
               className="object-contain object-left dark:hidden"
               priority
             />
             <Image
               src="/images/logo-orbit-dark-new.png"
-              alt="Procedure"
+              alt="Beautica"
               fill
               className="object-contain object-left hidden dark:block"
               priority

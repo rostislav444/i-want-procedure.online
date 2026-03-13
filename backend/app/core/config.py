@@ -46,9 +46,9 @@ class Settings(BaseSettings):
     MONOBANK_TOKEN: Optional[str] = None
 
     # Subscription pricing (in kopecks, e.g. 29900 = 299.00 UAH)
-    SUBSCRIPTION_PRICE_INDIVIDUAL: int = 29900  # 299 UAH/month
-    SUBSCRIPTION_PRICE_COMPANY_SMALL: int = 59900  # 599 UAH/month
-    SUBSCRIPTION_PRICE_COMPANY_LARGE: int = 99900  # 999 UAH/month
+    SUBSCRIPTION_PRICE_INDIVIDUAL: int = 50000  # 500 UAH/month
+    SUBSCRIPTION_PRICE_COMPANY_SMALL: int = 45000  # 450 UAH/month per specialist
+    SUBSCRIPTION_PRICE_COMPANY_LARGE: int = 40000  # 400 UAH/month per specialist
 
     # Trial: number of confirmed unique clients before billing starts
     TRIAL_CLIENT_LIMIT: int = 10

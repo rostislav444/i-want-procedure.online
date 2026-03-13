@@ -16,7 +16,7 @@ export default function CompanyFooter({ companyName }: CompanyFooterProps) {
         <p className="text-xs text-muted-foreground">
           Працює на{' '}
           <Link href="/" className="text-pink-500 hover:underline font-medium">
-            Procedure
+            Beautica
           </Link>
         </p>
       </div>

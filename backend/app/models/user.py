@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import String, DateTime, ForeignKey, BigInteger, Boolean, Text, func
+from sqlalchemy import String, DateTime, ForeignKey, BigInteger, Boolean, Text, Integer, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from app.models.specialty import Specialty
     from app.models.company_member import CompanyMember
     from app.models.inventory import StockMovement
+    from app.models.city import City
 
 
 class User(Base):
@@ -26,7 +27,9 @@ class User(Base):
     last_name: Mapped[str] = mapped_column(String(100))
     patronymic: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     phone: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
-    city: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    city: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)  # legacy, kept for backward compat
+    city_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("cities.id"), nullable=True)
+    address: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)  # street + building
     telegram_id: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True, unique=True, index=True)
     telegram_username: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
@@ -44,6 +47,11 @@ class User(Base):
     google_calendar_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
     google_calendar_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
+    # Referral tracking
+    referred_by_company_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("companies.id", ondelete="SET NULL"), nullable=True
+    )
+
     # Relationships
     company_memberships: Mapped[list["CompanyMember"]] = relationship(
         back_populates="user",
@@ -60,6 +68,7 @@ class User(Base):
     stock_movements: Mapped[list["StockMovement"]] = relationship(
         back_populates="performed_by_user"
     )
+    city_ref: Mapped[Optional["City"]] = relationship(lazy="joined")
 
     @property
     def company_id(self) -> Optional[int]:

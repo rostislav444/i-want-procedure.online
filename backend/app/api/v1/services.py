@@ -3,13 +3,12 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from app.api.deps import DbSession, CurrentUser
-from app.models.service import Service, ServiceStep, ServiceProduct, ServiceCategory, ServicePriceOption
+from app.models.service import Service, ServiceStep, ServiceProduct, ServicePriceOption
 from app.schemas.service import (
     ServiceCreate, ServiceUpdate, ServiceResponse, ServiceDetailResponse,
     ServiceStepCreate, ServiceStepUpdate, ServiceStepResponse,
     ServiceProductCreate, ServiceProductUpdate, ServiceProductResponse,
     ServicePriceOptionCreate, ServicePriceOptionUpdate, ServicePriceOptionResponse,
-    ServiceCategoryCreate, ServiceCategoryUpdate, ServiceCategoryResponse, ServiceCategoryTreeResponse,
 )
 
 router = APIRouter(prefix="/services")
@@ -21,7 +20,7 @@ router = APIRouter(prefix="/services")
 async def get_services(current_user: CurrentUser, db: DbSession):
     result = await db.execute(
         select(Service)
-        .options(selectinload(Service.category), selectinload(Service.specialty), selectinload(Service.price_options))
+        .options(selectinload(Service.global_category), selectinload(Service.specialty), selectinload(Service.price_options))
         .where(Service.company_id == current_user.company_id)
         .order_by(Service.created_at.desc())
     )
@@ -36,7 +35,7 @@ async def create_service(
 ):
     service = Service(
         company_id=current_user.company_id,
-        category_id=service_data.category_id,
+        global_category_id=service_data.global_category_id,
         specialty_id=service_data.specialty_id,
         position_id=service_data.position_id,
         doctor_id=service_data.doctor_id or current_user.id,
@@ -94,7 +93,7 @@ async def create_service(
             selectinload(Service.steps),
             selectinload(Service.products),
             selectinload(Service.price_options),
-            selectinload(Service.category),
+            selectinload(Service.global_category),
             selectinload(Service.specialty),
         )
         .where(Service.id == service.id)
@@ -110,7 +109,7 @@ async def get_service(service_id: int, current_user: CurrentUser, db: DbSession)
             selectinload(Service.steps),
             selectinload(Service.products),
             selectinload(Service.price_options),
-            selectinload(Service.category),
+            selectinload(Service.global_category),
             selectinload(Service.specialty),
         )
         .where(
@@ -140,7 +139,7 @@ async def update_service(
             selectinload(Service.steps),
             selectinload(Service.products),
             selectinload(Service.price_options),
-            selectinload(Service.category),
+            selectinload(Service.global_category),
             selectinload(Service.specialty),
         )
         .where(
@@ -440,170 +439,6 @@ async def delete_price_option(
     await db.commit()
 
 
-# ===== Service Categories CRUD =====
-
-def build_category_tree(categories: list[ServiceCategory], parent_id: int | None = None) -> list[dict]:
-    """Build a tree structure from flat list of categories"""
-    tree = []
-    for cat in categories:
-        if cat.parent_id == parent_id:
-            children = build_category_tree(categories, cat.id)
-            cat_dict = {
-                "id": cat.id,
-                "company_id": cat.company_id,
-                "parent_id": cat.parent_id,
-                "global_category_id": cat.global_category_id,
-                "is_custom": cat.is_custom,
-                "name": cat.name,
-                "description": cat.description,
-                "order": cat.order,
-                "created_at": cat.created_at,
-                "children": children,
-            }
-            tree.append(cat_dict)
-    return sorted(tree, key=lambda x: x["order"])
-
-
-@router.get("/categories", response_model=list[ServiceCategoryResponse])
-async def get_categories(current_user: CurrentUser, db: DbSession):
-    """Get all categories for the company (flat list)"""
-    result = await db.execute(
-        select(ServiceCategory)
-        .where(ServiceCategory.company_id == current_user.company_id)
-        .order_by(ServiceCategory.order, ServiceCategory.name)
-    )
-    return result.scalars().all()
-
-
-@router.get("/categories/tree", response_model=list[ServiceCategoryTreeResponse])
-async def get_categories_tree(current_user: CurrentUser, db: DbSession):
-    """Get categories as a tree structure"""
-    result = await db.execute(
-        select(ServiceCategory)
-        .where(ServiceCategory.company_id == current_user.company_id)
-    )
-    categories = result.scalars().all()
-    return build_category_tree(list(categories))
-
-
-@router.post("/categories", response_model=ServiceCategoryResponse, status_code=status.HTTP_201_CREATED)
-async def create_category(
-    category_data: ServiceCategoryCreate,
-    current_user: CurrentUser,
-    db: DbSession,
-):
-    # Validate parent belongs to same company if provided
-    if category_data.parent_id:
-        result = await db.execute(
-            select(ServiceCategory).where(
-                ServiceCategory.id == category_data.parent_id,
-                ServiceCategory.company_id == current_user.company_id,
-            )
-        )
-        if not result.scalar_one_or_none():
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Parent category not found",
-            )
-
-    category = ServiceCategory(
-        company_id=current_user.company_id,
-        parent_id=category_data.parent_id,
-        name=category_data.name,
-        description=category_data.description,
-        order=category_data.order,
-    )
-    db.add(category)
-    await db.commit()
-    await db.refresh(category)
-    return category
-
-
-@router.get("/categories/{category_id}", response_model=ServiceCategoryResponse)
-async def get_category(category_id: int, current_user: CurrentUser, db: DbSession):
-    result = await db.execute(
-        select(ServiceCategory).where(
-            ServiceCategory.id == category_id,
-            ServiceCategory.company_id == current_user.company_id,
-        )
-    )
-    category = result.scalar_one_or_none()
-    if not category:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Category not found",
-        )
-    return category
-
-
-@router.patch("/categories/{category_id}", response_model=ServiceCategoryResponse)
-async def update_category(
-    category_id: int,
-    category_data: ServiceCategoryUpdate,
-    current_user: CurrentUser,
-    db: DbSession,
-):
-    result = await db.execute(
-        select(ServiceCategory).where(
-            ServiceCategory.id == category_id,
-            ServiceCategory.company_id == current_user.company_id,
-        )
-    )
-    category = result.scalar_one_or_none()
-    if not category:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Category not found",
-        )
-
-    # Validate parent if being changed
-    if category_data.parent_id is not None and category_data.parent_id != category.parent_id:
-        if category_data.parent_id == category_id:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Category cannot be its own parent",
-            )
-        if category_data.parent_id:
-            result = await db.execute(
-                select(ServiceCategory).where(
-                    ServiceCategory.id == category_data.parent_id,
-                    ServiceCategory.company_id == current_user.company_id,
-                )
-            )
-            if not result.scalar_one_or_none():
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Parent category not found",
-                )
-
-    update_data = category_data.model_dump(exclude_unset=True)
-    for field, value in update_data.items():
-        setattr(category, field, value)
-
-    await db.commit()
-    await db.refresh(category)
-    return category
-
-
-@router.delete("/categories/{category_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_category(category_id: int, current_user: CurrentUser, db: DbSession):
-    result = await db.execute(
-        select(ServiceCategory).where(
-            ServiceCategory.id == category_id,
-            ServiceCategory.company_id == current_user.company_id,
-        )
-    )
-    category = result.scalar_one_or_none()
-    if not category:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Category not found",
-        )
-
-    await db.delete(category)
-    await db.commit()
-
-
 # ===== AI Service Generation =====
 
 from pydantic import BaseModel
@@ -618,6 +453,15 @@ class GeneratedPriceOption(BaseModel):
     duration_minutes: Optional[int] = None
 
 
+class GeneratedNewCategory(BaseModel):
+    """A new category proposed by AI."""
+    temp_id: str  # e.g. "new_1", "new_2"
+    parent_id: Optional[int | str] = None  # existing ID or another temp_id
+    name: str
+    name_en: Optional[str] = None
+    icon: Optional[str] = None
+
+
 class GeneratedService(BaseModel):
     """A single generated service."""
     name: str
@@ -625,6 +469,8 @@ class GeneratedService(BaseModel):
     duration_minutes: int
     price: int
     category_name: str
+    global_category_id: Optional[int] = None
+    global_template_id: Optional[int] = None
     price_options: list[GeneratedPriceOption] = []
 
 
@@ -637,10 +483,21 @@ class GenerateServicesRequest(BaseModel):
     additional_instructions: Optional[str] = None
 
 
+class GeneratedCategoryResult(BaseModel):
+    """A category that was created by AI."""
+    id: int
+    parent_id: Optional[int] = None
+    name: str
+    name_en: Optional[str] = None
+    icon: Optional[str] = None
+    is_new: bool = False  # True if created by AI
+
+
 class GenerateServicesResponse(BaseModel):
     """Response with generated services."""
     services: list[GeneratedService]
     categories: list[str]
+    new_categories: list[GeneratedCategoryResult] = []
     estimated_tokens: int
 
 
@@ -648,18 +505,71 @@ SERVICES_GENERATION_PROMPT = """Ти експерт з бьюті-індустр
 
 ГОЛОВНЕ ПРАВИЛО: Скопіюй ВСІ послуги з вхідних даних. НЕ пропускай жодної! Це критично важливо. Якщо на сайті/в тексті є 50 послуг — поверни всі 50.
 
+## КРОК 1: Аналіз вхідних даних
+Уважно переглянь усі послуги з вхідних даних:
+- Які категорії/розділи є на сторінці
+- Яка структура (напрямки → підкатегорії → послуги)
+- Скільки всього послуг
+
+## КРОК 2: Аналіз існуючого каталогу
+Це ГЛОБАЛЬНИЙ КАТАЛОГ MARKETPLACE — єдина база категорій для ВСІХ компаній на платформі.
+Кожна нова категорія стає видимою для всіх користувачів, тому додавати їх потрібно ДУЖЕ обережно.
+
+ГЛОБАЛЬНИЙ КАТАЛОГ:
+{global_catalog}
+
+## КРОК 3: Розподіл по існуючих категоріях (ПРІОРИТЕТ!)
+КРИТИЧНО ВАЖЛИВО — дотримуйся такого порядку:
+
+1. СПОЧАТКУ спробуй розмістити КОЖНУ послугу в існуючу категорію з каталогу
+2. Використовуй НАЙГЛИБШУ підходящу категорію (підкатегорію, а не батьківську)
+3. Якщо точного збігу немає — використовуй НАЙБЛИЖЧУ існуючу категорію. Наприклад:
+   - "Лазерна епіляція рук" → шукай категорію "Лазерна епіляція" або "Епіляція/Депіляція"
+   - "Масаж обличчя" → шукай "Масажі" або батьківську "Косметологія"
+   - Краще помістити послугу в ширшу існуючу категорію, ніж створювати нову вузьку
+
+## КРОК 4: Створення нових категорій (ТІЛЬКИ ЯКЩО НЕОБХІДНО)
+Нову категорію створюй ТІЛЬКИ якщо:
+- Послуга НЕ вписується навіть у батьківську категорію найближчого напрямку
+- Є щонайменше 2-3 послуги для цієї нової категорії (не створюй категорію для однієї послуги!)
+- Категорія має загальний сенс для MARKETPLACE (підходить для багатьох компаній, а не тільки для цієї)
+
+НЕ СТВОРЮЙ нову категорію якщо:
+- Є існуюча категорія, куди послуга логічно вписується (навіть якщо назва трохи відрізняється)
+- Це занадто вузька/специфічна категорія (краще використай батьківську)
+- Для неї буде лише 1 послуга
+
+Якщо все ж потрібна нова категорія:
+- Давай ЗАГАЛЬНУ назву (підходящу для marketplace, а не специфічну для одного салону)
+- parent_id — ОБОВ'ЯЗКОВО вкажи ID існуючої батьківської категорії
+- Категорії можуть бути вкладеними на будь-яку глибину
+- Додай іконку (emoji) та англійську назву
+
+## КРОК 5: Фінальний розподіл послуг
+
 ПРАВИЛА:
-1. Копіюй КОЖНУ послугу з вхідних даних — назву та ціну бери точно як у джерелі
-2. Групуй послуги по категоріях з джерела. Якщо категорії вже є — використовуй їх. Якщо ні — створи логічні категорії
-3. Тривалість: якщо вказана у джерелі — бери звідти. Якщо ні — вказуй реалістичну (30, 45, 60, 90, 120 хв)
-4. Ціни: бери ТОЧНО з джерела. Якщо ціни відсутні — ставь орієнтовну для {city}
-5. Опис: коротко (1-2 речення). Якщо є у джерелі — використовуй, якщо ні — додай стислий опис
-6. Якщо послуга має варіанти (різні зони, об'єми, кількість) з різними цінами — об'єднай їх в ОДНУ послугу з "price_options". Основна ціна (price) = мінімальна серед варіантів
-7. НЕ створюй окремі послуги для кожної зони — використовуй price_options
-8. Якщо інформації мало — додай типові послуги для цієї спеціальності. Але якщо вхідні дані детальні — копіюй тільки те що є, нічого не вигадуй
+1. Копіюй КОЖНУ послугу — назву та ціну бери точно як у джерелі
+2. global_category_id — ID існуючої категорії АБО temp_id нової (наприклад "new_1")
+3. Якщо послуга збігається з шаблоном з каталогу — вкажи global_template_id. Інакше — null
+4. category_name — назва категорії (для відображення)
+5. Тривалість: якщо вказана у джерелі — бери звідти. Інакше — реалістичну (30, 45, 60, 90, 120 хв)
+6. Ціни: бери ТОЧНО з джерела. Якщо відсутні — орієнтовну для {city}
+7. Опис: коротко (1-2 речення)
+8. Варіанти (зони, об'єми) з різними цінами — об'єднай в ОДНУ послугу з "price_options". price = мінімальна ціна
+9. НЕ створюй окремі послуги для кожної зони — використовуй price_options
+10. Якщо інформації мало — додай типові послуги для цієї спеціальності
 
 ФОРМАТ ВІДПОВІДІ (тільки JSON, без пояснень):
 {{
+  "new_categories": [
+    {{
+      "temp_id": "new_1",
+      "parent_id": 5,
+      "name": "Загальна назва категорії",
+      "name_en": "General category name",
+      "icon": "💆"
+    }}
+  ],
   "categories": ["Категорія 1", "Категорія 2"],
   "services": [
     {{
@@ -668,16 +578,33 @@ SERVICES_GENERATION_PROMPT = """Ти експерт з бьюті-індустр
       "duration_minutes": 60,
       "price": 1500,
       "category_name": "Категорія 1",
+      "global_category_id": 5,
+      "global_template_id": 42,
       "price_options": [
         {{"name": "Обличчя", "price": 1500}},
         {{"name": "Обличчя + шия", "price": 2000}},
         {{"name": "Обличчя + шия + декольте", "price": 2500}}
       ]
+    }},
+    {{
+      "name": "Послуга у новій категорії",
+      "description": "Опис",
+      "duration_minutes": 45,
+      "price": 800,
+      "category_name": "Загальна назва категорії",
+      "global_category_id": "new_1",
+      "global_template_id": null,
+      "price_options": []
     }}
   ]
 }}
 
-Примітка: price_options додавай ТІЛЬКИ для послуг де дійсно є варіанти. Для послуг з фіксованою ціною залишай price_options порожнім масивом []."""
+ВАЖЛИВО:
+- new_categories ПОВИНЕН бути порожнім [] в більшості випадків! Створюй нові категорії ДУЖЕ рідко
+- Це глобальний каталог MARKETPLACE — кожна категорія видима для ВСІХ компаній
+- parent_id у new_categories — ID існуючої батьківської категорії або temp_id іншої нової
+- global_category_id у services — ID існуючої категорії або temp_id нової
+- price_options — ТІЛЬКИ для послуг з варіантами. Для фіксованої ціни — порожній []"""
 
 
 import asyncio
@@ -690,6 +617,40 @@ _ai_jobs: dict[str, dict] = {}  # job_id -> {status, result, error}
 _ai_logger = logging.getLogger("ai_generation")
 
 
+async def _load_global_catalog_for_prompt() -> str:
+    """Load global catalog and format as text for AI prompt."""
+    from app.core.database import async_session_maker
+    from app.models.global_catalog import GlobalServiceCategory, GlobalServiceTemplate
+
+    async with async_session_maker() as db:
+        from sqlalchemy.orm import selectinload
+        result = await db.execute(
+            select(GlobalServiceCategory)
+            .options(selectinload(GlobalServiceCategory.templates))
+            .where(GlobalServiceCategory.is_active == True)
+        )
+        categories = result.scalars().all()
+
+    # Build text representation
+    lines = []
+    cat_by_parent: dict[int | None, list] = {}
+    for cat in categories:
+        cat_by_parent.setdefault(cat.parent_id, []).append(cat)
+
+    def render_cat(cat, indent=0):
+        prefix = "  " * indent
+        lines.append(f"{prefix}[Категорія id={cat.id}] {cat.name}")
+        for tmpl in sorted(cat.templates, key=lambda t: t.order):
+            lines.append(f"{prefix}  - [Шаблон id={tmpl.id}] {tmpl.name} ({tmpl.default_duration_minutes} хв)")
+        for child in cat_by_parent.get(cat.id, []):
+            render_cat(child, indent + 1)
+
+    for root in cat_by_parent.get(None, []):
+        render_cat(root)
+
+    return "\n".join(lines)
+
+
 async def _run_ai_generation(job_id: str, request: GenerateServicesRequest):
     """Background task that runs AI generation."""
     try:
@@ -698,6 +659,9 @@ async def _run_ai_generation(job_id: str, request: GenerateServicesRequest):
 
         debug_dir = Path("/app/debug_ai_responses")
         debug_dir.mkdir(exist_ok=True)
+
+        # Load global catalog
+        global_catalog_text = await _load_global_catalog_for_prompt()
 
         # Build source description
         source_description = ""
@@ -732,7 +696,10 @@ async def _run_ai_generation(job_id: str, request: GenerateServicesRequest):
 
         _ai_jobs[job_id]["status"] = "streaming"
         client = anthropic.AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
-        system_prompt = SERVICES_GENERATION_PROMPT.format(city=request.city)
+        system_prompt = SERVICES_GENERATION_PROMPT.format(
+            city=request.city,
+            global_catalog=global_catalog_text,
+        )
 
         response_text = ""
         async with client.messages.stream(
@@ -795,22 +762,112 @@ async def _run_ai_generation(job_id: str, request: GenerateServicesRequest):
             _ai_jobs[job_id] = {"status": "error", "error": "Не вдалося розпарсити відповідь AI"}
             return
 
+        # --- Create new categories in DB ---
+        new_categories_raw = data.get("new_categories", [])
+        temp_id_to_real_id: dict[str, int] = {}
+        created_categories: list[dict] = []
+
+        if new_categories_raw:
+            from app.core.database import async_session_maker
+            from app.models.global_catalog import GlobalServiceCategory
+
+            async with async_session_maker() as db:
+                # Sort: categories whose parent_id is an existing int come first,
+                # then those referencing other new categories (topological order)
+                def sort_key(c):
+                    pid = c.get("parent_id")
+                    if pid is None or isinstance(pid, int) or (isinstance(pid, str) and pid.isdigit()):
+                        return 0
+                    return 1  # depends on another new category
+
+                sorted_cats = sorted(new_categories_raw, key=sort_key)
+
+                # Process in multiple passes to resolve dependencies
+                remaining = list(sorted_cats)
+                max_passes = 10
+                for _ in range(max_passes):
+                    if not remaining:
+                        break
+                    still_remaining = []
+                    for cat_data in remaining:
+                        temp_id = cat_data.get("temp_id", "")
+                        raw_parent = cat_data.get("parent_id")
+
+                        # Resolve parent_id
+                        real_parent_id = None
+                        if raw_parent is not None:
+                            if isinstance(raw_parent, int):
+                                real_parent_id = raw_parent
+                            elif isinstance(raw_parent, str):
+                                if raw_parent.isdigit():
+                                    real_parent_id = int(raw_parent)
+                                elif raw_parent in temp_id_to_real_id:
+                                    real_parent_id = temp_id_to_real_id[raw_parent]
+                                else:
+                                    # Dependency not resolved yet
+                                    still_remaining.append(cat_data)
+                                    continue
+
+                        # Get max order among siblings
+                        from sqlalchemy import select as sa_select, func as sa_func
+                        max_order_result = await db.execute(
+                            sa_select(sa_func.coalesce(sa_func.max(GlobalServiceCategory.order), 0))
+                            .where(GlobalServiceCategory.parent_id == real_parent_id)
+                        )
+                        max_order = max_order_result.scalar() or 0
+
+                        new_cat = GlobalServiceCategory(
+                            parent_id=real_parent_id,
+                            name=cat_data.get("name", "Без назви"),
+                            name_en=cat_data.get("name_en"),
+                            icon=cat_data.get("icon"),
+                            order=max_order + 1,
+                            is_active=True,
+                            is_ai_created=True,
+                        )
+                        db.add(new_cat)
+                        await db.flush()  # Get the ID
+
+                        temp_id_to_real_id[temp_id] = new_cat.id
+                        created_categories.append({
+                            "id": new_cat.id,
+                            "parent_id": real_parent_id,
+                            "name": new_cat.name,
+                            "name_en": new_cat.name_en,
+                            "icon": new_cat.icon,
+                            "is_new": True,
+                        })
+                        _ai_logger.info(f"Created AI category: {new_cat.name} (id={new_cat.id}, parent={real_parent_id})")
+
+                    remaining = still_remaining
+
+                await db.commit()
+
+        # --- Resolve service category IDs ---
         services = []
         for s in data.get("services", []):
             try:
+                raw_cat_id = s.get("global_category_id")
+                # Resolve temp_id references
+                if isinstance(raw_cat_id, str) and not raw_cat_id.isdigit():
+                    s["global_category_id"] = temp_id_to_real_id.get(raw_cat_id)
+                elif isinstance(raw_cat_id, str) and raw_cat_id.isdigit():
+                    s["global_category_id"] = int(raw_cat_id)
+
                 services.append(GeneratedService(**s).model_dump())
-            except Exception:
-                pass
+            except Exception as parse_err:
+                _ai_logger.warning(f"Failed to parse service: {parse_err}")
 
         _ai_jobs[job_id] = {
             "status": "done",
             "result": {
                 "services": services,
                 "categories": data.get("categories", []),
+                "new_categories": created_categories,
                 "estimated_tokens": input_tokens + output_tokens,
             },
         }
-        _ai_logger.info(f"Job {job_id}: {len(services)} services parsed")
+        _ai_logger.info(f"Job {job_id}: {len(services)} services, {len(created_categories)} new categories")
 
     except Exception as e:
         _ai_logger.exception(f"Job {job_id} failed")

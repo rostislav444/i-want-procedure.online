@@ -33,6 +33,17 @@ from app.models.inventory import (
 )
 from app.models.expense import Expense, ExpenseFrequency
 from app.models.global_catalog import GlobalServiceCategory, GlobalServiceTemplate
+from app.models.city import City
+from app.models.education import (
+    EducationTopicCategory,
+    EducatorOffering,
+    OfferingType,
+    EducatorEvent,
+    EventTicketType,
+    EventRegistration,
+    RegistrationStatus,
+)
+from app.models.referral import Referral, ReferralEarning, ReferralPayout
 
 __all__ = [
     "Company",
@@ -80,4 +91,17 @@ __all__ = [
     # Global catalog
     "GlobalServiceCategory",
     "GlobalServiceTemplate",
+    # Cities
+    "City",
+    # Education
+    "EducationTopicCategory",
+    "EducatorOffering",
+    "OfferingType",
+    "EducatorEvent",
+    "EventRegistration",
+    "RegistrationStatus",
+    # Referrals
+    "Referral",
+    "ReferralEarning",
+    "ReferralPayout",
 ]

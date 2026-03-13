@@ -149,7 +149,7 @@ export default function WebsiteSettingsPage() {
   }
 
   const siteUrl = company
-    ? `${typeof window !== 'undefined' ? window.location.origin : ''}/site/${company.slug}`
+    ? `${typeof window !== 'undefined' ? window.location.origin : ''}/marketplace/${company.id}-${company.slug}`
     : ''
 
   const handleCopyUrl = async () => {

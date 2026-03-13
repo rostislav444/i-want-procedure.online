@@ -1,0 +1,1245 @@
+[
+  {
+    "id": 1,
+    "parent_id": null,
+    "name": "Косметологія",
+    "name_en": "Cosmetology",
+    "description": null,
+    "icon": "💆",
+    "order": 1,
+    "is_active": true,
+    "children": [
+      {
+        "id": 2,
+        "parent_id": 1,
+        "name": "Чистки обличчя",
+        "name_en": "Face Cleansing",
+        "description": null,
+        "icon": "🧴",
+        "order": 1,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          {
+            "id": 1,
+            "category_id": 2,
+            "name": "Механічна чистка обличчя",
+            "name_en": "Manual Face Cleansing",
+            "description": "Мануальне очищення пор з використанням стерильних інструментів",
+            "default_duration_minutes": 60,
+            "is_active": true,
+            "order": 1
+          },
+          {
+            "id": 2,
+            "category_id": 2,
+            "name": "Ультразвукова чистка обличчя",
+            "name_en": "Ultrasonic Face Cleansing",
+            "description": "Делікатне очищення шкіри за допомогою ультразвукової лопатки",
+            "default_duration_minutes": 45,
+            "is_active": true,
+            "order": 2
+          },
+          {
+            "id": 3,
+            "category_id": 2,
+            "name": "Комбінована чистка обличчя",
+            "name_en": "Combined Face Cleansing",
+            "description": "Поєднання ультразвукової та механічної чистки для глибокого очищення",
+            "default_duration_minutes": 75,
+            "is_active": true,
+            "order": 3
+          },
+          {
+            "id": 4,
+            "category_id": 2,
+            "name": "Атравматична чистка Holy Land",
+            "name_en": "Atraumatic Holy Land Cleansing",
+            "description": "Делікатна чистка без механічного впливу на основі космецевтики Holy Land",
+            "default_duration_minutes": 60,
+            "is_active": true,
+            "order": 4
+          },
+          {
+            "id": 5,
+            "category_id": 2,
+            "name": "Вакуумна чистка обличчя",
+            "name_en": "Vacuum Face Cleansing",
+            "description": "Очищення шкіри за допомогою вакуумного апарату",
+            "default_duration_minutes": 45,
+            "is_active": true,
+            "order": 5
+          },
+          {
+            "id": 6,
+            "category_id": 2,
+            "name": "Чистка обличчя з карбоновим пілінгом",
+            "name_en": "Carbon Peel Cleansing",
+            "description": "Лазерне очищення пор за допомогою карбонової маски",
+            "default_duration_minutes": 60,
+            "is_active": true,
+            "order": 6
+          },
+          {
+            "id": 7,
+            "category_id": 2,
+            "name": "Чистка спини",
+            "name_en": "Back Cleansing",
+            "description": "Глибоке очищення шкіри спини від комедонів та висипань",
+            "default_duration_minutes": 90,
+            "is_active": true,
+            "order": 7
+          },
+          {
+            "id": 8,
+            "category_id": 2,
+            "name": "Чистка зони декольте",
+            "name_en": "Décolleté Cleansing",
+            "description": "Очищення та догляд за шкірою в зоні декольте",
+            "default_duration_minutes": 60,
+            "is_active": true,
+            "order": 8
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "parent_id": 1,
+        "name": "Пілінги",
+        "name_en": "Peels",
+        "description": null,
+        "icon": "✨",
+        "order": 2,
+        "is_active": true,
+        "children": [
+          {
+            "id": 4,
+            "parent_id": 3,
+            "name": "Поверхневі пілінги",
+            "name_en": "Superficial Peels",
+            "description": null,
+            "icon": null,
+            "order": 1,
+            "is_active": true,
+            "children": [],
+            "templates": [
+              { "id": 9,  "category_id": 4, "name": "Мигдалевий пілінг",          "name_en": "Mandelic Acid Peel",       "description": "М'який пілінг на основі мигдалевої кислоти для чутливої шкіри",              "default_duration_minutes": 40, "is_active": true, "order": 1 },
+              { "id": 10, "category_id": 4, "name": "Молочний пілінг",            "name_en": "Lactic Acid Peel",         "description": "Зволожуючий пілінг на основі молочної кислоти",                             "default_duration_minutes": 40, "is_active": true, "order": 2 },
+              { "id": 11, "category_id": 4, "name": "Гліколевий пілінг",          "name_en": "Glycolic Acid Peel",        "description": "Пілінг на основі гліколевої кислоти для вирівнювання тону",                "default_duration_minutes": 40, "is_active": true, "order": 3 },
+              { "id": 12, "category_id": 4, "name": "Саліциловий пілінг",         "name_en": "Salicylic Acid Peel",       "description": "Пілінг для проблемної та жирної шкіри",                                  "default_duration_minutes": 40, "is_active": true, "order": 4 },
+              { "id": 13, "category_id": 4, "name": "Піровиноградний пілінг",     "name_en": "Pyruvic Acid Peel",         "description": "Пілінг на основі піровиноградної кислоти для зрілої шкіри",              "default_duration_minutes": 40, "is_active": true, "order": 5 },
+              { "id": 14, "category_id": 4, "name": "Азелаїновий пілінг",         "name_en": "Azelaic Acid Peel",         "description": "Протизапальний пілінг для шкіри з розацеа та акне",                      "default_duration_minutes": 40, "is_active": true, "order": 6 },
+              { "id": 15, "category_id": 4, "name": "Феруловий пілінг",           "name_en": "Ferulic Acid Peel",         "description": "Антиоксидантний пілінг з феруловою кислотою",                          "default_duration_minutes": 40, "is_active": true, "order": 7 },
+              { "id": 16, "category_id": 4, "name": "Ретиноловий пілінг (жовтий)","name_en": "Retinol Peel (Yellow)",     "description": "Пілінг з ретинолом для омолодження та вирівнювання рельєфу",              "default_duration_minutes": 45, "is_active": true, "order": 8 },
+              { "id": 17, "category_id": 4, "name": "Фітінова (рисовий) пілінг",  "name_en": "Phytic Acid Peel",          "description": "М'який освітлюючий пілінг для нерівного тону шкіри",                   "default_duration_minutes": 40, "is_active": true, "order": 9 },
+              { "id": 18, "category_id": 4, "name": "Вінна кислота пілінг",       "name_en": "Tartaric Acid Peel",        "description": "Антиоксидантний пілінг на основі виноградної кислоти",                 "default_duration_minutes": 40, "is_active": true, "order": 10 }
+            ]
+          },
+          {
+            "id": 5,
+            "parent_id": 3,
+            "name": "Серединні пілінги",
+            "name_en": "Medium Peels",
+            "description": null,
+            "icon": null,
+            "order": 2,
+            "is_active": true,
+            "children": [],
+            "templates": [
+              { "id": 19, "category_id": 5, "name": "ТСА пілінг (15–25%)",   "name_en": "TCA Peel (15–25%)",     "description": "Трихлороцтовий пілінг для корекції рубців та пігментації",               "default_duration_minutes": 45, "is_active": true, "order": 1 },
+              { "id": 20, "category_id": 5, "name": "Пілінг Джесснера",      "name_en": "Jessner Peel",          "description": "Комбінований пілінг для вирівнювання тону та текстури шкіри",              "default_duration_minutes": 45, "is_active": true, "order": 2 },
+              { "id": 21, "category_id": 5, "name": "PRX-T33 пілінг",        "name_en": "PRX-T33 Peel",          "description": "Біоревіталізуючий пілінг без лущення на основі ТСА та перекису водню",   "default_duration_minutes": 30, "is_active": true, "order": 3 },
+              { "id": 22, "category_id": 5, "name": "Феноловий пілінг",      "name_en": "Phenol Peel",           "description": "Глибокий серединний пілінг для вираженого омолодження",                 "default_duration_minutes": 60, "is_active": true, "order": 4 },
+              { "id": 23, "category_id": 5, "name": "Комбінований ТСА+Джесснер", "name_en": "TCA + Jessner Combo Peel", "description": "Посилений серединний пілінг для корекції складних проблем шкіри", "default_duration_minutes": 60, "is_active": true, "order": 5 }
+            ]
+          }
+        ],
+        "templates": []
+      },
+      {
+        "id": 6,
+        "parent_id": 1,
+        "name": "Ін'єкційна косметологія",
+        "name_en": "Injectable Cosmetology",
+        "description": null,
+        "icon": "💉",
+        "order": 3,
+        "is_active": true,
+        "children": [
+          {
+            "id": 7,
+            "parent_id": 6,
+            "name": "Ботулінотерапія",
+            "name_en": "Botulinum Therapy",
+            "description": null,
+            "icon": null,
+            "order": 1,
+            "is_active": true,
+            "children": [],
+            "templates": [
+              { "id": 24, "category_id": 7, "name": "Ботокс — лоб",                          "name_en": "Botox — Forehead",               "description": "Корекція мімічних зморшок лоба ботулотоксином",                             "default_duration_minutes": 30, "is_active": true, "order": 1 },
+              { "id": 25, "category_id": 7, "name": "Ботокс — міжбрів'я",                    "name_en": "Botox — Glabella",               "description": "Розгладження вертикальних зморшок між бровами",                          "default_duration_minutes": 20, "is_active": true, "order": 2 },
+              { "id": 26, "category_id": 7, "name": "Ботокс — навколо очей (гусячі лапки)",  "name_en": "Botox — Crow's Feet",            "description": "Корекція зморшок навколо очей",                                         "default_duration_minutes": 20, "is_active": true, "order": 3 },
+              { "id": 27, "category_id": 7, "name": "Ботокс — повний верх обличчя",          "name_en": "Botox — Full Upper Face",        "description": "Комплексна корекція верхньої третини обличчя",                          "default_duration_minutes": 30, "is_active": true, "order": 4 },
+              { "id": 28, "category_id": 7, "name": "Ліфтинг брів ботоксом",                 "name_en": "Botox Brow Lift",                "description": "Підняття хвостиків брів за допомогою ботулотоксину",                    "default_duration_minutes": 20, "is_active": true, "order": 5 },
+              { "id": 29, "category_id": 7, "name": "Ботокс — бандажі шиї (Нефертіті)",      "name_en": "Botox — Nefertiti Lift",         "description": "Корекція тяжів платизми для підтяжки контуру шиї",                     "default_duration_minutes": 30, "is_active": true, "order": 6 },
+              { "id": 30, "category_id": 7, "name": "Лікування гіпергідрозу (пахви)",        "name_en": "Hyperhidrosis — Armpits",        "description": "Ін'єкції ботоксу для зменшення потовиділення",                          "default_duration_minutes": 45, "is_active": true, "order": 7 },
+              { "id": 31, "category_id": 7, "name": "Лікування гіпергідрозу (долоні)",       "name_en": "Hyperhidrosis — Palms",          "description": "Ін'єкції ботоксу в долоні для зменшення потовиділення",                "default_duration_minutes": 45, "is_active": true, "order": 8 },
+              { "id": 32, "category_id": 7, "name": "Лікування бруксизму (жувальні м'язи)",  "name_en": "Bruxism — Jaw Muscles",          "description": "Розслаблення жувальних м'язів ботоксом",                               "default_duration_minutes": 30, "is_active": true, "order": 9 },
+              { "id": 33, "category_id": 7, "name": "Корекція ясеневої посмішки",            "name_en": "Gummy Smile Correction",         "description": "Ін'єкції ботоксу для корекції надмірного оголення ясен",               "default_duration_minutes": 20, "is_active": true, "order": 10 },
+              { "id": 34, "category_id": 7, "name": "Ботокс — підборіддя (ямочки)",          "name_en": "Botox — Chin Dimples",           "description": "Корекція зморщеності підборіддя ботулотоксином",                       "default_duration_minutes": 20, "is_active": true, "order": 11 },
+              { "id": 35, "category_id": 7, "name": "Ботокс — кінчик носа (фліп)",           "name_en": "Botox — Nose Tip Flip",          "description": "Корекція опускання кінчика носа при посмішці",                         "default_duration_minutes": 15, "is_active": true, "order": 12 }
+            ]
+          },
+          {
+            "id": 8,
+            "parent_id": 6,
+            "name": "Контурна пластика (філери)",
+            "name_en": "Dermal Fillers",
+            "description": null,
+            "icon": null,
+            "order": 2,
+            "is_active": true,
+            "children": [],
+            "templates": [
+              { "id": 36, "category_id": 8, "name": "Збільшення губ гіалуроновою кислотою",          "name_en": "Lip Augmentation",            "description": "Корекція об'єму та форми губ філером",                                      "default_duration_minutes": 45, "is_active": true, "order": 1 },
+              { "id": 37, "category_id": 8, "name": "Контурна пластика носогубних складок",          "name_en": "Nasolabial Folds Filler",     "description": "Заповнення носогубних складок філером",                                    "default_duration_minutes": 30, "is_active": true, "order": 2 },
+              { "id": 38, "category_id": 8, "name": "Контурна пластика маріонеткових зморшок",       "name_en": "Marionette Lines Filler",     "description": "Корекція зморшок від кутів рота вниз",                                     "default_duration_minutes": 30, "is_active": true, "order": 3 },
+              { "id": 39, "category_id": 8, "name": "Контурна пластика підборіддя",                  "name_en": "Chin Filler",                 "description": "Моделювання форми та об'єму підборіддя",                                   "default_duration_minutes": 30, "is_active": true, "order": 4 },
+              { "id": 40, "category_id": 8, "name": "Контурна пластика вилиць",                      "name_en": "Cheekbone Filler",            "description": "Додавання об'єму та підкреслення вилиць",                                  "default_duration_minutes": 30, "is_active": true, "order": 5 },
+              { "id": 41, "category_id": 8, "name": "Контурна пластика скронь",                      "name_en": "Temple Filler",               "description": "Заповнення западин скроневої зони",                                        "default_duration_minutes": 30, "is_active": true, "order": 6 },
+              { "id": 42, "category_id": 8, "name": "Корекція носа філером (безопераційна ринопластика)", "name_en": "Non-Surgical Rhinoplasty", "description": "Моделювання форми носа без хірургічного втручання",                    "default_duration_minutes": 30, "is_active": true, "order": 7 },
+              { "id": 43, "category_id": 8, "name": "Корекція слізної борозни",                      "name_en": "Tear Trough Filler",          "description": "Заповнення западини під очима для свіжого вигляду",                      "default_duration_minutes": 30, "is_active": true, "order": 8 },
+              { "id": 44, "category_id": 8, "name": "Контурна пластика кистей рук",                  "name_en": "Hand Rejuvenation Filler",    "description": "Омолодження шкіри рук за допомогою філера",                               "default_duration_minutes": 30, "is_active": true, "order": 9 },
+              { "id": 45, "category_id": 8, "name": "Корекція мочок вух",                            "name_en": "Earlobe Filler",              "description": "Відновлення об'єму мочок вух після носіння сережок",                     "default_duration_minutes": 20, "is_active": true, "order": 10 },
+              { "id": 46, "category_id": 8, "name": "Ліфтинг обличчя філерами (комплекс)",           "name_en": "Full Face Filler Lift",       "description": "Комплексне відновлення об'ємів і контурів обличчя філерами",              "default_duration_minutes": 60, "is_active": true, "order": 11 }
+            ]
+          },
+          {
+            "id": 9,
+            "parent_id": 6,
+            "name": "Біоревіталізація та мезотерапія",
+            "name_en": "Biorevitalization & Mesotherapy",
+            "description": null,
+            "icon": null,
+            "order": 3,
+            "is_active": true,
+            "children": [],
+            "templates": [
+              { "id": 47, "category_id": 9, "name": "Біоревіталізація обличчя",                      "name_en": "Face Biorevitalization",           "description": "Ін'єкції гіалуронової кислоти для глибокого зволоження шкіри",             "default_duration_minutes": 45, "is_active": true, "order": 1 },
+              { "id": 48, "category_id": 9, "name": "Біоревіталізація шиї",                          "name_en": "Neck Biorevitalization",           "description": "Зволоження та омолодження шкіри шиї",                                     "default_duration_minutes": 30, "is_active": true, "order": 2 },
+              { "id": 49, "category_id": 9, "name": "Біоревіталізація декольте",                     "name_en": "Décolleté Biorevitalization",      "description": "Відновлення тургору шкіри зони декольте",                                 "default_duration_minutes": 30, "is_active": true, "order": 3 },
+              { "id": 50, "category_id": 9, "name": "Біоревіталізація рук",                          "name_en": "Hand Biorevitalization",           "description": "Омолодження та зволоження шкіри кистей рук",                             "default_duration_minutes": 30, "is_active": true, "order": 4 },
+              { "id": 51, "category_id": 9, "name": "Мезотерапія обличчя (коктейлі)",                "name_en": "Face Mesotherapy",                 "description": "Введення мезококтейлів з вітамінами та амінокислотами",                   "default_duration_minutes": 45, "is_active": true, "order": 5 },
+              { "id": 52, "category_id": 9, "name": "Мезотерапія волосистої частини голови",         "name_en": "Scalp Mesotherapy",                "description": "Стимуляція росту волосся мезококтейлями",                                  "default_duration_minutes": 45, "is_active": true, "order": 6 },
+              { "id": 53, "category_id": 9, "name": "Мезотерапія тіла (ліполітики)",                 "name_en": "Body Mesotherapy (Lipolytics)",    "description": "Ін'єкційне розщеплення жирових відкладень",                               "default_duration_minutes": 45, "is_active": true, "order": 7 },
+              { "id": 54, "category_id": 9, "name": "Колагенстимулятори (Sculptra / Radiesse)",      "name_en": "Collagen Stimulators",             "description": "Стимуляція вироблення власного колагену",                                  "default_duration_minutes": 45, "is_active": true, "order": 8 },
+              { "id": 55, "category_id": 9, "name": "PRP-терапія (плазмоліфтинг) обличчя",          "name_en": "PRP Facial",                       "description": "Ін'єкції збагаченої тромбоцитами плазми",                                  "default_duration_minutes": 60, "is_active": true, "order": 9 },
+              { "id": 56, "category_id": 9, "name": "PRP-терапія волосистої частини голови",         "name_en": "PRP Scalp",                        "description": "Стимуляція росту волосся власною плазмою",                                "default_duration_minutes": 60, "is_active": true, "order": 10 },
+              { "id": 57, "category_id": 9, "name": "Полінуклеотиди (PDRN)",                         "name_en": "Polynucleotides (PDRN)",            "description": "Ін'єкції полінуклеотидів для регенерації шкіри",                          "default_duration_minutes": 45, "is_active": true, "order": 11 },
+              { "id": 58, "category_id": 9, "name": "Exosome-терапія",                               "name_en": "Exosome Therapy",                  "description": "Ін'єкції екзосом для глибокого омолодження та регенерації шкіри",         "default_duration_minutes": 45, "is_active": true, "order": 12 },
+              { "id": 59, "category_id": 9, "name": "Скін-бустери (Restylane Skinboosters)",         "name_en": "Skin Boosters",                    "description": "Мікроін'єкції нестабілізованої гіалуронової кислоти для сяяння шкіри",   "default_duration_minutes": 40, "is_active": true, "order": 13 }
+            ]
+          },
+          {
+            "id": 10,
+            "parent_id": 6,
+            "name": "Нитковий ліфтинг",
+            "name_en": "Thread Lifting",
+            "description": null,
+            "icon": null,
+            "order": 4,
+            "is_active": true,
+            "children": [],
+            "templates": [
+              { "id": 60, "category_id": 10, "name": "Нитковий ліфтинг обличчя (COG-нитки)", "name_en": "Face Thread Lift (COG)",   "description": "Підтяжка овалу обличчя армуючими нитками",               "default_duration_minutes": 60, "is_active": true, "order": 1 },
+              { "id": 61, "category_id": 10, "name": "Нитковий ліфтинг брів",                "name_en": "Brow Thread Lift",         "description": "Підтяжка зони брів мезонитками",                          "default_duration_minutes": 30, "is_active": true, "order": 2 },
+              { "id": 62, "category_id": 10, "name": "Нитки для шиї",                        "name_en": "Neck Thread Lift",         "description": "Підтяжка шкіри шиї армуючими нитками",                   "default_duration_minutes": 45, "is_active": true, "order": 3 },
+              { "id": 63, "category_id": 10, "name": "Мезонитки (лінійні)",                  "name_en": "Smooth Threads (Linear)",  "description": "Армування шкіри гладкими мезонитками для ущільнення",     "default_duration_minutes": 45, "is_active": true, "order": 4 },
+              { "id": 64, "category_id": 10, "name": "Нитки для тіла (груди, живіт, стегна)","name_en": "Body Thread Lift",         "description": "Підтяжка шкіри тіла армуючими нитками",                   "default_duration_minutes": 75, "is_active": true, "order": 5 }
+            ]
+          },
+          {
+            "id": 11,
+            "parent_id": 6,
+            "name": "Ліполітики та корекція тіла",
+            "name_en": "Lipolytics & Body Contouring",
+            "description": null,
+            "icon": null,
+            "order": 5,
+            "is_active": true,
+            "children": [],
+            "templates": [
+              { "id": 65, "category_id": 11, "name": "Ліполітики — підборіддя (другий підборіддя)", "name_en": "Lipolytics — Double Chin",  "description": "Розщеплення підшкірного жиру в зоні підборіддя", "default_duration_minutes": 30, "is_active": true, "order": 1 },
+              { "id": 66, "category_id": 11, "name": "Ліполітики — живіт",                         "name_en": "Lipolytics — Abdomen",     "description": "Ін'єкційна корекція жирових відкладень на животі", "default_duration_minutes": 45, "is_active": true, "order": 2 },
+              { "id": 67, "category_id": 11, "name": "Ліполітики — боки",                          "name_en": "Lipolytics — Flanks",      "description": "Корекція жирових відкладень в зоні боків",         "default_duration_minutes": 45, "is_active": true, "order": 3 },
+              { "id": 68, "category_id": 11, "name": "Ліполітики — стегна",                        "name_en": "Lipolytics — Thighs",      "description": "Ін'єкційна корекція зони галіфе",                  "default_duration_minutes": 45, "is_active": true, "order": 4 },
+              { "id": 69, "category_id": 11, "name": "Ліполітики — спина (жирові пастки)",         "name_en": "Lipolytics — Back Rolls",  "description": "Корекція жирових складок на спині",                 "default_duration_minutes": 45, "is_active": true, "order": 5 }
+            ]
+          }
+        ],
+        "templates": []
+      },
+      {
+        "id": 12,
+        "parent_id": 1,
+        "name": "Апаратна косметологія",
+        "name_en": "Hardware Cosmetology",
+        "description": null,
+        "icon": "🔬",
+        "order": 4,
+        "is_active": true,
+        "children": [
+          {
+            "id": 13,
+            "parent_id": 12,
+            "name": "Лазерні процедури",
+            "name_en": "Laser Treatments",
+            "description": null,
+            "icon": null,
+            "order": 1,
+            "is_active": true,
+            "children": [],
+            "templates": [
+              { "id": 70, "category_id": 13, "name": "Лазерне омолодження обличчя (фракційне)", "name_en": "Fractional Laser Rejuvenation", "description": "Стимуляція колагену фракційним лазером",                          "default_duration_minutes": 60, "is_active": true, "order": 1 },
+              { "id": 71, "category_id": 13, "name": "Лазерне видалення пігментації",           "name_en": "Laser Pigmentation Removal",   "description": "Видалення пігментних плям лазером",                               "default_duration_minutes": 30, "is_active": true, "order": 2 },
+              { "id": 72, "category_id": 13, "name": "Лазерне видалення судин (купероз)",       "name_en": "Laser Couperose Removal",      "description": "Коагуляція розширених судин лазером",                             "default_duration_minutes": 30, "is_active": true, "order": 3 },
+              { "id": 73, "category_id": 13, "name": "Лазерне видалення новоутворень",          "name_en": "Laser Lesion Removal",         "description": "Видалення папілом, бородавок, родимок лазером",                   "default_duration_minutes": 20, "is_active": true, "order": 4 },
+              { "id": 74, "category_id": 13, "name": "Лазерне шліфування (CO2)",                "name_en": "CO2 Laser Resurfacing",        "description": "Глибоке оновлення шкіри CO2-лазером",                             "default_duration_minutes": 60, "is_active": true, "order": 5 },
+              { "id": 75, "category_id": 13, "name": "Лазерне видалення татуажу",               "name_en": "Laser Tattoo Removal",         "description": "Видалення небажаного перманентного макіяжу",                     "default_duration_minutes": 30, "is_active": true, "order": 6 },
+              { "id": 76, "category_id": 13, "name": "Лазерне видалення рубців та стрій",       "name_en": "Laser Scar & Stretch Mark",    "description": "Корекція рубцевої тканини та розтяжок",                           "default_duration_minutes": 45, "is_active": true, "order": 7 },
+              { "id": 77, "category_id": 13, "name": "Nd:YAG лазер (судини + пігментація)",     "name_en": "Nd:YAG Laser",                 "description": "Комбінована лазерна терапія судин та пігментних плям",            "default_duration_minutes": 30, "is_active": true, "order": 8 }
+            ]
+          },
+          {
+            "id": 14,
+            "parent_id": 12,
+            "name": "RF-ліфтинг та SMAS",
+            "name_en": "RF Lifting & HIFU",
+            "description": null,
+            "icon": null,
+            "order": 2,
+            "is_active": true,
+            "children": [],
+            "templates": [
+              { "id": 78, "category_id": 14, "name": "RF-ліфтинг обличчя",              "name_en": "RF Face Lift",          "description": "Радіочастотна підтяжка шкіри обличчя",                        "default_duration_minutes": 45, "is_active": true, "order": 1 },
+              { "id": 79, "category_id": 14, "name": "RF-ліфтинг шиї та декольте",      "name_en": "RF Neck & Décolleté",   "description": "Підтяжка шкіри шиї та декольте радіочастотами",               "default_duration_minutes": 45, "is_active": true, "order": 2 },
+              { "id": 80, "category_id": 14, "name": "RF-ліфтинг тіла",                 "name_en": "RF Body Tightening",    "description": "Радіочастотна підтяжка та ущільнення шкіри тіла",             "default_duration_minutes": 60, "is_active": true, "order": 3 },
+              { "id": 81, "category_id": 14, "name": "SMAS-ліфтинг (HIFU / Ulthera)",   "name_en": "HIFU / SMAS Lifting",   "description": "Ультразвукова підтяжка на рівні SMAS-шару",                   "default_duration_minutes": 60, "is_active": true, "order": 4 },
+              { "id": 82, "category_id": 14, "name": "RF-мікронідлінг (Morpheus8)",     "name_en": "RF Microneedling",      "description": "Мікроголковий RF-ліфтинг для ремоделювання шкіри",            "default_duration_minutes": 60, "is_active": true, "order": 5 },
+              { "id": 83, "category_id": 14, "name": "Мікрострумова терапія",           "name_en": "Microcurrent Therapy",  "description": "Тонізація м'язів обличчя мікрострумами",                     "default_duration_minutes": 45, "is_active": true, "order": 6 }
+            ]
+          },
+          {
+            "id": 15,
+            "parent_id": 12,
+            "name": "Фототерапія",
+            "name_en": "Phototherapy",
+            "description": null,
+            "icon": null,
+            "order": 3,
+            "is_active": true,
+            "children": [],
+            "templates": [
+              { "id": 84, "category_id": 15, "name": "IPL-фототерапія (пігментація)",  "name_en": "IPL Pigmentation",     "description": "Імпульсне світло для видалення пігментних плям",         "default_duration_minutes": 30, "is_active": true, "order": 1 },
+              { "id": 85, "category_id": 15, "name": "IPL-фототерапія (судини)",       "name_en": "IPL Vascular",         "description": "Імпульсне світло для коагуляції судин",                  "default_duration_minutes": 30, "is_active": true, "order": 2 },
+              { "id": 86, "category_id": 15, "name": "IPL-фотоомолодження",            "name_en": "IPL Photorejuvenation","description": "Комплексне омолодження шкіри імпульсним світлом",         "default_duration_minutes": 45, "is_active": true, "order": 3 },
+              { "id": 87, "category_id": 15, "name": "LED-терапія (світлотерапія)",    "name_en": "LED Light Therapy",    "description": "Біостимуляція шкіри LED-світлом різних спектрів",         "default_duration_minutes": 30, "is_active": true, "order": 4 },
+              { "id": 88, "category_id": 15, "name": "BBL-фотоомолодження (BroadBand)", "name_en": "BBL Photorejuvenation","description": "Широкосмугова фототерапія для омолодження та вирівнювання тону", "default_duration_minutes": 45, "is_active": true, "order": 5 }
+            ]
+          },
+          {
+            "id": 16,
+            "parent_id": 12,
+            "name": "Інші апаратні процедури",
+            "name_en": "Other Hardware Treatments",
+            "description": null,
+            "icon": null,
+            "order": 4,
+            "is_active": true,
+            "children": [],
+            "templates": [
+              { "id": 89,  "category_id": 16, "name": "Мікродермабразія",              "name_en": "Microdermabrasion",       "description": "Механічна ексфоліація мікрокристалами для вирівнювання текстури",     "default_duration_minutes": 45, "is_active": true, "order": 1 },
+              { "id": 90,  "category_id": 16, "name": "Дарсонваль",                    "name_en": "Darsonval",               "description": "Імпульсна терапія для покращення кровообігу шкіри",                   "default_duration_minutes": 20, "is_active": true, "order": 2 },
+              { "id": 91,  "category_id": 16, "name": "Кріотерапія обличчя",           "name_en": "Cryotherapy Face",        "description": "Вплив холодом для тонізації та зменшення запалень",                  "default_duration_minutes": 15, "is_active": true, "order": 3 },
+              { "id": 92,  "category_id": 16, "name": "Карбокситерапія (CO2)",         "name_en": "Carboxytherapy",          "description": "Ін'єкції вуглекислого газу для стимуляції кровообігу",                "default_duration_minutes": 30, "is_active": true, "order": 4 },
+              { "id": 93,  "category_id": 16, "name": "Оксигенотерапія обличчя",       "name_en": "Oxygen Facial",           "description": "Насичення шкіри киснем під тиском",                                   "default_duration_minutes": 45, "is_active": true, "order": 5 },
+              { "id": 94,  "category_id": 16, "name": "Ультрафонофорез",               "name_en": "Ultraphonophoresis",      "description": "Введення активних речовин за допомогою ультразвуку",                  "default_duration_minutes": 30, "is_active": true, "order": 6 },
+              { "id": 95,  "category_id": 16, "name": "Мікронідлінг (Dermapen)",       "name_en": "Microneedling (Dermapen)","description": "Стимуляція колагену мікроголками для омолодження",                   "default_duration_minutes": 45, "is_active": true, "order": 7 },
+              { "id": 96,  "category_id": 16, "name": "Ліфтинг з SMAS-ультразвуком (фокусований)", "name_en": "Focused Ultrasound Lift", "description": "Точковий ультразвуковий вплив для підтяжки тканин",          "default_duration_minutes": 60, "is_active": true, "order": 8 },
+              { "id": 97,  "category_id": 16, "name": "Електропорація (безін'єкційна мезотерапія)", "name_en": "Electroporation",         "description": "Введення активних речовин без ін'єкцій електричним полем",     "default_duration_minutes": 30, "is_active": true, "order": 9 },
+              { "id": 98,  "category_id": 16, "name": "Кріоліполіз (заморожування жиру)",           "name_en": "Cryolipolysis",           "description": "Апаратне руйнування жирових клітин холодом",                    "default_duration_minutes": 60, "is_active": true, "order": 10 },
+              { "id": 99,  "category_id": 16, "name": "LPG-масаж (ендосфери / роликовий масаж)",    "name_en": "LPG / Roller Massage",    "description": "Апаратний ліфтинг та антицелюлітна терапія вакуумними роликами", "default_duration_minutes": 45, "is_active": true, "order": 11 },
+              { "id": 100, "category_id": 16, "name": "Ультразвукова кавітація",                    "name_en": "Ultrasonic Cavitation",   "description": "Руйнування жирових клітин ультразвуком",                         "default_duration_minutes": 45, "is_active": true, "order": 12 },
+              { "id": 101, "category_id": 16, "name": "EMS-стимуляція м'язів тіла (Emsculpt)",      "name_en": "EMS Body Sculpting",      "description": "Електромагнітна стимуляція м'язів для підтяжки та зміцнення",    "default_duration_minutes": 30, "is_active": true, "order": 13 }
+            ]
+          }
+        ],
+        "templates": []
+      },
+      {
+        "id": 17,
+        "parent_id": 1,
+        "name": "Доглядові процедури",
+        "name_en": "Facial Treatments & Skincare",
+        "description": null,
+        "icon": "🧖",
+        "order": 5,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          { "id": 102, "category_id": 17, "name": "Класичний догляд за обличчям",             "name_en": "Classic Facial",             "description": "Базовий догляд: очищення, тонізація, маска, крем",                    "default_duration_minutes": 60, "is_active": true, "order": 1 },
+          { "id": 103, "category_id": 17, "name": "Зволожуючий догляд",                       "name_en": "Hydrating Facial",           "description": "Інтенсивне зволоження для зневодненої шкіри",                        "default_duration_minutes": 60, "is_active": true, "order": 2 },
+          { "id": 104, "category_id": 17, "name": "Антивіковий догляд",                       "name_en": "Anti-Age Facial",            "description": "Комплексна anti-age процедура з ліфтинг-ефектом",                    "default_duration_minutes": 75, "is_active": true, "order": 3 },
+          { "id": 105, "category_id": 17, "name": "Заспокійливий догляд для чутливої шкіри",  "name_en": "Sensitive Skin Facial",      "description": "Зниження реактивності та зміцнення шкіри",                           "default_duration_minutes": 60, "is_active": true, "order": 4 },
+          { "id": 106, "category_id": 17, "name": "Догляд для проблемної шкіри",              "name_en": "Acne Facial",                "description": "Регуляція себосекреції та протизапальний ефект",                     "default_duration_minutes": 60, "is_active": true, "order": 5 },
+          { "id": 107, "category_id": 17, "name": "Альгінатна маска",                         "name_en": "Alginate Mask",              "description": "Моделююча маска з альгінатом для ліфтингу",                          "default_duration_minutes": 45, "is_active": true, "order": 6 },
+          { "id": 108, "category_id": 17, "name": "Колагенова маска",                         "name_en": "Collagen Mask",              "description": "Маска з колагеном для підвищення пружності",                        "default_duration_minutes": 45, "is_active": true, "order": 7 },
+          { "id": 109, "category_id": 17, "name": "Парафінотерапія обличчя",                  "name_en": "Face Paraffin Therapy",      "description": "Живлення та пом'якшення шкіри теплим парафіном",                    "default_duration_minutes": 30, "is_active": true, "order": 8 },
+          { "id": 110, "category_id": 17, "name": "Масаж обличчя (класичний)",                "name_en": "Classic Face Massage",       "description": "Розслаблюючий масаж для покращення мікроциркуляції",                "default_duration_minutes": 30, "is_active": true, "order": 9 },
+          { "id": 111, "category_id": 17, "name": "Масаж обличчя буккальний",                 "name_en": "Buccal Face Massage",        "description": "Скульптурний масаж через ротову порожнину",                         "default_duration_minutes": 45, "is_active": true, "order": 10 },
+          { "id": 112, "category_id": 17, "name": "Масаж обличчя кобідо",                     "name_en": "Kobido Face Massage",        "description": "Японська техніка ліфтинг-масажу",                                   "default_duration_minutes": 60, "is_active": true, "order": 11 },
+          { "id": 113, "category_id": 17, "name": "Гідрофейшл (HydraFacial)",                 "name_en": "HydraFacial",                "description": "Багатоетапне очищення та зволоження апаратом HydraFacial",           "default_duration_minutes": 60, "is_active": true, "order": 12 },
+          { "id": 114, "category_id": 17, "name": "Карбонове очищення (Carbon Peel)",         "name_en": "Carbon Peel Facial",         "description": "Глибоке очищення з карбоновою маскою та лазером",                  "default_duration_minutes": 45, "is_active": true, "order": 13 },
+          { "id": 115, "category_id": 17, "name": "Мейсопорація (безін'єкційна мезотерапія)", "name_en": "Mesoporation Facial",        "description": "Безін'єкційне введення активних компонентів у шкіру",               "default_duration_minutes": 45, "is_active": true, "order": 14 },
+          { "id": 116, "category_id": 17, "name": "Гуаша масаж обличчя",                      "name_en": "Gua Sha Face Massage",       "description": "Масаж нефритовим скребком для дренажу та ліфтингу",                "default_duration_minutes": 30, "is_active": true, "order": 15 },
+          { "id": 117, "category_id": 17, "name": "Масаж обличчя роликовим масажером (jade roller)", "name_en": "Jade Roller Massage",  "description": "Дренажний масаж обличчя роликовим кристальним масажером",          "default_duration_minutes": 20, "is_active": true, "order": 16 },
+          { "id": 118, "category_id": 17, "name": "Осінньо-зимовий відновлюючий догляд",      "name_en": "Restorative Seasonal Facial","description": "Інтенсивне відновлення шкіри після сезонного стресу",                "default_duration_minutes": 60, "is_active": true, "order": 17 }
+        ]
+      },
+      {
+        "id": 18,
+        "parent_id": 1,
+        "name": "Лазерна епіляція",
+        "name_en": "Laser Hair Removal",
+        "description": null,
+        "icon": "⚡",
+        "order": 6,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          { "id": 119, "category_id": 18, "name": "Лазерна епіляція — верхня губа",          "name_en": "Laser — Upper Lip",       "description": "Видалення небажаного волосся над верхньою губою",     "default_duration_minutes": 10, "is_active": true, "order": 1 },
+          { "id": 120, "category_id": 18, "name": "Лазерна епіляція — підборіддя",           "name_en": "Laser — Chin",            "description": "Видалення волосся на підборідді",                     "default_duration_minutes": 10, "is_active": true, "order": 2 },
+          { "id": 121, "category_id": 18, "name": "Лазерна епіляція — щоки / бакенбарди",   "name_en": "Laser — Cheeks/Sideburns","description": "Видалення волосся на щоках",                          "default_duration_minutes": 15, "is_active": true, "order": 3 },
+          { "id": 122, "category_id": 18, "name": "Лазерна епіляція — лінія шиї",           "name_en": "Laser — Neck Hairline",   "description": "Корекція лінії росту волосся на шиї",                "default_duration_minutes": 15, "is_active": true, "order": 4 },
+          { "id": 123, "category_id": 18, "name": "Лазерна епіляція — обличчя повністю",    "name_en": "Laser — Full Face",       "description": "Повне видалення небажаного волосся на обличчі",       "default_duration_minutes": 30, "is_active": true, "order": 5 },
+          { "id": 124, "category_id": 18, "name": "Лазерна епіляція — пахви",               "name_en": "Laser — Armpits",         "description": "Видалення волосся в пахвовій зоні",                   "default_duration_minutes": 15, "is_active": true, "order": 6 },
+          { "id": 125, "category_id": 18, "name": "Лазерна епіляція — руки повністю",       "name_en": "Laser — Full Arms",       "description": "Видалення волосся на руках від пальців до плечей",   "default_duration_minutes": 30, "is_active": true, "order": 7 },
+          { "id": 126, "category_id": 18, "name": "Лазерна епіляція — передпліччя",         "name_en": "Laser — Forearms",        "description": "Видалення волосся від зап'ястя до ліктя",             "default_duration_minutes": 20, "is_active": true, "order": 8 },
+          { "id": 127, "category_id": 18, "name": "Лазерна епіляція — ноги повністю",       "name_en": "Laser — Full Legs",       "description": "Видалення волосся на ногах повністю",                 "default_duration_minutes": 45, "is_active": true, "order": 9 },
+          { "id": 128, "category_id": 18, "name": "Лазерна епіляція — гомілки",             "name_en": "Laser — Lower Legs",      "description": "Видалення волосся від коліна до щиколотки",           "default_duration_minutes": 30, "is_active": true, "order": 10 },
+          { "id": 129, "category_id": 18, "name": "Лазерна епіляція — стегна",              "name_en": "Laser — Thighs",          "description": "Видалення волосся на стегнах",                        "default_duration_minutes": 30, "is_active": true, "order": 11 },
+          { "id": 130, "category_id": 18, "name": "Лазерна епіляція — бікіні класичне",     "name_en": "Laser — Classic Bikini",  "description": "Видалення волосся по лінії білизни",                  "default_duration_minutes": 15, "is_active": true, "order": 12 },
+          { "id": 131, "category_id": 18, "name": "Лазерна епіляція — бікіні глибоке",      "name_en": "Laser — Deep Bikini",     "description": "Повне видалення волосся в інтимній зоні",             "default_duration_minutes": 25, "is_active": true, "order": 13 },
+          { "id": 132, "category_id": 18, "name": "Лазерна епіляція — живіт",               "name_en": "Laser — Abdomen",         "description": "Видалення волосся на животі",                         "default_duration_minutes": 20, "is_active": true, "order": 14 },
+          { "id": 133, "category_id": 18, "name": "Лазерна епіляція — спина",               "name_en": "Laser — Back",            "description": "Видалення волосся на спині",                          "default_duration_minutes": 30, "is_active": true, "order": 15 },
+          { "id": 134, "category_id": 18, "name": "Лазерна епіляція — груди (чоловіки)",    "name_en": "Laser — Chest (Men)",     "description": "Видалення волосся на грудях",                         "default_duration_minutes": 20, "is_active": true, "order": 16 },
+          { "id": 135, "category_id": 18, "name": "Лазерна епіляція — сідниці",             "name_en": "Laser — Buttocks",        "description": "Видалення волосся в зоні сідниць",                    "default_duration_minutes": 20, "is_active": true, "order": 17 }
+        ]
+      },
+      {
+        "id": 19,
+        "parent_id": 1,
+        "name": "Перманентний макіяж",
+        "name_en": "Permanent Makeup",
+        "description": null,
+        "icon": "🎨",
+        "order": 7,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          { "id": 136, "category_id": 19, "name": "Перманент брів (пудрове напилення)",       "name_en": "Brows — Powder Ombre",       "description": "Техніка пудрового напилення для природного ефекту",                    "default_duration_minutes": 120, "is_active": true, "order": 1 },
+          { "id": 137, "category_id": 19, "name": "Перманент брів (мікроблейдинг)",           "name_en": "Brows — Microblading",       "description": "Ручна техніка волоскового прорисовування",                             "default_duration_minutes": 120, "is_active": true, "order": 2 },
+          { "id": 138, "category_id": 19, "name": "Перманент брів (комбінована техніка)",     "name_en": "Brows — Combo Technique",    "description": "Поєднання волоскової та пудрової техніки",                             "default_duration_minutes": 120, "is_active": true, "order": 3 },
+          { "id": 139, "category_id": 19, "name": "Перманент брів (мікрошейдинг)",            "name_en": "Brows — Microshading",       "description": "Точкова техніка для пухнастого ефекту",                                "default_duration_minutes": 120, "is_active": true, "order": 4 },
+          { "id": 140, "category_id": 19, "name": "Перманент губ (акварельна техніка)",       "name_en": "Lips — Aquarelle",           "description": "Ніжний перманент губ з ефектом акварелі",                              "default_duration_minutes": 120, "is_active": true, "order": 5 },
+          { "id": 141, "category_id": 19, "name": "Перманент губ (контур з розтушовкою)",     "name_en": "Lips — Contour & Shading",   "description": "Перманент губ з чітким контуром та м'якою розтушовкою",               "default_duration_minutes": 120, "is_active": true, "order": 6 },
+          { "id": 142, "category_id": 19, "name": "Перманент губ (повне фарбування)",         "name_en": "Lips — Full Color",          "description": "Насичений перманент всієї поверхні губ",                               "default_duration_minutes": 120, "is_active": true, "order": 7 },
+          { "id": 143, "category_id": 19, "name": "Перманент повік (міжвійковий простір)",    "name_en": "Eyeliner — Lash Enhancement","description": "Заповнення міжвійкового простору для ефекту густих вій",               "default_duration_minutes": 90,  "is_active": true, "order": 8 },
+          { "id": 144, "category_id": 19, "name": "Перманент повік (стрілка)",                "name_en": "Eyeliner — Arrow",           "description": "Перманентна стрілка на верхній повіці",                               "default_duration_minutes": 90,  "is_active": true, "order": 9 },
+          { "id": 145, "category_id": 19, "name": "Перманент повік (класична стрілка низ)",   "name_en": "Eyeliner — Lower Lash Line", "description": "Перманентна підводка на нижньому повіці",                             "default_duration_minutes": 60,  "is_active": true, "order": 10 },
+          { "id": 146, "category_id": 19, "name": "Перманент мушки (родимки)",                "name_en": "Decorative Mole / Beauty Mark","description": "Декоративна мушка перманентною технікою",                           "default_duration_minutes": 30,  "is_active": true, "order": 11 },
+          { "id": 147, "category_id": 19, "name": "Корекція перманентного макіяжу",           "name_en": "PMU Touch-Up / Correction",  "description": "Оновлення та корекція раніше нанесеного перманенту",                 "default_duration_minutes": 90,  "is_active": true, "order": 12 },
+          { "id": 148, "category_id": 19, "name": "Видалення перманентного макіяжу (ремувер)","name_en": "PMU Removal (Remover)",      "description": "Видалення небажаного перманенту спеціальним ремувером",              "default_duration_minutes": 60,  "is_active": true, "order": 13 },
+          { "id": 149, "category_id": 19, "name": "Камуфляж рубців та шрамів PMU",            "name_en": "Scar Camouflage PMU",        "description": "Перекриття рубців та вітіліго пігментом тілесного кольору",          "default_duration_minutes": 120, "is_active": true, "order": 14 }
+        ]
+      }
+    ],
+    "templates": []
+  },
+  {
+    "id": 20,
+    "parent_id": null,
+    "name": "Масажна терапія",
+    "name_en": "Massage Therapy",
+    "description": null,
+    "icon": "💆‍♂️",
+    "order": 2,
+    "is_active": true,
+    "children": [
+      {
+        "id": 21,
+        "parent_id": 20,
+        "name": "Класичний масаж",
+        "name_en": "Classic Massage",
+        "description": null,
+        "icon": "🤲",
+        "order": 1,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          { "id": 150, "category_id": 21, "name": "Загальний класичний масаж тіла",    "name_en": "Full Body Classic Massage",       "description": "Повний масаж тіла для розслаблення та оздоровлення",              "default_duration_minutes": 60, "is_active": true, "order": 1 },
+          { "id": 151, "category_id": 21, "name": "Масаж спини",                       "name_en": "Back Massage",                    "description": "Класичний масаж спини для зняття напруження",                     "default_duration_minutes": 30, "is_active": true, "order": 2 },
+          { "id": 152, "category_id": 21, "name": "Масаж шийно-комірцевої зони",       "name_en": "Neck & Shoulder Massage",         "description": "Масаж шиї, плечей та верхньої частини спини",                    "default_duration_minutes": 20, "is_active": true, "order": 3 },
+          { "id": 153, "category_id": 21, "name": "Масаж попереково-крижової зони",    "name_en": "Lower Back Massage",              "description": "Масаж нижньої частини спини",                                    "default_duration_minutes": 20, "is_active": true, "order": 4 },
+          { "id": 154, "category_id": 21, "name": "Масаж ніг",                         "name_en": "Leg Massage",                     "description": "Масаж нижніх кінцівок від стоп до стегон",                       "default_duration_minutes": 30, "is_active": true, "order": 5 },
+          { "id": 155, "category_id": 21, "name": "Масаж рук",                         "name_en": "Arm Massage",                     "description": "Масаж верхніх кінцівок від кистей до плечей",                   "default_duration_minutes": 20, "is_active": true, "order": 6 },
+          { "id": 156, "category_id": 21, "name": "Масаж голови та шиї",               "name_en": "Head & Neck Massage",             "description": "Розслаблюючий масаж голови, шиї та скальпа",                    "default_duration_minutes": 20, "is_active": true, "order": 7 },
+          { "id": 157, "category_id": 21, "name": "Масаж живота",                      "name_en": "Abdominal Massage",               "description": "Масаж абдомінальної зони для покращення травлення",              "default_duration_minutes": 20, "is_active": true, "order": 8 },
+          { "id": 158, "category_id": 21, "name": "Масаж стоп",                        "name_en": "Foot Massage",                    "description": "Рефлекторний масаж стоп",                                        "default_duration_minutes": 20, "is_active": true, "order": 9 }
+        ]
+      },
+      {
+        "id": 22,
+        "parent_id": 20,
+        "name": "Лікувальний масаж",
+        "name_en": "Therapeutic Massage",
+        "description": null,
+        "icon": "🏥",
+        "order": 2,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          { "id": 159, "category_id": 22, "name": "Лікувальний масаж спини",               "name_en": "Therapeutic Back Massage",        "description": "Терапевтичний масаж при болях та дискомфорті в спині",              "default_duration_minutes": 45, "is_active": true, "order": 1 },
+          { "id": 160, "category_id": 22, "name": "Масаж при остеохондрозі",               "name_en": "Osteochondrosis Massage",         "description": "Спеціалізований масаж для полегшення симптомів остеохондрозу",     "default_duration_minutes": 45, "is_active": true, "order": 2 },
+          { "id": 161, "category_id": 22, "name": "Масаж при сколіозі",                    "name_en": "Scoliosis Massage",               "description": "Корекційний масаж при порушеннях постави",                         "default_duration_minutes": 45, "is_active": true, "order": 3 },
+          { "id": 162, "category_id": 22, "name": "Масаж при головних болях",              "name_en": "Headache Relief Massage",         "description": "Масаж голови, шиї та комірцевої зони при цефалгіях",               "default_duration_minutes": 30, "is_active": true, "order": 4 },
+          { "id": 163, "category_id": 22, "name": "Сегментарно-рефлекторний масаж",        "name_en": "Segmental Reflex Massage",        "description": "Вплив на рефлексогенні зони для лікування внутрішніх органів",    "default_duration_minutes": 45, "is_active": true, "order": 5 },
+          { "id": 164, "category_id": 22, "name": "Масаж при міофасціальному синдромі",    "name_en": "Myofascial Massage",              "description": "Глибока робота з тригерними точками",                              "default_duration_minutes": 45, "is_active": true, "order": 6 },
+          { "id": 165, "category_id": 22, "name": "Периостальний масаж",                   "name_en": "Periosteal Massage",              "description": "Точковий масаж окістя для лікування хронічного болю",             "default_duration_minutes": 30, "is_active": true, "order": 7 },
+          { "id": 166, "category_id": 22, "name": "Постізометрична релаксація (ПІР)",      "name_en": "Post-Isometric Relaxation",       "description": "Техніка розтягнення м'язів після ізометричного напруження",       "default_duration_minutes": 45, "is_active": true, "order": 8 }
+        ]
+      },
+      {
+        "id": 23,
+        "parent_id": 20,
+        "name": "Спортивний масаж",
+        "name_en": "Sports Massage",
+        "description": null,
+        "icon": "🏋️",
+        "order": 3,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          { "id": 167, "category_id": 23, "name": "Спортивний масаж (передтренувальний)",  "name_en": "Pre-workout Sports Massage",  "description": "Підготовка м'язів до навантажень",                          "default_duration_minutes": 30, "is_active": true, "order": 1 },
+          { "id": 168, "category_id": 23, "name": "Спортивний масаж (відновлювальний)",   "name_en": "Post-workout Sports Massage", "description": "Відновлення після інтенсивних тренувань",                   "default_duration_minutes": 45, "is_active": true, "order": 2 },
+          { "id": 169, "category_id": 23, "name": "Масаж глибоких тканин (Deep Tissue)",  "name_en": "Deep Tissue Massage",         "description": "Глибока проробка м'язів та фасцій",                         "default_duration_minutes": 60, "is_active": true, "order": 3 },
+          { "id": 170, "category_id": 23, "name": "Міофасціальний реліз (МФР)",           "name_en": "Myofascial Release",          "description": "Розслаблення фасціальних структур тіла",                    "default_duration_minutes": 60, "is_active": true, "order": 4 },
+          { "id": 171, "category_id": 23, "name": "Тейпування (кінезіотейпінг)",          "name_en": "Kinesio Taping",              "description": "Накладання кінезіологічних тейпів для підтримки м'язів",     "default_duration_minutes": 30, "is_active": true, "order": 5 },
+          { "id": 172, "category_id": 23, "name": "Перкусійний масаж (масажний пістолет)","name_en": "Percussive Massage",          "description": "Вібраційна терапія для швидкого відновлення м'язів",        "default_duration_minutes": 30, "is_active": true, "order": 6 }
+        ]
+      },
+      {
+        "id": 24,
+        "parent_id": 20,
+        "name": "Антицелюлітний та моделюючий масаж",
+        "name_en": "Anti-Cellulite & Body Contouring Massage",
+        "description": null,
+        "icon": "🔥",
+        "order": 4,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          { "id": 173, "category_id": 24, "name": "Антицелюлітний масаж (стегна + сідниці)", "name_en": "Anti-Cellulite Thighs",       "description": "Інтенсивний масаж для боротьби з целюлітом",                   "default_duration_minutes": 45, "is_active": true, "order": 1 },
+          { "id": 174, "category_id": 24, "name": "Антицелюлітний масаж (все тіло)",         "name_en": "Anti-Cellulite Full Body",    "description": "Комплексний антицелюлітний масаж всього тіла",               "default_duration_minutes": 60, "is_active": true, "order": 2 },
+          { "id": 175, "category_id": 24, "name": "Медовий масаж",                           "name_en": "Honey Massage",               "description": "Детоксикуючий масаж з натуральним медом",                    "default_duration_minutes": 45, "is_active": true, "order": 3 },
+          { "id": 176, "category_id": 24, "name": "Вакуумно-баночний масаж",                 "name_en": "Cupping Massage",             "description": "Масаж силіконовими банками для лімфодренажу",                "default_duration_minutes": 40, "is_active": true, "order": 4 },
+          { "id": 177, "category_id": 24, "name": "Лімфодренажний масаж тіла",               "name_en": "Lymphatic Drainage Body",     "description": "Ручний лімфодренаж для зняття набряків",                    "default_duration_minutes": 60, "is_active": true, "order": 5 },
+          { "id": 178, "category_id": 24, "name": "Лімфодренажний масаж обличчя",            "name_en": "Lymphatic Drainage Face",     "description": "Зняття набряків та покращення лімфотоку на обличчі",       "default_duration_minutes": 30, "is_active": true, "order": 6 },
+          { "id": 179, "category_id": 24, "name": "Скульптурний масаж тіла",                 "name_en": "Body Sculpting Massage",      "description": "Моделювання силуету тіла ручними техніками",                "default_duration_minutes": 60, "is_active": true, "order": 7 },
+          { "id": 180, "category_id": 24, "name": "Масаж бамбуковими паличками",             "name_en": "Bamboo Massage",              "description": "Моделюючий масаж з бамбуковими паличками",                  "default_duration_minutes": 60, "is_active": true, "order": 8 }
+        ]
+      },
+      {
+        "id": 25,
+        "parent_id": 20,
+        "name": "Релаксаційний та SPA-масаж",
+        "name_en": "Relaxation & SPA Massage",
+        "description": null,
+        "icon": "🧘",
+        "order": 5,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          { "id": 181, "category_id": 25, "name": "Ароматерапевтичний масаж",              "name_en": "Aromatherapy Massage",        "description": "Розслаблюючий масаж з ефірними оліями",                    "default_duration_minutes": 60, "is_active": true, "order": 1 },
+          { "id": 182, "category_id": 25, "name": "Масаж гарячими каменями (стоун-терапія)","name_en": "Hot Stone Massage",           "description": "Масаж з базальтовими каменями для глибокого розслаблення", "default_duration_minutes": 75, "is_active": true, "order": 2 },
+          { "id": 183, "category_id": 25, "name": "Тайський масаж",                        "name_en": "Thai Massage",                "description": "Традиційний тайський масаж з елементами розтяжки",          "default_duration_minutes": 90, "is_active": true, "order": 3 },
+          { "id": 184, "category_id": 25, "name": "Балійський масаж",                      "name_en": "Balinese Massage",            "description": "Комбінований масаж з елементами акупресури та ароматерапії","default_duration_minutes": 60, "is_active": true, "order": 4 },
+          { "id": 185, "category_id": 25, "name": "Масаж шоколадом",                       "name_en": "Chocolate Massage",           "description": "SPA-масаж з гарячим шоколадом",                            "default_duration_minutes": 60, "is_active": true, "order": 5 },
+          { "id": 186, "category_id": 25, "name": "Масаж з кокосовою олією",               "name_en": "Coconut Oil Massage",         "description": "Зволожуючий масаж з натуральною кокосовою олією",          "default_duration_minutes": 60, "is_active": true, "order": 6 },
+          { "id": 187, "category_id": 25, "name": "Масаж свічкою",                         "name_en": "Massage Candle Ritual",       "description": "Масаж з використанням розтопленого воску масажної свічки", "default_duration_minutes": 60, "is_active": true, "order": 7 },
+          { "id": 188, "category_id": 25, "name": "4 руки масаж",                          "name_en": "4-Hands Massage",             "description": "Синхронний масаж двома масажистами одночасно",             "default_duration_minutes": 60, "is_active": true, "order": 8 },
+          { "id": 189, "category_id": 25, "name": "Масаж тибетськими чашами",              "name_en": "Tibetan Singing Bowl Massage","description": "Звукова вібраційна терапія та масаж тибетськими чашами",   "default_duration_minutes": 60, "is_active": true, "order": 9 },
+          { "id": 190, "category_id": 25, "name": "Masaje Lomi-Lomi (гавайський)",         "name_en": "Lomi-Lomi (Hawaiian Massage)","description": "Ритмічний гавайський масаж передпліччями",                 "default_duration_minutes": 75, "is_active": true, "order": 10 }
+        ]
+      },
+      {
+        "id": 26,
+        "parent_id": 20,
+        "name": "Спеціалізований масаж",
+        "name_en": "Specialized Massage",
+        "description": null,
+        "icon": "👶",
+        "order": 6,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          { "id": 191, "category_id": 26, "name": "Масаж для вагітних",              "name_en": "Prenatal Massage",            "description": "Безпечний масаж для жінок під час вагітності",                "default_duration_minutes": 45, "is_active": true, "order": 1 },
+          { "id": 192, "category_id": 26, "name": "Дитячий масаж (до 1 року)",       "name_en": "Infant Massage",              "description": "Загальнозміцнюючий масаж для немовлят",                       "default_duration_minutes": 30, "is_active": true, "order": 2 },
+          { "id": 193, "category_id": 26, "name": "Дитячий масаж (1–7 років)",       "name_en": "Child Massage (1–7 y.o.)",    "description": "Масаж для дітей дошкільного віку",                           "default_duration_minutes": 30, "is_active": true, "order": 3 },
+          { "id": 194, "category_id": 26, "name": "Масаж при плоскостопості",        "name_en": "Flat Foot Massage",           "description": "Корекційний масаж стоп та гомілок",                          "default_duration_minutes": 30, "is_active": true, "order": 4 },
+          { "id": 195, "category_id": 26, "name": "Точковий масаж (акупресура)",     "name_en": "Acupressure",                 "description": "Вплив на біологічно активні точки тіла",                     "default_duration_minutes": 45, "is_active": true, "order": 5 },
+          { "id": 196, "category_id": 26, "name": "Масаж Гуаша для тіла",           "name_en": "Gua Sha Body",                "description": "Скребковий масаж нефритовими пластинами",                    "default_duration_minutes": 45, "is_active": true, "order": 6 },
+          { "id": 197, "category_id": 26, "name": "Вісцеральний масаж (масаж живота)","name_en": "Visceral Massage",           "description": "Глибокий масаж внутрішніх органів через черевну стінку",    "default_duration_minutes": 45, "is_active": true, "order": 7 },
+          { "id": 198, "category_id": 26, "name": "Масаж після вагітності",          "name_en": "Postnatal Massage",           "description": "Відновлювальний масаж для мам після пологів",                "default_duration_minutes": 60, "is_active": true, "order": 8 }
+        ]
+      }
+    ],
+    "templates": []
+  },
+  {
+    "id": 27,
+    "parent_id": null,
+    "name": "Брови та вії",
+    "name_en": "Brows & Lashes",
+    "description": null,
+    "icon": "👁️",
+    "order": 3,
+    "is_active": true,
+    "children": [
+      {
+        "id": 28,
+        "parent_id": 27,
+        "name": "Оформлення брів",
+        "name_en": "Brow Styling",
+        "description": null,
+        "icon": "✏️",
+        "order": 1,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          { "id": 199, "category_id": 28, "name": "Корекція брів (пінцет)",                             "name_en": "Brow Correction (Tweezers)",          "description": "Класична корекція форми брів пінцетом",                               "default_duration_minutes": 20, "is_active": true, "order": 1 },
+          { "id": 200, "category_id": 28, "name": "Корекція брів (воском)",                             "name_en": "Brow Waxing",                         "description": "Корекція форми брів за допомогою воску",                              "default_duration_minutes": 15, "is_active": true, "order": 2 },
+          { "id": 201, "category_id": 28, "name": "Корекція брів (ниткою)",                             "name_en": "Brow Threading",                      "description": "Тридинг — видалення волосків ниткою",                                "default_duration_minutes": 20, "is_active": true, "order": 3 },
+          { "id": 202, "category_id": 28, "name": "Архітектура брів (побудова форми)",                  "name_en": "Brow Architecture",                   "description": "Підбір ідеальної форми з урахуванням геометрії обличчя",             "default_duration_minutes": 30, "is_active": true, "order": 4 },
+          { "id": 203, "category_id": 28, "name": "Фарбування брів фарбою",                             "name_en": "Brow Tinting",                        "description": "Стійке фарбування брів професійною фарбою",                         "default_duration_minutes": 20, "is_active": true, "order": 5 },
+          { "id": 204, "category_id": 28, "name": "Фарбування брів хною (біохна)",                      "name_en": "Brow Henna",                          "description": "Натуральне фарбування з ефектом тіні на шкірі",                     "default_duration_minutes": 30, "is_active": true, "order": 6 },
+          { "id": 205, "category_id": 28, "name": "Довготривала укладка брів (ламінування)",            "name_en": "Brow Lamination",                     "description": "Фіксація волосків у бажаному напрямку на 6–8 тижнів",              "default_duration_minutes": 45, "is_active": true, "order": 7 },
+          { "id": 206, "category_id": 28, "name": "Комплекс: корекція + фарбування",                    "name_en": "Brow Correction + Tint",              "description": "Корекція форми та фарбування брів",                                 "default_duration_minutes": 35, "is_active": true, "order": 8 },
+          { "id": 207, "category_id": 28, "name": "Комплекс: архітектура + ламінування + фарбування",  "name_en": "Full Brow Treatment",                 "description": "Повний комплекс оформлення брів",                                    "default_duration_minutes": 60, "is_active": true, "order": 9 },
+          { "id": 208, "category_id": 28, "name": "Стрижка брів",                                       "name_en": "Brow Trim",                           "description": "Підрівнювання довгих волосків брів ножицями",                       "default_duration_minutes": 10, "is_active": true, "order": 10 }
+        ]
+      },
+      {
+        "id": 29,
+        "parent_id": 27,
+        "name": "Послуги для вій",
+        "name_en": "Lash Services",
+        "description": null,
+        "icon": "👀",
+        "order": 2,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          { "id": 209, "category_id": 29, "name": "Нарощування вій (класика)",            "name_en": "Lash Extension — Classic",       "description": "Поштучне нарощування по одній вії на кожну натуральну",     "default_duration_minutes": 120, "is_active": true, "order": 1 },
+          { "id": 210, "category_id": 29, "name": "Нарощування вій (2D)",                 "name_en": "Lash Extension — 2D",            "description": "Нарощування пучками по 2 вії для об'ємного ефекту",         "default_duration_minutes": 120, "is_active": true, "order": 2 },
+          { "id": 211, "category_id": 29, "name": "Нарощування вій (3D)",                 "name_en": "Lash Extension — 3D",            "description": "Нарощування пучками по 3 вії для ефекту «лисиця»",         "default_duration_minutes": 150, "is_active": true, "order": 3 },
+          { "id": 212, "category_id": 29, "name": "Нарощування вій (мега-об'єм 4–6D)",   "name_en": "Lash Extension — Mega Volume",   "description": "Максимально об'ємне нарощування",                          "default_duration_minutes": 180, "is_active": true, "order": 4 },
+          { "id": 213, "category_id": 29, "name": "Зняття нарощених вій",                "name_en": "Lash Extension Removal",         "description": "Безпечне зняття нарощених вій спеціальним ремувером",     "default_duration_minutes": 30,  "is_active": true, "order": 5 },
+          { "id": 214, "category_id": 29, "name": "Корекція нарощених вій",              "name_en": "Lash Extension Infill",          "description": "Заміна відрослих та опалих вій",                            "default_duration_minutes": 90,  "is_active": true, "order": 6 },
+          { "id": 215, "category_id": 29, "name": "Ламінування вій",                     "name_en": "Lash Lift",                      "description": "Підкручування, фарбування та живлення натуральних вій",    "default_duration_minutes": 60,  "is_active": true, "order": 7 },
+          { "id": 216, "category_id": 29, "name": "Ботокс для вій",                      "name_en": "Lash Botox",                     "description": "Живлення та відновлення вій кератиновим складом",          "default_duration_minutes": 60,  "is_active": true, "order": 8 },
+          { "id": 217, "category_id": 29, "name": "Фарбування вій",                      "name_en": "Lash Tinting",                   "description": "Стійке фарбування натуральних вій",                         "default_duration_minutes": 15,  "is_active": true, "order": 9 },
+          { "id": 218, "category_id": 29, "name": "Ламінування + ботокс вій",            "name_en": "Lash Lift + Botox",              "description": "Комплекс підкручування та глибокого живлення вій",         "default_duration_minutes": 75,  "is_active": true, "order": 10 },
+          { "id": 219, "category_id": 29, "name": "Нарощування пучкових вій (таббі)",    "name_en": "Lash Extension — Tabby/Hybrid", "description": "Гібридна техніка поєднання класики і об'єму",              "default_duration_minutes": 120, "is_active": true, "order": 11 }
+        ]
+      }
+    ],
+    "templates": []
+  },
+  {
+    "id": 30,
+    "parent_id": null,
+    "name": "Нігтьовий сервіс",
+    "name_en": "Nail Services",
+    "description": null,
+    "icon": "💅",
+    "order": 4,
+    "is_active": true,
+    "children": [
+      {
+        "id": 31,
+        "parent_id": 30,
+        "name": "Манікюр",
+        "name_en": "Manicure",
+        "description": null,
+        "icon": "✋",
+        "order": 1,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          { "id": 220, "category_id": 31, "name": "Класичний манікюр (обрізний)",    "name_en": "Classic Manicure",       "description": "Обрізна техніка обробки кутикули",                      "default_duration_minutes": 40, "is_active": true, "order": 1 },
+          { "id": 221, "category_id": 31, "name": "Апаратний манікюр",               "name_en": "Hardware Manicure",      "description": "Обробка кутикули та нігтів апаратом",                   "default_duration_minutes": 45, "is_active": true, "order": 2 },
+          { "id": 222, "category_id": 31, "name": "Комбінований манікюр",            "name_en": "Combined Manicure",      "description": "Поєднання апаратної та обрізної техніки",                "default_duration_minutes": 50, "is_active": true, "order": 3 },
+          { "id": 223, "category_id": 31, "name": "Японський манікюр (P.Shine)",     "name_en": "Japanese Manicure",      "description": "Лікувальний манікюр з полірувальною пастою",             "default_duration_minutes": 40, "is_active": true, "order": 4 },
+          { "id": 224, "category_id": 31, "name": "Європейський манікюр (необрізний)","name_en": "European Manicure",     "description": "Делікатний манікюр без обрізання кутикули",              "default_duration_minutes": 40, "is_active": true, "order": 5 },
+          { "id": 225, "category_id": 31, "name": "Чоловічий манікюр",               "name_en": "Men's Manicure",         "description": "Апаратний манікюр адаптований для чоловіків",           "default_duration_minutes": 45, "is_active": true, "order": 6 },
+          { "id": 226, "category_id": 31, "name": "Дитячий манікюр",                 "name_en": "Kids' Manicure",         "description": "Безпечний манікюр для дітей",                           "default_duration_minutes": 30, "is_active": true, "order": 7 }
+        ]
+      },
+      {
+        "id": 32,
+        "parent_id": 30,
+        "name": "Покриття нігтів",
+        "name_en": "Nail Polish & Coating",
+        "description": null,
+        "icon": "🎨",
+        "order": 2,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          { "id": 227, "category_id": 32, "name": "Покриття гель-лаком (однотонне)",          "name_en": "Gel Polish — Solid Color",    "description": "Стійке покриття одним кольором гель-лаку",              "default_duration_minutes": 30, "is_active": true, "order": 1 },
+          { "id": 228, "category_id": 32, "name": "Покриття гель-лаком (френч)",              "name_en": "Gel Polish — French",         "description": "Класичний або кольоровий френч",                         "default_duration_minutes": 40, "is_active": true, "order": 2 },
+          { "id": 229, "category_id": 32, "name": "Покриття гель-лаком (градієнт / омбре)",  "name_en": "Gel Polish — Ombre",          "description": "Плавний перехід кольорів на нігтях",                    "default_duration_minutes": 45, "is_active": true, "order": 3 },
+          { "id": 230, "category_id": 32, "name": "Покриття гель-лаком (кошачий очей)",      "name_en": "Gel Polish — Cat Eye",        "description": "Магнітний гель-лак з ефектом котячого ока",             "default_duration_minutes": 35, "is_active": true, "order": 4 },
+          { "id": 231, "category_id": 32, "name": "Зняття гель-лаку",                        "name_en": "Gel Polish Removal",          "description": "Безпечне зняття попереднього покриття",                 "default_duration_minutes": 15, "is_active": true, "order": 5 },
+          { "id": 232, "category_id": 32, "name": "Зміцнення нігтів базою / каучуковою базою","name_en": "Rubber Base Coating",        "description": "Вирівнювання та зміцнення нігтьової пластини",         "default_duration_minutes": 15, "is_active": true, "order": 6 },
+          { "id": 233, "category_id": 32, "name": "Покриття звичайним лаком",                "name_en": "Regular Polish",              "description": "Покриття нігтів класичним лаком",                       "default_duration_minutes": 15, "is_active": true, "order": 7 },
+          { "id": 234, "category_id": 32, "name": "Polygel покриття",                        "name_en": "Polygel Coating",             "description": "Зміцнення та покриття нігтів полігелем",                "default_duration_minutes": 30, "is_active": true, "order": 8 }
+        ]
+      },
+      {
+        "id": 33,
+        "parent_id": 30,
+        "name": "Нарощування нігтів",
+        "name_en": "Nail Extensions",
+        "description": null,
+        "icon": "💎",
+        "order": 3,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          { "id": 235, "category_id": 33, "name": "Нарощування нігтів гелем (на формах)",  "name_en": "Gel Extension (Forms)",     "description": "Створення довжини та форми гелем на формах",           "default_duration_minutes": 120, "is_active": true, "order": 1 },
+          { "id": 236, "category_id": 33, "name": "Нарощування нігтів гелем (на типсах)",  "name_en": "Gel Extension (Tips)",      "description": "Нарощування з використанням пластикових типс",        "default_duration_minutes": 90,  "is_active": true, "order": 2 },
+          { "id": 237, "category_id": 33, "name": "Нарощування акрилом",                   "name_en": "Acrylic Extension",         "description": "Моделювання нігтів акриловою системою",                "default_duration_minutes": 120, "is_active": true, "order": 3 },
+          { "id": 238, "category_id": 33, "name": "Нарощування полігелем",                 "name_en": "Polygel Extension",         "description": "Нарощування комбінованим матеріалом полігелю",         "default_duration_minutes": 100, "is_active": true, "order": 4 },
+          { "id": 239, "category_id": 33, "name": "Корекція нарощених нігтів",             "name_en": "Nail Extension Infill",     "description": "Оновлення відрослої зони нарощених нігтів",            "default_duration_minutes": 90,  "is_active": true, "order": 5 },
+          { "id": 240, "category_id": 33, "name": "Зняття нарощених нігтів",               "name_en": "Nail Extension Removal",    "description": "Безпечне зняття штучного матеріалу",                  "default_duration_minutes": 30,  "is_active": true, "order": 6 },
+          { "id": 241, "category_id": 33, "name": "Ремонт нігтя (1 шт)",                   "name_en": "Nail Repair (1 nail)",      "description": "Відновлення зламаного нігтя",                         "default_duration_minutes": 15,  "is_active": true, "order": 7 }
+        ]
+      },
+      {
+        "id": 34,
+        "parent_id": 30,
+        "name": "Дизайн нігтів",
+        "name_en": "Nail Art & Design",
+        "description": null,
+        "icon": "🖌️",
+        "order": 4,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          { "id": 242, "category_id": 34, "name": "Дизайн — стрази / камінці (1 ніготь)",   "name_en": "Nail Art — Rhinestones",    "description": "Декор стразами або камінцями на одному нігті",     "default_duration_minutes": 10, "is_active": true, "order": 1 },
+          { "id": 243, "category_id": 34, "name": "Дизайн — ручний розпис (1 ніготь)",      "name_en": "Nail Art — Hand Painted",   "description": "Художній розпис тонким пензлем",                   "default_duration_minutes": 15, "is_active": true, "order": 2 },
+          { "id": 244, "category_id": 34, "name": "Дизайн — стемпінг (1 ніготь)",           "name_en": "Nail Art — Stamping",       "description": "Нанесення візерунку за допомогою штампу",          "default_duration_minutes": 5,  "is_active": true, "order": 3 },
+          { "id": 245, "category_id": 34, "name": "Дизайн — фольга / поталь (1 ніготь)",    "name_en": "Nail Art — Foil",           "description": "Декорування фольгою або поталлю",                  "default_duration_minutes": 10, "is_active": true, "order": 4 },
+          { "id": 246, "category_id": 34, "name": "Дизайн — наклейки / слайдери (1 ніготь)","name_en": "Nail Art — Sliders",        "description": "Нанесення декоративних слайдерів або наклейок",    "default_duration_minutes": 5,  "is_active": true, "order": 5 },
+          { "id": 247, "category_id": 34, "name": "Дизайн — втирка (всі нігті)",            "name_en": "Nail Art — Chrome Powder",  "description": "Нанесення дзеркальної, хромової або перлової втирки","default_duration_minutes": 15, "is_active": true, "order": 6 },
+          { "id": 248, "category_id": 34, "name": "Дизайн — акваріумний (1 ніготь)",        "name_en": "Nail Art — Aquarium",       "description": "Об'ємний дизайн всередині нігтя",                  "default_duration_minutes": 20, "is_active": true, "order": 7 },
+          { "id": 249, "category_id": 34, "name": "Дизайн — ліплення 3D (1 ніготь)",        "name_en": "Nail Art — 3D Sculpting",   "description": "Об'ємна ліпка декоративних елементів",             "default_duration_minutes": 20, "is_active": true, "order": 8 }
+        ]
+      },
+      {
+        "id": 35,
+        "parent_id": 30,
+        "name": "Педикюр",
+        "name_en": "Pedicure",
+        "description": null,
+        "icon": "🦶",
+        "order": 5,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          { "id": 250, "category_id": 35, "name": "Класичний педикюр (обрізний)",            "name_en": "Classic Pedicure",          "description": "Обрізна обробка стоп та нігтів",                                   "default_duration_minutes": 60, "is_active": true, "order": 1 },
+          { "id": 251, "category_id": 35, "name": "Апаратний педикюр",                       "name_en": "Hardware Pedicure",         "description": "Апаратна обробка стоп та нігтів",                                  "default_duration_minutes": 60, "is_active": true, "order": 2 },
+          { "id": 252, "category_id": 35, "name": "Комбінований педикюр",                    "name_en": "Combined Pedicure",         "description": "Поєднання апаратної та обрізної техніки обробки стоп",            "default_duration_minutes": 70, "is_active": true, "order": 3 },
+          { "id": 253, "category_id": 35, "name": "Медичний педикюр",                        "name_en": "Medical Pedicure",          "description": "Спеціалізована обробка при проблемних нігтях",                    "default_duration_minutes": 75, "is_active": true, "order": 4 },
+          { "id": 254, "category_id": 35, "name": "SPA-педикюр",                             "name_en": "SPA Pedicure",              "description": "Комплексний догляд зі скрабом, маскою та масажем стоп",           "default_duration_minutes": 75, "is_active": true, "order": 5 },
+          { "id": 255, "category_id": 35, "name": "Покриття гель-лаком (ноги)",              "name_en": "Gel Polish — Toes",         "description": "Стійке покриття нігтів ніг гель-лаком",                           "default_duration_minutes": 30, "is_active": true, "order": 6 },
+          { "id": 256, "category_id": 35, "name": "Обробка мозолів та натоптишів",           "name_en": "Callus & Corn Removal",     "description": "Видалення мозолів та натоптишів на стопах",                       "default_duration_minutes": 30, "is_active": true, "order": 7 },
+          { "id": 257, "category_id": 35, "name": "Корекція врослого нігтя",                 "name_en": "Ingrown Nail Correction",   "description": "Терапевтична корекція врослого нігтя",                            "default_duration_minutes": 45, "is_active": true, "order": 8 },
+          { "id": 258, "category_id": 35, "name": "Встановлення коректуючої системи (скоби / пластини)", "name_en": "Nail Correction System", "description": "Установка системи для корекції форми нігтя",         "default_duration_minutes": 45, "is_active": true, "order": 9 },
+          { "id": 259, "category_id": 35, "name": "Протезування нігтя",                      "name_en": "Nail Prosthetics",          "description": "Відновлення нігтьової пластини спеціальним матеріалом",           "default_duration_minutes": 30, "is_active": true, "order": 10 }
+        ]
+      },
+      {
+        "id": 36,
+        "parent_id": 30,
+        "name": "Догляд за руками та ногами",
+        "name_en": "Hand & Foot Care",
+        "description": null,
+        "icon": "🧴",
+        "order": 6,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          { "id": 260, "category_id": 36, "name": "Парафінотерапія рук",      "name_en": "Hand Paraffin Therapy",   "description": "Живильна процедура з теплим парафіном для рук",             "default_duration_minutes": 20, "is_active": true, "order": 1 },
+          { "id": 261, "category_id": 36, "name": "Парафінотерапія ніг",      "name_en": "Foot Paraffin Therapy",   "description": "Живильна процедура з теплим парафіном для стоп",            "default_duration_minutes": 20, "is_active": true, "order": 2 },
+          { "id": 262, "category_id": 36, "name": "SPA-догляд для рук",       "name_en": "SPA Hand Treatment",      "description": "Комплексний догляд: скраб, маска, масаж рук",               "default_duration_minutes": 30, "is_active": true, "order": 3 },
+          { "id": 263, "category_id": 36, "name": "Масаж рук (до ліктя)",     "name_en": "Forearm & Hand Massage",  "description": "Розслаблюючий масаж кистей та передпліч",                   "default_duration_minutes": 15, "is_active": true, "order": 4 },
+          { "id": 264, "category_id": 36, "name": "Масаж стоп та гомілок",    "name_en": "Foot & Calf Massage",     "description": "Розслаблюючий масаж для зняття втоми ніг",                 "default_duration_minutes": 20, "is_active": true, "order": 5 }
+        ]
+      }
+    ],
+    "templates": []
+  },
+  {
+    "id": 37,
+    "parent_id": null,
+    "name": "Депіляція та шугарінг",
+    "name_en": "Waxing & Sugaring",
+    "description": null,
+    "icon": "🍯",
+    "order": 5,
+    "is_active": true,
+    "children": [
+      {
+        "id": 38,
+        "parent_id": 37,
+        "name": "Шугарінг (цукрова депіляція)",
+        "name_en": "Sugaring",
+        "description": null,
+        "icon": "🍬",
+        "order": 1,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          { "id": 265, "category_id": 38, "name": "Шугарінг — верхня губа",      "name_en": "Sugaring — Upper Lip",      "description": "Видалення волосся над верхньою губою цукровою пастою",  "default_duration_minutes": 10, "is_active": true, "order": 1 },
+          { "id": 266, "category_id": 38, "name": "Шугарінг — підборіддя",       "name_en": "Sugaring — Chin",           "description": "Видалення волосся на підборідді",                     "default_duration_minutes": 10, "is_active": true, "order": 2 },
+          { "id": 267, "category_id": 38, "name": "Шугарінг — обличчя повністю", "name_en": "Sugaring — Full Face",      "description": "Повне видалення волосся на обличчі",                  "default_duration_minutes": 20, "is_active": true, "order": 3 },
+          { "id": 268, "category_id": 38, "name": "Шугарінг — пахви",            "name_en": "Sugaring — Armpits",        "description": "Видалення волосся в пахвовій зоні",                   "default_duration_minutes": 15, "is_active": true, "order": 4 },
+          { "id": 269, "category_id": 38, "name": "Шугарінг — руки повністю",    "name_en": "Sugaring — Full Arms",      "description": "Видалення волосся на руках від пальців до плечей",   "default_duration_minutes": 30, "is_active": true, "order": 5 },
+          { "id": 270, "category_id": 38, "name": "Шугарінг — руки до ліктя",    "name_en": "Sugaring — Forearms",       "description": "Видалення волосся від зап'ястя до ліктя",             "default_duration_minutes": 20, "is_active": true, "order": 6 },
+          { "id": 271, "category_id": 38, "name": "Шугарінг — ноги повністю",    "name_en": "Sugaring — Full Legs",      "description": "Видалення волосся на ногах повністю",                 "default_duration_minutes": 45, "is_active": true, "order": 7 },
+          { "id": 272, "category_id": 38, "name": "Шугарінг — ноги до коліна",   "name_en": "Sugaring — Lower Legs",     "description": "Видалення волосся від щиколотки до коліна",           "default_duration_minutes": 30, "is_active": true, "order": 8 },
+          { "id": 273, "category_id": 38, "name": "Шугарінг — стегна",           "name_en": "Sugaring — Thighs",         "description": "Видалення волосся на стегнах",                        "default_duration_minutes": 30, "is_active": true, "order": 9 },
+          { "id": 274, "category_id": 38, "name": "Шугарінг — бікіні класичне",  "name_en": "Sugaring — Classic Bikini", "description": "Видалення волосся по лінії білизни",                  "default_duration_minutes": 20, "is_active": true, "order": 10 },
+          { "id": 275, "category_id": 38, "name": "Шугарінг — бікіні глибоке",   "name_en": "Sugaring — Deep Bikini",    "description": "Повне видалення волосся в інтимній зоні",             "default_duration_minutes": 30, "is_active": true, "order": 11 },
+          { "id": 276, "category_id": 38, "name": "Шугарінг — живіт",            "name_en": "Sugaring — Abdomen",        "description": "Видалення волосся на животі",                         "default_duration_minutes": 15, "is_active": true, "order": 12 },
+          { "id": 277, "category_id": 38, "name": "Шугарінг — спина",            "name_en": "Sugaring — Back",           "description": "Видалення волосся на спині",                          "default_duration_minutes": 30, "is_active": true, "order": 13 },
+          { "id": 278, "category_id": 38, "name": "Шугарінг — груди (чоловіки)", "name_en": "Sugaring — Chest (Men)",    "description": "Видалення волосся на грудях",                         "default_duration_minutes": 20, "is_active": true, "order": 14 },
+          { "id": 279, "category_id": 38, "name": "Шугарінг — сідниці",          "name_en": "Sugaring — Buttocks",       "description": "Видалення волосся в зоні сідниць",                    "default_duration_minutes": 15, "is_active": true, "order": 15 }
+        ]
+      },
+      {
+        "id": 39,
+        "parent_id": 37,
+        "name": "Воскова депіляція",
+        "name_en": "Waxing",
+        "description": null,
+        "icon": "🕯️",
+        "order": 2,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          { "id": 280, "category_id": 39, "name": "Воскова депіляція — верхня губа",      "name_en": "Waxing — Upper Lip",      "description": "Видалення волосся воском над верхньою губою",           "default_duration_minutes": 10, "is_active": true, "order": 1 },
+          { "id": 281, "category_id": 39, "name": "Воскова депіляція — пахви",            "name_en": "Waxing — Armpits",        "description": "Видалення волосся в пахвовій зоні воском",              "default_duration_minutes": 15, "is_active": true, "order": 2 },
+          { "id": 282, "category_id": 39, "name": "Воскова депіляція — руки повністю",    "name_en": "Waxing — Full Arms",      "description": "Видалення волосся на руках воском",                     "default_duration_minutes": 30, "is_active": true, "order": 3 },
+          { "id": 283, "category_id": 39, "name": "Воскова депіляція — ноги повністю",    "name_en": "Waxing — Full Legs",      "description": "Видалення волосся на ногах воском",                     "default_duration_minutes": 45, "is_active": true, "order": 4 },
+          { "id": 284, "category_id": 39, "name": "Воскова депіляція — бікіні класичне",  "name_en": "Waxing — Classic Bikini", "description": "Видалення волосся по лінії білизни воском",             "default_duration_minutes": 20, "is_active": true, "order": 5 },
+          { "id": 285, "category_id": 39, "name": "Воскова депіляція — бікіні глибоке",   "name_en": "Waxing — Deep Bikini",    "description": "Повне видалення волосся в інтимній зоні воском",        "default_duration_minutes": 30, "is_active": true, "order": 6 },
+          { "id": 286, "category_id": 39, "name": "Воскова депіляція — спина",            "name_en": "Waxing — Back",           "description": "Видалення волосся на спині воском",                     "default_duration_minutes": 30, "is_active": true, "order": 7 },
+          { "id": 287, "category_id": 39, "name": "Воскова депіляція — обличчя",          "name_en": "Waxing — Face",           "description": "Видалення волосся на обличчі воском",                   "default_duration_minutes": 15, "is_active": true, "order": 8 },
+          { "id": 288, "category_id": 39, "name": "Воскова депіляція — бікіні бразильська","name_en": "Waxing — Brazilian Wax",  "description": "Повне видалення волосся в зоні бікіні гарячим воском",  "default_duration_minutes": 35, "is_active": true, "order": 9 }
+        ]
+      },
+      {
+        "id": 60,
+        "parent_id": 37,
+        "name": "Електроепіляція",
+        "name_en": "Electrolysis",
+        "description": null,
+        "icon": "⚡",
+        "order": 3,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          { "id": 289, "category_id": 60, "name": "Електроепіляція (обличчя, 15 хв)",     "name_en": "Electrolysis Face (15 min)",  "description": "Перманентне видалення волосся електрострумом — обличчя", "default_duration_minutes": 15, "is_active": true, "order": 1 },
+          { "id": 290, "category_id": 60, "name": "Електроепіляція (обличчя, 30 хв)",     "name_en": "Electrolysis Face (30 min)",  "description": "Перманентне видалення волосся електрострумом — обличчя", "default_duration_minutes": 30, "is_active": true, "order": 2 },
+          { "id": 291, "category_id": 60, "name": "Електроепіляція (тіло, 30 хв)",        "name_en": "Electrolysis Body (30 min)",  "description": "Перманентне видалення волосся електрострумом — тіло",   "default_duration_minutes": 30, "is_active": true, "order": 3 },
+          { "id": 292, "category_id": 60, "name": "Електроепіляція (тіло, 60 хв)",        "name_en": "Electrolysis Body (60 min)",  "description": "Перманентне видалення волосся електрострумом — тіло",   "default_duration_minutes": 60, "is_active": true, "order": 4 }
+        ]
+      }
+    ],
+    "templates": []
+  },
+  {
+    "id": 40,
+    "parent_id": null,
+    "name": "Перукарські послуги",
+    "name_en": "Hair Services",
+    "description": null,
+    "icon": "💇",
+    "order": 6,
+    "is_active": true,
+    "children": [
+      {
+        "id": 41,
+        "parent_id": 40,
+        "name": "Стрижки",
+        "name_en": "Haircuts",
+        "description": null,
+        "icon": "✂️",
+        "order": 1,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          { "id": 293, "category_id": 41, "name": "Жіноча стрижка",                "name_en": "Women's Haircut",       "description": "Стрижка з урахуванням форми обличчя та побажань",          "default_duration_minutes": 60, "is_active": true, "order": 1 },
+          { "id": 294, "category_id": 41, "name": "Чоловіча стрижка",              "name_en": "Men's Haircut",         "description": "Класична або модельна чоловіча стрижка",                   "default_duration_minutes": 30, "is_active": true, "order": 2 },
+          { "id": 295, "category_id": 41, "name": "Дитяча стрижка",               "name_en": "Kids' Haircut",         "description": "Стрижка для дітей до 12 років",                           "default_duration_minutes": 30, "is_active": true, "order": 3 },
+          { "id": 296, "category_id": 41, "name": "Стрижка чолки",                "name_en": "Fringe Trim",           "description": "Корекція або створення чолки",                            "default_duration_minutes": 15, "is_active": true, "order": 4 },
+          { "id": 297, "category_id": 41, "name": "Стрижка кінчиків",             "name_en": "Ends Trim",             "description": "Підрівнювання кінчиків для підтримки форми",               "default_duration_minutes": 20, "is_active": true, "order": 5 },
+          { "id": 298, "category_id": 41, "name": "Стрижка гарячими ножицями",    "name_en": "Hot Scissors Trim",     "description": "Запаювання кінчиків для запобігання січенню",             "default_duration_minutes": 60, "is_active": true, "order": 6 }
+        ]
+      },
+      {
+        "id": 42,
+        "parent_id": 40,
+        "name": "Фарбування",
+        "name_en": "Hair Coloring",
+        "description": null,
+        "icon": "🎨",
+        "order": 2,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          { "id": 299, "category_id": 42, "name": "Фарбування в один тон",          "name_en": "Single Color",          "description": "Однотонне фарбування всієї довжини волосся",                "default_duration_minutes": 90,  "is_active": true, "order": 1 },
+          { "id": 300, "category_id": 42, "name": "Фарбування коренів",             "name_en": "Root Touch-Up",         "description": "Підфарбування відрослих коренів",                          "default_duration_minutes": 60,  "is_active": true, "order": 2 },
+          { "id": 301, "category_id": 42, "name": "Мелірування (класичне)",         "name_en": "Highlights (Classic)",  "description": "Освітлення окремих пасм через фольгу",                    "default_duration_minutes": 120, "is_active": true, "order": 3 },
+          { "id": 302, "category_id": 42, "name": "Мелірування (AirTouch)",         "name_en": "AirTouch Highlights",   "description": "Сучасна техніка мелірування з використанням фену",          "default_duration_minutes": 180, "is_active": true, "order": 4 },
+          { "id": 303, "category_id": 42, "name": "Балаяж",                         "name_en": "Balayage",              "description": "Техніка вільного нанесення фарби для природного ефекту",   "default_duration_minutes": 150, "is_active": true, "order": 5 },
+          { "id": 304, "category_id": 42, "name": "Шатуш",                          "name_en": "Shatush",               "description": "Ефект вигорілого волосся з м'яким переходом",              "default_duration_minutes": 120, "is_active": true, "order": 6 },
+          { "id": 305, "category_id": 42, "name": "Омбре / сомбре",                 "name_en": "Ombre / Sombre",        "description": "Градієнтний перехід від темного до світлого",              "default_duration_minutes": 120, "is_active": true, "order": 7 },
+          { "id": 306, "category_id": 42, "name": "Тонування волосся",              "name_en": "Hair Toning",           "description": "М'яке тонування без аміаку для відтінку та блиску",       "default_duration_minutes": 60,  "is_active": true, "order": 8 },
+          { "id": 307, "category_id": 42, "name": "Складне фарбування",             "name_en": "Complex Coloring",      "description": "Багатотонове фарбування з індивідуальною технікою",        "default_duration_minutes": 240, "is_active": true, "order": 9 },
+          { "id": 308, "category_id": 42, "name": "Знебарвлення (блондування)",     "name_en": "Bleaching",             "description": "Повне освітлення волосся",                                 "default_duration_minutes": 120, "is_active": true, "order": 10 },
+          { "id": 309, "category_id": 42, "name": "Камуфляж сивини",               "name_en": "Gray Coverage",         "description": "Ретельне перекриття сивого волосся",                      "default_duration_minutes": 60,  "is_active": true, "order": 11 },
+          { "id": 310, "category_id": 42, "name": "Глосінг (блиск + тонування)",   "name_en": "Hair Glossing",         "description": "Відновлення блиску та насиченості кольору волосся",        "default_duration_minutes": 45,  "is_active": true, "order": 12 }
+        ]
+      },
+      {
+        "id": 43,
+        "parent_id": 40,
+        "name": "Укладки та зачіски",
+        "name_en": "Styling & Updos",
+        "description": null,
+        "icon": "💆‍♀️",
+        "order": 3,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          { "id": 311, "category_id": 43, "name": "Укладка феном (брашинг)",         "name_en": "Blow-dry (Brushing)",     "description": "Укладка з використанням фену та круглого пензля",       "default_duration_minutes": 30, "is_active": true, "order": 1 },
+          { "id": 312, "category_id": 43, "name": "Святкова укладка / зачіска",      "name_en": "Event Updo",              "description": "Створення зачіски для особливих подій",                 "default_duration_minutes": 60, "is_active": true, "order": 2 },
+          { "id": 313, "category_id": 43, "name": "Весільна зачіска",                "name_en": "Bridal Updo",             "description": "Складна зачіска для нареченої з елементами декору",     "default_duration_minutes": 90, "is_active": true, "order": 3 },
+          { "id": 314, "category_id": 43, "name": "Укладка плойкою / щипцями",       "name_en": "Curling Iron Styling",    "description": "Створення локонів або хвиль плойкою",                  "default_duration_minutes": 40, "is_active": true, "order": 4 },
+          { "id": 315, "category_id": 43, "name": "Укладка-випрямлення праскою",     "name_en": "Flat Iron Styling",       "description": "Вирівнювання та полірування волосся праскою",           "default_duration_minutes": 30, "is_active": true, "order": 5 },
+          { "id": 316, "category_id": 43, "name": "Плетіння кіс",                    "name_en": "Braiding",                "description": "Створення кіс різної складності",                       "default_duration_minutes": 30, "is_active": true, "order": 6 },
+          { "id": 317, "category_id": 43, "name": "Миття голови + укладка",          "name_en": "Shampoo + Blow-dry",      "description": "Миття волосся з подальшою укладкою феном",              "default_duration_minutes": 30, "is_active": true, "order": 7 }
+        ]
+      },
+      {
+        "id": 44,
+        "parent_id": 40,
+        "name": "Лікувальні процедури для волосся",
+        "name_en": "Hair Treatments",
+        "description": null,
+        "icon": "💊",
+        "order": 4,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          { "id": 318, "category_id": 44, "name": "Кератинове випрямлення волосся",  "name_en": "Keratin Straightening",  "description": "Довготривале випрямлення та відновлення кератином",  "default_duration_minutes": 120, "is_active": true, "order": 1 },
+          { "id": 319, "category_id": 44, "name": "Ботокс для волосся",              "name_en": "Hair Botox",             "description": "Глибоке відновлення структури волосся",              "default_duration_minutes": 90,  "is_active": true, "order": 2 },
+          { "id": 320, "category_id": 44, "name": "Ламінування волосся",             "name_en": "Hair Lamination",        "description": "Створення захисної плівки для блиску та гладкості", "default_duration_minutes": 60,  "is_active": true, "order": 3 },
+          { "id": 321, "category_id": 44, "name": "Нанопластика волосся",            "name_en": "Nanoplasty",             "description": "Випрямлення та відновлення без формальдегіду",       "default_duration_minutes": 120, "is_active": true, "order": 4 },
+          { "id": 322, "category_id": 44, "name": "Холодне відновлення волосся",     "name_en": "Cold Hair Reconstruction","description": "Інтенсивна реконструкція пошкодженого волосся",     "default_duration_minutes": 60,  "is_active": true, "order": 5 },
+          { "id": 323, "category_id": 44, "name": "SPA-догляд для волосся",          "name_en": "Hair SPA Treatment",     "description": "Комплексний догляд з масками та масажем голови",    "default_duration_minutes": 45,  "is_active": true, "order": 6 },
+          { "id": 324, "category_id": 44, "name": "Хімічна завивка",                 "name_en": "Perm",                   "description": "Довготривале завивання волосся хімічним складом",   "default_duration_minutes": 120, "is_active": true, "order": 7 },
+          { "id": 325, "category_id": 44, "name": "Біозавивка волосся",              "name_en": "Bio Wave / Organic Perm","description": "Безаміачна завивка на натуральних компонентах",    "default_duration_minutes": 120, "is_active": true, "order": 8 },
+          { "id": 326, "category_id": 44, "name": "Лікування від сивини (пігментація стовбурів)", "name_en": "Gray Stem Pigmentation", "description": "Відновлення натурального кольору волосся без фарби", "default_duration_minutes": 60, "is_active": true, "order": 9 }
+        ]
+      },
+      {
+        "id": 45,
+        "parent_id": 40,
+        "name": "Нарощування волосся",
+        "name_en": "Hair Extensions",
+        "description": null,
+        "icon": "🌟",
+        "order": 5,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          { "id": 327, "category_id": 45, "name": "Нарощування волосся (кератин, холодне)", "name_en": "Keratin Bond Extensions",   "description": "Капсульне нарощування з використанням кератинових капсул",  "default_duration_minutes": 180, "is_active": true, "order": 1 },
+          { "id": 328, "category_id": 45, "name": "Нарощування волосся (стрічкове)",       "name_en": "Tape-In Extensions",        "description": "Нарощування на стрічкових смужках",                         "default_duration_minutes": 120, "is_active": true, "order": 2 },
+          { "id": 329, "category_id": 45, "name": "Мікронарощування волосся",              "name_en": "Micro Ring Extensions",     "description": "Нарощування за допомогою мікрокілець без нагрівання",       "default_duration_minutes": 150, "is_active": true, "order": 3 },
+          { "id": 330, "category_id": 45, "name": "Корекція нарощених волосся",            "name_en": "Hair Extension Infill",     "description": "Переміщення капсул при відростанні власного волосся",       "default_duration_minutes": 120, "is_active": true, "order": 4 },
+          { "id": 331, "category_id": 45, "name": "Зняття нарощених волосся",              "name_en": "Hair Extension Removal",    "description": "Безпечне зняття нарощених прядей",                          "default_duration_minutes": 60,  "is_active": true, "order": 5 }
+        ]
+      }
+    ],
+    "templates": []
+  },
+  {
+    "id": 46,
+    "parent_id": null,
+    "name": "Барбершоп / Чоловічий догляд",
+    "name_en": "Barbershop / Men's Grooming",
+    "description": null,
+    "icon": "✂️",
+    "order": 7,
+    "is_active": true,
+    "children": [
+      {
+        "id": 47,
+        "parent_id": 46,
+        "name": "Стрижки (барбершоп)",
+        "name_en": "Barbershop Haircuts",
+        "description": null,
+        "icon": "💈",
+        "order": 1,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          { "id": 332, "category_id": 47, "name": "Чоловіча стрижка (ножицями)",           "name_en": "Men's Scissor Cut",         "description": "Класична чоловіча стрижка ножицями з укладкою",                 "default_duration_minutes": 45, "is_active": true, "order": 1 },
+          { "id": 333, "category_id": 47, "name": "Чоловіча стрижка (машинкою)",           "name_en": "Men's Clipper Cut",         "description": "Стрижка машинкою з декількома насадками та укладкою",          "default_duration_minutes": 30, "is_active": true, "order": 2 },
+          { "id": 334, "category_id": 47, "name": "Стрижка fade / undercut",               "name_en": "Fade / Undercut",           "description": "Сучасна стрижка з чітким переходом (фейд) або андеркатом",     "default_duration_minutes": 45, "is_active": true, "order": 3 },
+          { "id": 335, "category_id": 47, "name": "Стрижка наголо (бритва / машинка)",     "name_en": "Shaved Head",               "description": "Повне збривання волосся",                                       "default_duration_minutes": 20, "is_active": true, "order": 4 },
+          { "id": 336, "category_id": 47, "name": "Hair tattoo / рисунок на голові",       "name_en": "Hair Tattoo / Design",      "description": "Художнє виголювання рисунку машинкою на голові",               "default_duration_minutes": 30, "is_active": true, "order": 5 },
+          { "id": 337, "category_id": 47, "name": "Дитяча стрижка (барбер)",               "name_en": "Kids' Haircut (Barber)",    "description": "Дитяча стрижка в барбершопі",                                  "default_duration_minutes": 30, "is_active": true, "order": 6 },
+          { "id": 338, "category_id": 47, "name": "Стрижка + моделювання бороди (комплекс)","name_en": "Haircut + Beard Package",  "description": "Комплексна послуга: стрижка та повне оформлення бороди",      "default_duration_minutes": 60, "is_active": true, "order": 7 }
+        ]
+      },
+      {
+        "id": 48,
+        "parent_id": 46,
+        "name": "Борода та вуса",
+        "name_en": "Beard & Mustache",
+        "description": null,
+        "icon": "🧔",
+        "order": 2,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          { "id": 339, "category_id": 48, "name": "Стрижка бороди (машинкою)",             "name_en": "Beard Trim (Clipper)",      "description": "Корекція довжини та об'єму бороди машинкою",                    "default_duration_minutes": 20, "is_active": true, "order": 1 },
+          { "id": 340, "category_id": 48, "name": "Моделювання бороди",                    "name_en": "Beard Shaping",             "description": "Створення форми бороди з урахуванням особливостей обличчя",   "default_duration_minutes": 30, "is_active": true, "order": 2 },
+          { "id": 341, "category_id": 48, "name": "Бритьё опасною бритвою",               "name_en": "Straight Razor Shave",      "description": "Класичне гоління опасною бритвою з компресами",               "default_duration_minutes": 30, "is_active": true, "order": 3 },
+          { "id": 342, "category_id": 48, "name": "Моделювання бороди з бритвою (повний сервіс)", "name_en": "Full Beard Service",  "description": "Розпарювання, стрижка, оформлення бритвою, масаж, живлення", "default_duration_minutes": 45, "is_active": true, "order": 4 },
+          { "id": 343, "category_id": 48, "name": "Корекція контуру (лінія бороди)",       "name_en": "Beard Line-Up",             "description": "Чітке оформлення контурів бороди та щік",                     "default_duration_minutes": 15, "is_active": true, "order": 5 },
+          { "id": 344, "category_id": 48, "name": "Стрижка вусів",                         "name_en": "Mustache Trim",             "description": "Корекція форми та довжини вусів",                              "default_duration_minutes": 10, "is_active": true, "order": 6 },
+          { "id": 345, "category_id": 48, "name": "Фарбування бороди",                     "name_en": "Beard Coloring",            "description": "Фарбування бороди та вусів для приховання сивини",           "default_duration_minutes": 30, "is_active": true, "order": 7 },
+          { "id": 346, "category_id": 48, "name": "Камуфляж сивини бороди",                "name_en": "Beard Gray Camouflage",     "description": "М'який камуфляж сивих волосків без різкої межі",              "default_duration_minutes": 30, "is_active": true, "order": 8 }
+        ]
+      },
+      {
+        "id": 49,
+        "parent_id": 46,
+        "name": "Чоловічий догляд за обличчям",
+        "name_en": "Men's Facial Care",
+        "description": null,
+        "icon": "🧴",
+        "order": 3,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          { "id": 347, "category_id": 49, "name": "Чоловічий догляд за обличчям (базовий)",  "name_en": "Men's Basic Facial",          "description": "Очищення, тонізація та зволоження для чоловічої шкіри",        "default_duration_minutes": 45, "is_active": true, "order": 1 },
+          { "id": 348, "category_id": 49, "name": "Чоловіча чистка обличчя",                 "name_en": "Men's Face Cleansing",        "description": "Глибоке очищення пор для чоловічої шкіри",                    "default_duration_minutes": 60, "is_active": true, "order": 2 },
+          { "id": 349, "category_id": 49, "name": "Масаж обличчя для чоловіків",             "name_en": "Men's Face Massage",          "description": "Розслаблюючий масаж обличчя та голови",                       "default_duration_minutes": 30, "is_active": true, "order": 3 }
+        ]
+      }
+    ],
+    "templates": []
+  },
+  {
+    "id": 50,
+    "parent_id": null,
+    "name": "Макіяж",
+    "name_en": "Makeup",
+    "description": null,
+    "icon": "💄",
+    "order": 8,
+    "is_active": true,
+    "children": [
+      {
+        "id": 51,
+        "parent_id": 50,
+        "name": "Макіяж обличчя",
+        "name_en": "Face Makeup",
+        "description": null,
+        "icon": "💅",
+        "order": 1,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          { "id": 350, "category_id": 51, "name": "Денний (натуральний) макіяж",       "name_en": "Natural / Daytime Makeup",  "description": "Легкий денний макіяж для повсякденного вигляду",         "default_duration_minutes": 45, "is_active": true, "order": 1 },
+          { "id": 351, "category_id": 51, "name": "Вечірній макіяж",                   "name_en": "Evening Makeup",            "description": "Насичений макіяж для вечірніх виходів",                 "default_duration_minutes": 60, "is_active": true, "order": 2 },
+          { "id": 352, "category_id": 51, "name": "Весільний макіяж",                  "name_en": "Bridal Makeup",             "description": "Стійкий весільний макіяж для нареченої",                "default_duration_minutes": 90, "is_active": true, "order": 3 },
+          { "id": 353, "category_id": 51, "name": "Весільний макіяж + зачіска",        "name_en": "Bridal Makeup + Hair",      "description": "Комплекс весільного макіяжу та зачіски",                "default_duration_minutes": 150,"is_active": true, "order": 4 },
+          { "id": 354, "category_id": 51, "name": "Макіяж для фотосесії",              "name_en": "Photoshoot Makeup",         "description": "Стійкий макіяж адаптований для фото та відео зйомки",  "default_duration_minutes": 60, "is_active": true, "order": 5 },
+          { "id": 355, "category_id": 51, "name": "Сценічний / театральний макіяж",   "name_en": "Stage / Theatrical Makeup", "description": "Макіяж для сцени або театральних виступів",             "default_duration_minutes": 75, "is_active": true, "order": 6 },
+          { "id": 356, "category_id": 51, "name": "Корекційний (перекриваючий) макіяж","name_en": "Corrective Makeup",         "description": "Покриття дефектів шкіри, судин, пігментації",           "default_duration_minutes": 60, "is_active": true, "order": 7 },
+          { "id": 357, "category_id": 51, "name": "Урок макіяжу (індивідуальний)",     "name_en": "Makeup Lesson",             "description": "Навчання технікам нанесення макіяжу",                   "default_duration_minutes": 90, "is_active": true, "order": 8 },
+          { "id": 358, "category_id": 51, "name": "Підбір макіяжу (консультація + нанесення)", "name_en": "Makeup Consultation", "description": "Підбір кольорів та техніки макіяжу під тип обличчя", "default_duration_minutes": 60, "is_active": true, "order": 9 }
+        ]
+      }
+    ],
+    "templates": []
+  },
+  {
+    "id": 52,
+    "parent_id": null,
+    "name": "Тату, пірсинг та боді-арт",
+    "name_en": "Tattoo, Piercing & Body Art",
+    "description": null,
+    "icon": "🎭",
+    "order": 9,
+    "is_active": true,
+    "children": [
+      {
+        "id": 53,
+        "parent_id": 52,
+        "name": "Татуювання",
+        "name_en": "Tattoo",
+        "description": null,
+        "icon": "🖊️",
+        "order": 1,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          { "id": 359, "category_id": 53, "name": "Татуювання (мала робота до 1 год)",   "name_en": "Tattoo — Small (up to 1h)",   "description": "Невелике татуювання, ескіз або деталь",                    "default_duration_minutes": 60,  "is_active": true, "order": 1 },
+          { "id": 360, "category_id": 53, "name": "Татуювання (середня робота 1–3 год)", "name_en": "Tattoo — Medium (1–3h)",      "description": "Середнє татуювання (долоня–долонь)",                       "default_duration_minutes": 150, "is_active": true, "order": 2 },
+          { "id": 361, "category_id": 53, "name": "Татуювання (велика робота 3+ год)",   "name_en": "Tattoo — Large (3h+)",        "description": "Велике татуювання: рукав, спина, грудна клітка",           "default_duration_minutes": 240, "is_active": true, "order": 3 },
+          { "id": 362, "category_id": 53, "name": "Корекція та реставрація татуювання",  "name_en": "Tattoo Touch-Up / Restoration","description": "Оновлення та підправка вже існуючого татуювання",         "default_duration_minutes": 90,  "is_active": true, "order": 4 },
+          { "id": 363, "category_id": 53, "name": "Тату в мінімалістичному стилі",       "name_en": "Minimalist / Fine Line Tattoo","description": "Витончені тонколінійні татуювання",                       "default_duration_minutes": 60,  "is_active": true, "order": 5 },
+          { "id": 364, "category_id": 53, "name": "Акварельне татуювання",               "name_en": "Watercolor Tattoo",           "description": "Яскраве кольорове татуювання в акварельній техніці",     "default_duration_minutes": 120, "is_active": true, "order": 6 },
+          { "id": 365, "category_id": 53, "name": "Реалістичне татуювання",              "name_en": "Realism Tattoo",              "description": "Фотореалістичне татуювання (портрет, тварини, природа)",  "default_duration_minutes": 180, "is_active": true, "order": 7 }
+        ]
+      },
+      {
+        "id": 54,
+        "parent_id": 52,
+        "name": "Пірсинг",
+        "name_en": "Piercing",
+        "description": null,
+        "icon": "💎",
+        "order": 2,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          { "id": 366, "category_id": 54, "name": "Прокол вух (мочка)",          "name_en": "Ear Piercing — Lobe",          "description": "Стандартний прокол мочки вуха",                        "default_duration_minutes": 15, "is_active": true, "order": 1 },
+          { "id": 367, "category_id": 54, "name": "Прокол вух (хрящ / геликс)", "name_en": "Ear Piercing — Cartilage",     "description": "Прокол хряща вуха (геликс, трагус, конч та ін.)",    "default_duration_minutes": 15, "is_active": true, "order": 2 },
+          { "id": 368, "category_id": 54, "name": "Прокол носа",                 "name_en": "Nose Piercing",                "description": "Прокол крила або перегородки носа (септум)",           "default_duration_minutes": 15, "is_active": true, "order": 3 },
+          { "id": 369, "category_id": 54, "name": "Прокол брів",                 "name_en": "Eyebrow Piercing",             "description": "Горизонтальний прокол в зоні брови",                  "default_duration_minutes": 15, "is_active": true, "order": 4 },
+          { "id": 370, "category_id": 54, "name": "Прокол губ / philtrum",       "name_en": "Lip / Philtrum Piercing",      "description": "Прокол губи або зони під носом (медуза)",             "default_duration_minutes": 15, "is_active": true, "order": 5 },
+          { "id": 371, "category_id": 54, "name": "Прокол язика",                "name_en": "Tongue Piercing",              "description": "Прокол посередині язика",                             "default_duration_minutes": 20, "is_active": true, "order": 6 },
+          { "id": 372, "category_id": 54, "name": "Прокол пупка",                "name_en": "Navel Piercing",               "description": "Прокол в зоні пупка",                                 "default_duration_minutes": 15, "is_active": true, "order": 7 },
+          { "id": 373, "category_id": 54, "name": "Заміна / встановлення прикраси", "name_en": "Jewelry Change / Install",  "description": "Заміна прикраси в готовому проколі",                  "default_duration_minutes": 10, "is_active": true, "order": 8 }
+        ]
+      },
+      {
+        "id": 55,
+        "parent_id": 52,
+        "name": "Боді-арт та тимчасові прикраси",
+        "name_en": "Body Art & Temporary Decorations",
+        "description": null,
+        "icon": "🎨",
+        "order": 3,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          { "id": 374, "category_id": 55, "name": "Хна-розпис (Мехенді)",            "name_en": "Henna / Mehndi",          "description": "Натуральний розпис хною на тілі",                 "default_duration_minutes": 60, "is_active": true, "order": 1 },
+          { "id": 375, "category_id": 55, "name": "Аквагрим (дитячий / дорослий)",   "name_en": "Face / Body Paint",       "description": "Художній розпис обличчя або тіла фарбами на водній основі","default_duration_minutes": 30, "is_active": true, "order": 2 },
+          { "id": 376, "category_id": 55, "name": "Бодіпейнтинг (повне тіло)",       "name_en": "Full Body Painting",      "description": "Художній розпис повного тіла",                    "default_duration_minutes": 180,"is_active": true, "order": 3 },
+          { "id": 377, "category_id": 55, "name": "Глітерне татуювання (тимчасове)", "name_en": "Glitter Tattoo",          "description": "Тимчасове прикраса шкіри блискітками",            "default_duration_minutes": 15, "is_active": true, "order": 4 }
+        ]
+      }
+    ],
+    "templates": []
+  },
+  {
+    "id": 56,
+    "parent_id": null,
+    "name": "Солярій та засмага",
+    "name_en": "Solarium & Tanning",
+    "description": null,
+    "icon": "☀️",
+    "order": 10,
+    "is_active": true,
+    "children": [
+      {
+        "id": 57,
+        "parent_id": 56,
+        "name": "Послуги засмаги",
+        "name_en": "Tanning Services",
+        "description": null,
+        "icon": "🌞",
+        "order": 1,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          { "id": 378, "category_id": 57, "name": "Вертикальний солярій (5 хв)",        "name_en": "Vertical Tanning (5 min)",     "description": "Сеанс у вертикальному соляріі 5 хвилин",              "default_duration_minutes": 10, "is_active": true, "order": 1 },
+          { "id": 379, "category_id": 57, "name": "Вертикальний солярій (10 хв)",       "name_en": "Vertical Tanning (10 min)",    "description": "Сеанс у вертикальному соляріі 10 хвилин",             "default_duration_minutes": 15, "is_active": true, "order": 2 },
+          { "id": 380, "category_id": 57, "name": "Горизонтальний солярій (10 хв)",     "name_en": "Horizontal Tanning (10 min)",  "description": "Сеанс у горизонтальному соляріі 10 хвилин",           "default_duration_minutes": 15, "is_active": true, "order": 3 },
+          { "id": 381, "category_id": 57, "name": "Горизонтальний солярій (20 хв)",     "name_en": "Horizontal Tanning (20 min)",  "description": "Сеанс у горизонтальному соляріі 20 хвилин",           "default_duration_minutes": 25, "is_active": true, "order": 4 },
+          { "id": 382, "category_id": 57, "name": "Спрей-засмага (автозасмага)",        "name_en": "Spray Tan",                    "description": "Нанесення автозасмаги за допомогою аерографа",        "default_duration_minutes": 20, "is_active": true, "order": 5 },
+          { "id": 383, "category_id": 57, "name": "Самозасмага (нанесення мусу / пінки)","name_en": "Self-Tanning Application",    "description": "Нанесення самозасмаги майстром",                      "default_duration_minutes": 20, "is_active": true, "order": 6 }
+        ]
+      }
+    ],
+    "templates": []
+  },
+  {
+    "id": 58,
+    "parent_id": null,
+    "name": "SPA-програми та обгортання",
+    "name_en": "SPA Programs & Body Wraps",
+    "description": null,
+    "icon": "🌺",
+    "order": 11,
+    "is_active": true,
+    "children": [
+      {
+        "id": 59,
+        "parent_id": 58,
+        "name": "Обгортання тіла",
+        "name_en": "Body Wraps",
+        "description": null,
+        "icon": "🧖‍♀️",
+        "order": 1,
+        "is_active": true,
+        "children": [],
+        "templates": [
+          { "id": 384, "category_id": 59, "name": "Антицелюлітне обгортання",       "name_en": "Anti-Cellulite Wrap",       "description": "Гаряче або холодне обгортання для корекції та зменшення целюліту",      "default_duration_minutes": 60, "is_active": true, "order": 1 },
+          { "id": 385, "category_id": 59, "name": "Шоколадне обгортання",            "name_en": "Chocolate Body Wrap",       "description": "Обгортання шоколадними та какао компонентами",                          "default_duration_minutes": 60, "is_active": true, "order": 2 },
+          { "id": 386, "category_id": 59, "name": "Морське (водоростеве) обгортання","name_en": "Seaweed / Marine Wrap",     "description": "Обгортання ламінарією або морськими водоростями",                      "default_duration_minutes": 60, "is_active": true, "order": 3 },
+          { "id": 387, "category_id": 59, "name": "Медове обгортання",               "name_en": "Honey Body Wrap",           "description": "Живлення та детокс шкіри з натуральним медом",                         "default_duration_minutes": 60, "is_active": true, "order": 4 },
+          { "id": 388, "category_id": 59, "name": "Термальне обгортання (глина/бруд)","name_en": "Thermal Clay / Mud Wrap",  "description": "Глибоке очищення та мінералізація шкіри глиною або лікувальним брудом","default_duration_minutes": 60, "is_active": true, "order": 5 },
+          { "id": 389, "category_id": 59, "name": "SPA-програма (повний цикл)",      "name_en": "Full SPA Program",          "description": "Комплексна SPA-процедура: скраб + обгортання + масаж",                 "default_duration_minutes": 120,"is_active": true, "order": 6 },
+          { "id": 390, "category_id": 59, "name": "Скраб тіла (пілінг тіла)",        "name_en": "Body Scrub",                "description": "Ексфоліація та відновлення шкіри тіла скрабом",                        "default_duration_minutes": 45, "is_active": true, "order": 7 },
+          { "id": 391, "category_id": 59, "name": "Флоатинг (сенсорна депривація)",  "name_en": "Flotation Therapy",         "description": "Розслаблення у флоат-капсулі з насиченою сольовою водою",              "default_duration_minutes": 60, "is_active": true, "order": 8 }
+        ]
+      }
+    ],
+    "templates": []
+  }
+]

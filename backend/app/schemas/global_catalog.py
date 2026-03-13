@@ -14,6 +14,7 @@ class GlobalCategoryResponse(BaseModel):
     icon: Optional[str] = None
     order: int
     is_active: bool
+    is_ai_created: bool = False
 
     class Config:
         from_attributes = True
@@ -28,6 +29,7 @@ class GlobalCategoryTreeResponse(BaseModel):
     icon: Optional[str] = None
     order: int
     is_active: bool
+    is_ai_created: bool = False
     children: list["GlobalCategoryTreeResponse"] = []
     templates: list["GlobalTemplateResponse"] = []
 
@@ -119,3 +121,7 @@ class CustomServiceRequest(BaseModel):
     duration_minutes: int = 60
     price: float
     category_name: str  # Will create custom category if doesn't exist
+
+
+# Resolve forward references
+GlobalCategoryTreeResponse.model_rebuild()

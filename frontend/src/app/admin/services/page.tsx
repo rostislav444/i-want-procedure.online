@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
-import { Plus, Clock, ChevronRight, ChevronDown, FolderPlus, Pencil, Trash2, Folder, FolderOpen, PanelLeftClose, PanelLeft, X, Settings, ChevronsUpDown, ChevronsDownUp, Sparkles, FileText, Link2, Loader2, Check, LayoutGrid, List } from 'lucide-react'
+import { Plus, Clock, ChevronRight, ChevronDown, Folder, FolderOpen, PanelLeftClose, PanelLeft, X, ChevronsUpDown, ChevronsDownUp, Sparkles, FileText, Link2, Loader2, Check, LayoutGrid, List, Bot } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -16,7 +16,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { servicesApi, categoriesApi, positionsApi, Service, ServiceCategory, Position } from '@/lib/api'
+import { servicesApi, globalCatalogApi, positionsApi, Service, GlobalCategory, Position } from '@/lib/api'
 import { useCompany } from '@/contexts/CompanyContext'
 import { Briefcase } from 'lucide-react'
 
@@ -111,7 +111,7 @@ const POSITION_COLORS: Record<string, string> = {
 export default function ServicesPage() {
   const { companyType } = useCompany()
   const [services, setServices] = useState<Service[]>([])
-  const [categories, setCategories] = useState<ServiceCategory[]>([])
+  const [categories, setCategories] = useState<GlobalCategory[]>([])
   const [positions, setPositions] = useState<Position[]>([])
   const [selectedPositionId, setSelectedPositionId] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
@@ -124,12 +124,8 @@ export default function ServicesPage() {
   const categoryRefs = useRef<Map<number, HTMLDivElement>>(new Map())
 
   // Category dialog state
-  const [showCategoryDialog, setShowCategoryDialog] = useState(false)
-  const [editingCategory, setEditingCategory] = useState<ServiceCategory | null>(null)
-  const [categoryName, setCategoryName] = useState('')
-  const [categoryDescription, setCategoryDescription] = useState('')
-  const [categoryParentId, setCategoryParentId] = useState<number | null>(null)
-  const [savingCategory, setSavingCategory] = useState(false)
+  // Category dialog state removed — categories come from global catalog
+  // Category editing removed — global categories are managed via admin panel
 
   // AI Generation modal
   const [aiModalOpen, setAiModalOpen] = useState(false)
@@ -145,9 +141,19 @@ export default function ServicesPage() {
       duration_minutes: number
       price: number
       category_name: string
+      global_category_id?: number
+      global_template_id?: number
+      price_options?: Array<{ name: string; price: number; duration_minutes?: number }>
       selected: boolean
     }>
     categories: string[]
+    new_categories?: Array<{
+      id: number
+      parent_id?: number
+      name: string
+      icon?: string
+      is_new: boolean
+    }>
   } | null>(null)
   const [aiSaving, setAiSaving] = useState(false)
 
@@ -173,7 +179,7 @@ export default function ServicesPage() {
   }, [])
 
   // Collect all category IDs recursively
-  const getAllCategoryIds = (cats: ServiceCategory[]): number[] => {
+  const getAllCategoryIds = (cats: GlobalCategory[]): number[] => {
     const ids: number[] = []
     cats.forEach(cat => {
       ids.push(cat.id)
@@ -188,16 +194,23 @@ export default function ServicesPage() {
     try {
       const [servicesData, categoriesData, positionsData] = await Promise.all([
         servicesApi.getAll(),
-        categoriesApi.getTree(),
+        globalCatalogApi.getCategoriesTree(),
         positionsApi.getAll(),
       ])
       setServices(servicesData)
       setCategories(categoriesData)
       setPositions(positionsData)
-      // Expand all categories by default (including uncategorized)
-      const allIds = getAllCategoryIds(categoriesData)
-      allIds.push(-1) // Include uncategorized section
-      setExpandedCategories(new Set(allIds))
+      // Categories collapsed by default, but expand the first visible one
+      const getTotalSvc = (cat: GlobalCategory): number => {
+        let c = servicesData.filter(s => s.global_category_id === cat.id).length
+        if (cat.children) cat.children.forEach(ch => { c += getTotalSvc(ch) })
+        return c
+      }
+      const visibleRoots = categoriesData.filter(cat => getTotalSvc(cat) > 0)
+      const singleRoot = visibleRoots.length === 1 && (visibleRoots[0].children?.length ?? 0) > 0
+      const display = singleRoot ? visibleRoots[0].children! : categoriesData
+      const firstVisible = display.find(cat => getTotalSvc(cat) > 0)
+      setExpandedCategories(firstVisible ? new Set([firstVisible.id]) : new Set())
     } catch (error) {
       console.error('Error loading data:', error)
     } finally {
@@ -228,7 +241,7 @@ export default function ServicesPage() {
   }
 
   // Get all ancestor IDs for a category (for expanding parent chain)
-  const getCategoryAncestorIds = (categoryId: number, cats: ServiceCategory[] = categories): number[] => {
+  const getCategoryAncestorIds = (categoryId: number, cats: GlobalCategory[] = categories): number[] => {
     for (const cat of cats) {
       if (cat.id === categoryId) {
         return [categoryId]
@@ -268,51 +281,6 @@ export default function ServicesPage() {
     }, 100)
   }
 
-  const openCategoryDialog = (category?: ServiceCategory, parentId?: number) => {
-    setEditingCategory(category || null)
-    setCategoryName(category?.name || '')
-    setCategoryDescription(category?.description || '')
-    setCategoryParentId(category?.parent_id || parentId || null)
-    setShowCategoryDialog(true)
-  }
-
-  const handleSaveCategory = async () => {
-    if (!categoryName.trim()) return
-
-    setSavingCategory(true)
-    try {
-      const data = {
-        name: categoryName.trim(),
-        description: categoryDescription.trim() || undefined,
-        parent_id: categoryParentId || undefined,
-      }
-
-      if (editingCategory) {
-        await categoriesApi.update(editingCategory.id, data)
-      } else {
-        await categoriesApi.create(data)
-      }
-
-      await loadData()
-      setShowCategoryDialog(false)
-    } catch (error) {
-      console.error('Error saving category:', error)
-    } finally {
-      setSavingCategory(false)
-    }
-  }
-
-  const handleDeleteCategory = async (id: number) => {
-    if (!confirm('Видалити категорію? Послуги з цієї категорії залишаться без категорії.')) return
-
-    try {
-      await categoriesApi.delete(id)
-      await loadData()
-    } catch (error) {
-      console.error('Error deleting category:', error)
-    }
-  }
-
   // AI Generation handlers
   const handleAiGenerate = async () => {
     if (!aiContent.trim() || !aiPositionName.trim()) return
@@ -332,6 +300,7 @@ export default function ServicesPage() {
       setAiResult({
         services: result.services.map(s => ({ ...s, selected: true })),
         categories: result.categories,
+        new_categories: result.new_categories,
       })
     } catch (error) {
       console.error('Failed to generate services:', error)
@@ -353,42 +322,19 @@ export default function ServicesPage() {
     try {
       setAiSaving(true)
 
-      // First, create categories that don't exist
-      const existingCategoryNames = new Set(
-        categories.flatMap(c => [c.name, ...(c.children?.map(ch => ch.name) || [])])
-      )
-      const newCategoryNames = new Set(
-        selectedServices.map(s => s.category_name).filter(name => !existingCategoryNames.has(name))
-      )
-
-      const categoryMap: Record<string, number> = {}
-
-      // Map existing categories
-      for (const cat of categories) {
-        categoryMap[cat.name] = cat.id
-        for (const child of cat.children || []) {
-          categoryMap[child.name] = child.id
-        }
-      }
-
-      // Create new categories
-      for (const name of Array.from(newCategoryNames)) {
-        const newCat = await categoriesApi.create({ name })
-        categoryMap[name] = newCat.id
-      }
-
       // Get position ID if selected
       const selectedPosition = positions.find(p => p.name === aiPositionName)
 
-      // Create services
+      // Create services with global category and template links
       for (const service of selectedServices) {
         await servicesApi.create({
           name: service.name,
           description: service.description,
           duration_minutes: service.duration_minutes,
           price: service.price,
-          category_id: categoryMap[service.category_name],
+          global_category_id: service.global_category_id,
           position_id: selectedPosition?.id,
+          global_template_id: service.global_template_id,
           price_options: service.price_options?.map((opt, idx) => ({
             name: opt.name,
             price: opt.price,
@@ -429,33 +375,29 @@ export default function ServicesPage() {
       ? services.filter(s => !s.position_id) // "Without position" filter
       : services.filter(s => s.position_id === selectedPositionId)
 
-  // Group services by category
+  // Group services by global category (including all descendant category IDs)
+  const getCategoryDescendantIds = (cat: GlobalCategory): number[] => {
+    const ids = [cat.id]
+    for (const child of cat.children || []) {
+      ids.push(...getCategoryDescendantIds(child))
+    }
+    return ids
+  }
+
   const getServicesByCategory = (categoryId: number): Service[] => {
-    return filteredServices.filter(s => s.category_id === categoryId)
+    return filteredServices.filter(s => s.global_category_id === categoryId)
   }
 
   // Services without category
-  const uncategorizedServices = filteredServices.filter(s => !s.category_id)
+  const uncategorizedServices = filteredServices.filter(s => !s.global_category_id)
 
   // Get color class for position
   const getPositionColorClass = (color: string | null) => {
     return POSITION_COLORS[color || ''] || 'bg-gray-500'
   }
 
-  // Get flat list of categories for parent selector
-  const getFlatCategories = (cats: ServiceCategory[], level = 0): { id: number; name: string; level: number }[] => {
-    const result: { id: number; name: string; level: number }[] = []
-    cats.forEach(c => {
-      result.push({ id: c.id, name: c.name, level })
-      if (c.children) {
-        result.push(...getFlatCategories(c.children, level + 1))
-      }
-    })
-    return result
-  }
-
   // Count total services in category including children recursively (uses filtered services)
-  const getTotalServicesInCategory = (category: ServiceCategory): number => {
+  const getTotalServicesInCategory = (category: GlobalCategory): number => {
     let count = getServicesByCategory(category.id).length
     if (category.children) {
       category.children.forEach(child => {
@@ -464,6 +406,12 @@ export default function ServicesPage() {
     }
     return count
   }
+
+  // Root categories that actually have services (for single-root skip)
+  const visibleRootCategories = categories.filter(cat => getTotalServicesInCategory(cat) > 0)
+  // If only one root category has services, skip it and show its children directly
+  const isSingleRoot = visibleRootCategories.length === 1 && (visibleRootCategories[0].children?.length ?? 0) > 0
+  const displayCategories = isSingleRoot ? visibleRootCategories[0].children! : categories
 
   // Count services without position
   const servicesWithoutPosition = services.filter(s => !s.position_id).length
@@ -576,14 +524,14 @@ export default function ServicesPage() {
   }
 
   // Render category with its services (accordion style)
-  const renderCategorySection = (category: ServiceCategory, level = 0) => {
+  const renderCategorySection = (category: GlobalCategory, level = 0) => {
     const categoryServices = getServicesByCategory(category.id)
     const isExpanded = expandedCategories.has(category.id)
     const hasChildren = category.children && category.children.length > 0
     const hasServices = categoryServices.length > 0
     const totalServices = getTotalServicesInCategory(category)
 
-    if (totalServices === 0 && !hasChildren) return null
+    if (totalServices === 0) return null
 
     return (
       <div
@@ -597,7 +545,9 @@ export default function ServicesPage() {
           className="flex items-center gap-2 py-2 px-1 cursor-pointer group hover:bg-muted/30 rounded-md"
           onClick={() => toggleCategory(category.id)}
         >
-          {isExpanded ? (
+          {category.icon ? (
+            <span className="text-base flex-shrink-0">{category.icon}</span>
+          ) : isExpanded ? (
             <FolderOpen className="h-5 w-5 text-primary" />
           ) : (
             <Folder className="h-5 w-5 text-muted-foreground" />
@@ -607,8 +557,15 @@ export default function ServicesPage() {
             {category.name}
           </span>
 
+          {category.is_ai_created && (
+            <Badge variant="outline" className="text-xs gap-1 text-purple-600 border-purple-300">
+              <Bot className="h-3 w-3" />
+              AI
+            </Badge>
+          )}
+
           <span className="text-sm text-muted-foreground">
-            {getTotalServicesInCategory(category)} послуг
+            {totalServices} послуг
           </span>
 
           <button className="p-0.5">
@@ -618,30 +575,6 @@ export default function ServicesPage() {
               <ChevronRight className="h-5 w-5 text-muted-foreground" />
             )}
           </button>
-
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
-            <button
-              onClick={() => openCategoryDialog(undefined, category.id)}
-              className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
-              title="Додати підкатегорію"
-            >
-              <FolderPlus className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => openCategoryDialog(category)}
-              className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
-              title="Редагувати"
-            >
-              <Pencil className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => handleDeleteCategory(category.id)}
-              className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-red-500"
-              title="Видалити"
-            >
-              <Trash2 className="h-4 w-4" />
-            </button>
-          </div>
         </div>
 
         {isExpanded && (
@@ -666,7 +599,7 @@ export default function ServicesPage() {
   }
 
   // Render category tree item in panel
-  const renderCategoryPanelItem = (category: ServiceCategory, level = 0) => {
+  const renderCategoryPanelItem = (category: GlobalCategory, level = 0) => {
     const totalServices = getTotalServicesInCategory(category)
 
     // Skip empty categories
@@ -681,7 +614,11 @@ export default function ServicesPage() {
           className="w-full flex items-center gap-2 py-2 px-3 rounded-md text-left text-sm hover:bg-muted transition-colors"
           style={{ paddingLeft: `${level * 16 + 12}px` }}
         >
-          <Folder className="h-4 w-4 flex-shrink-0" />
+          {category.icon ? (
+            <span className="text-sm flex-shrink-0">{category.icon}</span>
+          ) : (
+            <Folder className="h-4 w-4 flex-shrink-0" />
+          )}
           <span className="flex-1 truncate">{category.name}</span>
           <span className="text-xs text-muted-foreground">{totalServices}</span>
         </button>
@@ -721,7 +658,7 @@ export default function ServicesPage() {
 
           <div className="flex-1 overflow-y-auto p-2">
             <div>
-              {categories.map(cat => renderCategoryPanelItem(cat))}
+              {displayCategories.map(cat => renderCategoryPanelItem(cat))}
             </div>
 
             {uncategorizedServices.length > 0 && (
@@ -758,7 +695,7 @@ export default function ServicesPage() {
               <div>
                 <h1 className="text-2xl font-bold">Послуги</h1>
                 <p className="text-sm text-muted-foreground">
-                  {selectedPositionId !== null ? `${filteredServices.length} з ${services.length}` : services.length} послуг у {categories.length} категоріях
+                  {selectedPositionId !== null ? `${filteredServices.length} з ${services.length}` : services.length} послуг у {displayCategories.filter(cat => getTotalServicesInCategory(cat) > 0).length} категоріях
                 </p>
               </div>
             </div>
@@ -801,11 +738,6 @@ export default function ServicesPage() {
               >
                 <ChevronsDownUp className="h-5 w-5" />
               </Button>
-              <Link href="/admin/categories">
-                <Button variant="outline" size="icon" title="Керування категоріями">
-                  <Settings className="h-5 w-5" />
-                </Button>
-              </Link>
               <Button variant="outline" onClick={() => setAiModalOpen(true)}>
                 <Sparkles className="mr-2 h-4 w-4" />
                 AI
@@ -867,7 +799,7 @@ export default function ServicesPage() {
 
           {/* Categories with services (accordion) */}
           <div className="space-y-3">
-            {categories.map(cat => renderCategorySection(cat))}
+            {displayCategories.map(cat => renderCategorySection(cat))}
 
             {/* Uncategorized services */}
             {uncategorizedServices.length > 0 && (
@@ -927,64 +859,6 @@ export default function ServicesPage() {
           )}
         </div>
       </div>
-
-      {/* Category Dialog */}
-      <Dialog open={showCategoryDialog} onOpenChange={setShowCategoryDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>
-              {editingCategory ? 'Редагувати категорію' : 'Нова категорія'}
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label>Назва</Label>
-              <Input
-                value={categoryName}
-                onChange={(e) => setCategoryName(e.target.value)}
-                placeholder="Назва категорії"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Опис (необов'язково)</Label>
-              <Input
-                value={categoryDescription}
-                onChange={(e) => setCategoryDescription(e.target.value)}
-                placeholder="Короткий опис"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Батьківська категорія</Label>
-              <select
-                value={categoryParentId || ''}
-                onChange={(e) => setCategoryParentId(e.target.value ? Number(e.target.value) : null)}
-                className="w-full h-10 px-3 border rounded-md bg-background"
-              >
-                <option value="">Без батьківської категорії</option>
-                {getFlatCategories(categories)
-                  .filter(c => c.id !== editingCategory?.id)
-                  .map(c => (
-                    <option key={c.id} value={c.id}>
-                      {'—'.repeat(c.level)} {c.name}
-                    </option>
-                  ))}
-              </select>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCategoryDialog(false)}>
-              Скасувати
-            </Button>
-            <Button onClick={handleSaveCategory} disabled={savingCategory || !categoryName.trim()}>
-              {savingCategory ? '...' : 'Зберегти'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* AI Generation Modal */}
       <Dialog open={aiModalOpen} onOpenChange={(open) => {
@@ -1092,7 +966,24 @@ export default function ServicesPage() {
             )
           ) : (
             <div className="space-y-4 py-4">
-              <div className="flex items-center justify-between">
+              {aiResult.new_categories && aiResult.new_categories.length > 0 && (
+              <div className="bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800 rounded-lg p-3 space-y-1.5">
+                <p className="text-sm font-medium flex items-center gap-1.5 text-purple-700 dark:text-purple-300">
+                  <Bot className="h-4 w-4" />
+                  Створено {aiResult.new_categories.length} нових категорій:
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {aiResult.new_categories.map(cat => (
+                    <Badge key={cat.id} variant="outline" className="text-xs border-purple-300 text-purple-600">
+                      {cat.icon && <span className="mr-1">{cat.icon}</span>}
+                      {cat.name}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between">
                 <p className="text-sm text-muted-foreground">
                   Знайдено {aiResult.services.length} послуг. Оберіть ті, які хочете додати:
                 </p>

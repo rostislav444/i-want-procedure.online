@@ -47,7 +47,7 @@ class Subscription(Base):
     __tablename__ = "subscriptions"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    company_id: Mapped[int] = mapped_column(ForeignKey("companies.id", ondelete="CASCADE"), index=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("companies.id", ondelete="CASCADE"), unique=True, index=True)
 
     plan: Mapped[SubscriptionPlan] = mapped_column(String(30), default=SubscriptionPlan.INDIVIDUAL)
     status: Mapped[SubscriptionStatus] = mapped_column(String(20), default=SubscriptionStatus.TRIAL)

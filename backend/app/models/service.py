@@ -65,6 +65,9 @@ class Service(Base):
         ForeignKey("positions.id", ondelete="SET NULL"), nullable=True
     )
     doctor_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
+    global_category_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("global_service_categories.id", ondelete="SET NULL"), nullable=True
+    )
     global_template_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey("global_service_templates.id", ondelete="SET NULL"), nullable=True
     )
@@ -80,7 +83,8 @@ class Service(Base):
 
     # Relationships
     company: Mapped["Company"] = relationship(back_populates="services")
-    category: Mapped[Optional["ServiceCategory"]] = relationship(back_populates="services")
+    category: Mapped[Optional["ServiceCategory"]] = relationship(back_populates="services")  # legacy
+    global_category: Mapped[Optional["GlobalServiceCategory"]] = relationship()
     global_template: Mapped[Optional["GlobalServiceTemplate"]] = relationship()
     specialty: Mapped[Optional["Specialty"]] = relationship(back_populates="services")
     position: Mapped[Optional["Position"]] = relationship(back_populates="services")

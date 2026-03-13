@@ -2,7 +2,7 @@ from datetime import time
 
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import select
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, joinedload
 
 from app.api.deps import DbSession, CurrentUser
 from app.models.company import Company, CompanyType, generate_slug
@@ -62,12 +62,18 @@ async def get_my_company_memberships(current_user: CurrentUser, db: DbSession):
 
 @router.post("/me", response_model=CompanyResponse, status_code=status.HTTP_201_CREATED)
 async def create_my_company(company_data: CompanyCreate, current_user: CurrentUser, db: DbSession):
-    """Create a company for the current user (if they don't have one)"""
-    company_id = get_user_company_id(current_user)
-    if company_id is not None:
+    """Create a company for the current user (if they don't have one of this type)"""
+    # Check if user already has a company of the requested type
+    existing_result = await db.execute(
+        select(Company)
+        .join(CompanyMember, CompanyMember.company_id == Company.id)
+        .where(CompanyMember.user_id == current_user.id, CompanyMember.is_active == True)
+        .where(Company.type == company_data.type)
+    )
+    if existing_result.scalar_one_or_none():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="You already have a company",
+            detail="You already have a company of this type",
         )
 
     # Generate unique slug
@@ -123,12 +129,12 @@ async def get_my_company(current_user: CurrentUser, db: DbSession):
             detail="You don't have a company yet",
         )
     result = await db.execute(
-        select(Company).where(Company.id == company_id)
+        select(Company)
+        .options(joinedload(Company.city_ref))
+        .where(Company.id == company_id)
     )
     company = result.scalar_one()
-    response = CompanyResponse.model_validate(company)
-    response.has_monobank_token = bool(company.monobank_token)
-    return response
+    return CompanyResponse.from_company(company)
 
 
 @router.patch("/me", response_model=CompanyResponse)
@@ -150,6 +156,18 @@ async def update_my_company(
 
     update_data = company_data.model_dump(exclude_unset=True)
 
+    # Regenerate slug when name changes
+    if "name" in update_data and update_data["name"] != company.name:
+        from app.models.company import generate_slug
+        new_slug = generate_slug(update_data["name"])
+        # Ensure uniqueness
+        existing = await db.execute(
+            select(Company.id).where(Company.slug == new_slug, Company.id != company.id)
+        )
+        if existing.scalar_one_or_none():
+            new_slug = f"{new_slug}-{company.id}"
+        update_data["slug"] = new_slug
+
     # When upgrading to clinic, make the owner also a manager
     old_type = company.type
     new_type = update_data.get("type")
@@ -169,8 +187,15 @@ async def update_my_company(
             member.is_manager = True
 
     await db.commit()
-    await db.refresh(company)
-    return company
+
+    # Re-fetch with city_ref loaded
+    result = await db.execute(
+        select(Company)
+        .options(joinedload(Company.city_ref))
+        .where(Company.id == company_id)
+    )
+    company = result.scalar_one()
+    return CompanyResponse.from_company(company)
 
 
 @router.get("/me/doctors", response_model=list[UserResponse])

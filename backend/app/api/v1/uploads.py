@@ -134,6 +134,21 @@ async def upload_cover(
     return {"url": url}
 
 
+@router.post("/offering-cover")
+async def upload_offering_cover(
+    current_user: CurrentUser,
+    file: UploadFile = File(...),
+):
+    """Upload cover image for an educational offering"""
+    if not current_user.company_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You don't have a company yet",
+        )
+    url = await save_upload(file, "offering-covers", f"offering_{current_user.company_id}")
+    return {"url": url}
+
+
 @router.post("/protocol-photo", response_model=ProtocolFileUploadResponse)
 async def upload_protocol_photo(
     current_user: CurrentUser,

@@ -33,7 +33,7 @@ interface CompanyContextType {
   selectedCompanyId: number | null
 
   // Derived state
-  companyType: 'solo' | 'clinic' | null
+  companyType: 'solo' | 'clinic' | 'educator' | null
   userRole: CompanyRole | null
   isLoading: boolean
   needsCompanySelection: boolean

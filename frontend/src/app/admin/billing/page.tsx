@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { CreditCard, Check, Clock, AlertTriangle, Users, Zap, Building2, Crown, ExternalLink, RefreshCw } from 'lucide-react'
+import { CreditCard, Check, Clock, AlertTriangle, Users, Building2, Crown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { billingApi, BillingOverview } from '@/lib/api'
 import { useCompany } from '@/contexts/CompanyContext'
@@ -10,21 +10,27 @@ import { useCompany } from '@/contexts/CompanyContext'
 const PLAN_INFO = {
   individual: {
     name: 'Індивідуальний',
-    description: 'Для одного спеціаліста',
+    description: 'Для приватних спеціалістів',
     icon: Crown,
-    features: ['1 спеціаліст', 'Необмежені клієнти', 'Запис онлайн', 'Фінансова аналітика', 'Склад матеріалів'],
+    price: 50000,
+    priceLabel: 'грн/міс',
+    features: ['Всі функції платформи', 'Telegram боти', 'Google Calendar', 'Власний мініс-сайт', 'Підтримка'],
   },
   company_small: {
-    name: 'Клініка (до 3)',
-    description: 'Для невеликої команди',
+    name: 'Компанія',
+    description: '3-9 спеціалістів',
     icon: Users,
-    features: ['До 3 спеціалістів', 'Управління командою', 'Всі функції Індивідуального', 'Ролі та дозволи'],
+    price: 45000,
+    priceLabel: 'грн/спеціаліст',
+    features: ['Все з індивідуального', 'Декілька спеціалістів', 'Спільна база клієнтів', 'Аналітика по команді', 'Пріоритетна підтримка'],
   },
   company_large: {
-    name: 'Клініка (без обмежень)',
-    description: 'Для великих клінік',
+    name: 'Велика компанія',
+    description: '10+ спеціалістів',
     icon: Building2,
-    features: ['Без обмежень спеціалістів', 'Всі функції Клініки', 'Пріоритетна підтримка'],
+    price: 40000,
+    priceLabel: 'грн/спеціаліст',
+    features: ['Все з попередніх', 'Максимальна знижка', 'Індивідуальне налаштування', 'Виділений менеджер', 'SLA підтримка'],
   },
 }
 
@@ -126,10 +132,6 @@ export default function BillingPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Підписка</h1>
-        <Button variant="outline" size="sm" onClick={loadOverview}>
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Оновити
-        </Button>
       </div>
 
       {/* Payment success banner */}
@@ -224,10 +226,8 @@ export default function BillingPage() {
         <div className="grid gap-4 md:grid-cols-3">
           {Object.entries(PLAN_INFO).map(([planKey, plan]) => {
             const isCurrentPlan = sub?.plan === planKey
-            const price = planKey === 'individual'
-              ? overview.subscription?.price || 29900
-              : planKey === 'company_small' ? 59900 : 99900
             const PlanIcon = plan.icon
+            const isContactPlan = planKey === 'company_large'
 
             return (
               <div
@@ -253,8 +253,8 @@ export default function BillingPage() {
                   </div>
                 </div>
                 <div className="mb-4">
-                  <span className="text-3xl font-bold">{formatPrice(price)}</span>
-                  <span className="text-muted-foreground"> / міс</span>
+                  <span className="text-3xl font-bold">{formatPrice(plan.price)}</span>
+                  <span className="text-muted-foreground"> {plan.priceLabel}</span>
                 </div>
                 <ul className="space-y-2 mb-6">
                   {plan.features.map((feature, i) => (
@@ -264,18 +264,18 @@ export default function BillingPage() {
                     </li>
                   ))}
                 </ul>
-                {overview.has_monobank ? (
+                {isContactPlan ? (
+                  <Button className="w-full" variant="outline" asChild>
+                    <a href="https://t.me/procedure_support">Зв&apos;язатися з нами</a>
+                  </Button>
+                ) : overview.has_monobank ? (
                   <Button
                     className="w-full"
                     variant={isCurrentPlan && sub?.status === 'active' ? 'outline' : 'default'}
                     disabled={paying || (isCurrentPlan && sub?.status === 'active')}
                     onClick={() => handlePay(planKey)}
                   >
-                    {paying ? (
-                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <CreditCard className="h-4 w-4 mr-2" />
-                    )}
+                    <CreditCard className="h-4 w-4 mr-2" />
                     {isCurrentPlan && sub?.status === 'active'
                       ? 'Активний'
                       : isCurrentPlan

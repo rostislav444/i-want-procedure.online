@@ -13,7 +13,7 @@ export default function Logo({ className, width = 180, height = 60 }: LogoProps)
     <>
       <Image
         src="/images/logo-orbit-light-new.png"
-        alt="Procedure"
+        alt="Beautica"
         width={width}
         height={height}
         className={`${className || ''} dark:hidden`}
@@ -21,7 +21,7 @@ export default function Logo({ className, width = 180, height = 60 }: LogoProps)
       />
       <Image
         src="/images/logo-orbit-dark-new.png"
-        alt="Procedure"
+        alt="Beautica"
         width={width}
         height={height}
         className={`${className || ''} hidden dark:block`}

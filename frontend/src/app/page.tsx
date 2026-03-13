@@ -3,22 +3,26 @@ import {
   CheckCircle2,
   UserCircle,
   Stethoscope,
-  ArrowRight,
+
   Sparkles,
   Heart,
   CreditCard,
   Clock,
-  Zap
+  Zap,
+  X,
+  Star,
+  Shield,
+  CalendarCheck
 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import TelegramDemo from '@/components/site/TelegramDemo'
 import Header from '@/components/site/Header'
 import Footer from '@/components/site/Footer'
-import WaveDivider from '@/components/site/WaveDivider'
 import FeatureShowcase from '@/components/landing/FeatureShowcase'
 import TargetAudienceSection from '@/components/site/sections/TargetAudienceSection'
 import FAQAccordion from '@/components/site/FAQAccordion'
+import { HeroCTA, BottomCTA } from '@/components/site/AuthAwareCTA'
 
 export default function HomePage() {
   return (
@@ -26,58 +30,71 @@ export default function HomePage() {
       <Header />
 
       {/* Hero Section */}
-      <section className="relative pt-20 pb-8 overflow-hidden">
-        {/* Decorative blobs */}
-        <div className="absolute w-72 h-72 bg-pink-300 dark:bg-pink-500/20 top-10 -left-36 rounded-full blur-3xl opacity-40 animate-blob" />
-        <div className="absolute w-64 h-64 bg-yellow-200 dark:bg-yellow-500/15 top-20 -right-16 rounded-full blur-3xl opacity-40 animate-blob" style={{ animationDelay: '-2s' }} />
+      <section className="relative pt-24 sm:pt-28 pb-16 sm:pb-20 overflow-hidden">
+        {/* Background: light = soft gradient, dark = deep purple */}
+        <div className="absolute inset-0 bg-gradient-to-br from-pink-50 via-purple-50/50 to-white dark:from-[#0f0524] dark:via-[#1a0a2e] dark:to-[#0d001a]" />
+        <div className="absolute inset-0 hero-mesh-gradient" />
 
         <div className="relative max-w-6xl mx-auto px-4 py-8 sm:py-12">
-          <div className="grid lg:grid-cols-2 gap-8 items-center">
+          <div className="grid lg:grid-cols-2 gap-10 items-center">
             <div className="text-center lg:text-left">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-pink-100 dark:bg-pink-500/15 text-pink-600 dark:text-pink-400 text-xs font-medium mb-4">
+              {/* Badge */}
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-pink-100 dark:bg-white/10 backdrop-blur-sm border border-pink-200 dark:border-white/10 text-pink-600 dark:text-pink-300 text-xs font-medium mb-5">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Платформа для спеціалістів</span>
+                <span>CRM для спеціалістів краси та здоров&apos;я</span>
               </div>
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-3 dark:text-white">
-                Більше клієнтів,
-                <span className="gradient-text"> менше рутини</span>
+
+              {/* Main headline — problem-oriented */}
+              <h1 className="text-3xl sm:text-4xl lg:text-[3.25rem] lg:leading-[1.15] font-bold tracking-tight mb-4 text-gray-900 dark:text-white">
+                Клієнти пишуть —{' '}
+                <span className="gradient-text dark:hero-gradient-text">ви втрачаєте їх</span>
+                <br className="hidden sm:block" />
+                <span className="text-gray-700 dark:text-white/90"> поки відповідаєте вручну</span>
               </h1>
-              <p className="text-sm sm:text-base text-muted-foreground dark:text-gray-300 max-w-xl mb-5">
-                Автоматизуйте записи через Telegram-бота та Google Calendar. Для косметологів, масажистів, стоматологів та інших спеціалістів.
+
+              {/* Subheadline — solution */}
+              <p className="text-base sm:text-lg text-gray-500 dark:text-white/60 max-w-xl mb-6 leading-relaxed">
+                Telegram-бот відповідає <span className="text-gray-800 dark:text-white/90 font-medium">за 2 секунди</span>, записує клієнтів у ваш календар і нагадує про візит. Ви отримуєте готові записи — без дзвінків і переписок.
               </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
-                <Link
-                  href="/admin"
-                  className="group inline-flex items-center justify-center gap-2 px-5 py-2 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full text-sm font-medium hover:shadow-lg hover:shadow-pink-500/30 transition-all hover:-translate-y-0.5"
-                >
-                  Спробувати безкоштовно
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </Link>
-                <Link
-                  href="#features"
-                  className="inline-flex items-center justify-center gap-2 px-5 py-2 bg-card dark:bg-white/10 border border-pink-200 dark:border-pink-500/30 text-foreground dark:text-white rounded-full text-sm font-medium hover:border-pink-400 hover:bg-pink-50 dark:hover:bg-white/15 transition-all"
-                >
-                  Переглянути функції
-                </Link>
+
+              {/* CTA Buttons */}
+              <HeroCTA />
+
+              {/* Confidence boosters */}
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 justify-center lg:justify-start text-xs text-gray-400 dark:text-white/40">
+                <span className="flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5 text-green-500/60 dark:text-green-400/60" /> 14 днів безкоштовно</span>
+                <span className="flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5 text-green-500/60 dark:text-green-400/60" /> Без картки</span>
+                <span className="flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5 text-green-500/60 dark:text-green-400/60" /> Налаштування за 15 хв</span>
               </div>
             </div>
 
             {/* Hero Image */}
             <div className="relative">
-              <div className="relative rounded-2xl overflow-hidden shadow-xl shadow-pink-500/15 border border-pink-100 dark:border-pink-500/20">
+              {/* Glow behind image */}
+              <div className="absolute -inset-4 bg-gradient-to-r from-pink-500/10 to-purple-500/10 dark:from-pink-500/20 dark:to-purple-500/20 rounded-3xl blur-2xl" />
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-pink-500/10 border border-pink-100 dark:border-white/10">
                 <Image
                   src="/screens/dashboard.png"
-                  alt="Procedure CRM"
+                  alt="Beautica CRM — панель управління"
                   width={800}
                   height={500}
                   className="w-full h-auto"
+                  priority
                 />
+              </div>
+              {/* Feature badge */}
+              <div className="absolute -bottom-3 -left-3 sm:left-4 px-4 py-2 bg-white/80 dark:bg-white/10 backdrop-blur-md border border-pink-100 dark:border-white/15 rounded-xl shadow-lg">
+                <div className="flex items-center gap-2">
+                  <CalendarCheck className="w-4 h-4 text-green-500 dark:text-green-400" />
+                  <span className="text-xs text-gray-600 dark:text-white/80 font-medium">Працює 24/7, навіть коли ви спите</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <WaveDivider />
+        {/* Bottom gradient fade to next section */}
+        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent" />
       </section>
 
       {/* Stats Section */}
@@ -85,10 +102,10 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
-              { value: '24/7', label: 'Онлайн запис', icon: Clock },
-              { value: '2', label: 'Telegram боти', icon: MessageCircle },
-              { value: '100%', label: 'Автоматизація', icon: Zap },
-              { value: '500+', label: 'Спеціалістів', icon: Heart },
+              { value: '24/7', label: 'Бот приймає записи', icon: Clock },
+              { value: '2 сек', label: 'Час відповіді бота', icon: Zap },
+              { value: '0', label: 'Втрачених клієнтів', icon: Shield },
+              { value: '15 хв', label: 'На налаштування', icon: CalendarCheck },
             ].map((stat, i) => (
               <div key={i} className="text-center group">
                 <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center text-white shadow-md shadow-pink-500/20 group-hover:scale-110 transition-transform">
@@ -102,8 +119,186 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Before / After Section */}
+      <section className="py-10 sm:py-14 relative overflow-hidden">
+        <div className="max-w-5xl mx-auto px-4">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-red-100 to-green-100 dark:from-red-500/15 dark:to-green-500/15 text-red-600 dark:text-red-400 text-xs font-medium mb-3">
+              <Zap className="w-3.5 h-3.5" />
+              <span>Порівняйте</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 dark:text-white">
+              Без автоматизації vs <span className="gradient-text">з Beautica</span>
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-5">
+            {/* WITHOUT — the problem */}
+            <div className="relative p-6 rounded-2xl bg-red-50/50 dark:bg-red-500/5 border border-red-200/50 dark:border-red-500/15">
+              <div className="flex items-center gap-2 mb-5">
+                <div className="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-500/20 flex items-center justify-center">
+                  <X className="w-4 h-4 text-red-500" />
+                </div>
+                <h3 className="font-bold text-red-600 dark:text-red-400">Без автоматизації</h3>
+              </div>
+
+              <div className="space-y-3 mb-5">
+                {/* Incoming message at night */}
+                <div className="flex gap-2">
+                  <div className="w-7 h-7 rounded-full bg-gray-200 dark:bg-gray-700 flex-shrink-0 flex items-center justify-center text-[10px]">К</div>
+                  <div>
+                    <div className="bg-white dark:bg-white/10 rounded-xl rounded-tl-sm px-3 py-2 text-xs">
+                      Доброго вечора! Хочу записатися на чистку обличчя 🙏
+                    </div>
+                    <div className="text-[10px] text-muted-foreground mt-0.5">23:47</div>
+                  </div>
+                </div>
+
+                {/* Long wait */}
+                <div className="flex items-center justify-center gap-2 py-3">
+                  <Clock className="w-3.5 h-3.5 text-red-400 animate-pulse" />
+                  <span className="text-xs text-red-500 font-medium">Ви спите... відповідь через 9 год</span>
+                </div>
+
+                {/* Another client */}
+                <div className="flex gap-2">
+                  <div className="w-7 h-7 rounded-full bg-gray-200 dark:bg-gray-700 flex-shrink-0 flex items-center justify-center text-[10px]">М</div>
+                  <div>
+                    <div className="bg-white dark:bg-white/10 rounded-xl rounded-tl-sm px-3 py-2 text-xs">
+                      Привіт, скажіть ціну на мезотерапію?
+                    </div>
+                    <div className="text-[10px] text-muted-foreground mt-0.5">00:15</div>
+                  </div>
+                </div>
+
+                {/* Morning — chaos */}
+                <div className="flex gap-2 justify-end">
+                  <div>
+                    <div className="bg-pink-100 dark:bg-pink-500/20 rounded-xl rounded-tr-sm px-3 py-2 text-xs">
+                      Доброго ранку! Вибачте... <br/>Є четвер 14:00, підходить?
+                    </div>
+                    <div className="text-[10px] text-muted-foreground mt-0.5 text-right">09:00</div>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <div className="w-7 h-7 rounded-full bg-gray-200 dark:bg-gray-700 flex-shrink-0 flex items-center justify-center text-[10px]">К</div>
+                  <div>
+                    <div className="bg-white dark:bg-white/10 rounded-xl rounded-tl-sm px-3 py-2 text-xs text-muted-foreground italic">
+                      Дякую, вже записалась в інше місце
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Result */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-red-100/50 dark:bg-red-500/10 border border-red-200/50 dark:border-red-500/10">
+                  <X className="w-4 h-4 text-red-500 flex-shrink-0" />
+                  <span className="text-xs font-medium text-red-600 dark:text-red-400">2 клієнти втрачені за одну ніч</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-center">
+                  <div className="p-2 rounded-lg bg-red-100/30 dark:bg-red-500/5">
+                    <div className="text-lg font-bold text-red-500">9 год</div>
+                    <div className="text-[10px] text-muted-foreground">час відповіді</div>
+                  </div>
+                  <div className="p-2 rounded-lg bg-red-100/30 dark:bg-red-500/5">
+                    <div className="text-lg font-bold text-red-500">0 ₴</div>
+                    <div className="text-[10px] text-muted-foreground">заробіток</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* WITH — the solution */}
+            <div className="relative p-6 rounded-2xl bg-green-50/50 dark:bg-green-500/5 border border-green-200/50 dark:border-green-500/15">
+              <div className="flex items-center gap-2 mb-5">
+                <div className="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-500/20 flex items-center justify-center">
+                  <CheckCircle2 className="w-4 h-4 text-green-500" />
+                </div>
+                <h3 className="font-bold text-green-600 dark:text-green-400">З Beautica</h3>
+              </div>
+
+              {/* Bot button-based flow */}
+              <div className="space-y-3 mb-5">
+                {/* Client opens bot */}
+                <div className="flex gap-2 justify-start">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex-shrink-0 flex items-center justify-center">
+                    <MessageCircle className="w-3.5 h-3.5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="bg-white dark:bg-white/10 rounded-xl rounded-tl-sm px-3 py-2 text-xs">
+                      Привіт! Оберіть дію:
+                    </div>
+                    {/* Bot buttons */}
+                    <div className="mt-1.5 space-y-1 max-w-[220px]">
+                      <div className="px-3 py-1.5 bg-pink-500 text-white rounded-lg text-[11px] font-medium text-center">📅 Записатись на процедуру</div>
+                      <div className="px-3 py-1.5 bg-white dark:bg-white/10 border border-gray-200 dark:border-white/15 rounded-lg text-[11px] text-center">📋 Мої записи</div>
+                    </div>
+                    <div className="text-[10px] text-muted-foreground mt-1">23:47</div>
+                  </div>
+                </div>
+
+                {/* Service selection */}
+                <div className="flex gap-2 justify-start">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex-shrink-0 flex items-center justify-center">
+                    <MessageCircle className="w-3.5 h-3.5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="bg-white dark:bg-white/10 rounded-xl rounded-tl-sm px-3 py-2 text-xs">
+                      Оберіть послугу:
+                    </div>
+                    <div className="mt-1.5 space-y-1 max-w-[220px]">
+                      <div className="px-3 py-1.5 bg-pink-500 text-white rounded-lg text-[11px] font-medium text-center">💆 Чистка — 800 грн</div>
+                      <div className="px-3 py-1.5 bg-white dark:bg-white/10 border border-gray-200 dark:border-white/15 rounded-lg text-[11px] text-center">💉 Мезотерапія — 1500 грн</div>
+                    </div>
+                    <div className="text-[10px] text-muted-foreground mt-1">23:47</div>
+                  </div>
+                </div>
+
+                {/* Date + time in one compact block */}
+                <div className="flex gap-2 justify-start">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex-shrink-0 flex items-center justify-center">
+                    <MessageCircle className="w-3.5 h-3.5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="bg-white dark:bg-white/10 rounded-xl rounded-tl-sm px-3 py-2 text-xs">
+                      ✅ Чистка обличчя<br/>Оберіть дату:
+                    </div>
+                    <div className="mt-1.5 grid grid-cols-3 gap-1 max-w-[220px]">
+                      <div className="px-2 py-1.5 bg-pink-500 text-white rounded-lg text-[10px] font-medium text-center">Чт, 6</div>
+                      <div className="px-2 py-1.5 bg-white dark:bg-white/10 border border-gray-200 dark:border-white/15 rounded-lg text-[10px] text-center">Пт, 7</div>
+                      <div className="px-2 py-1.5 bg-white dark:bg-white/10 border border-gray-200 dark:border-white/15 rounded-lg text-[10px] text-center">Сб, 8</div>
+                    </div>
+                    <div className="text-[10px] text-muted-foreground mt-1">23:48</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Result */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-green-100/50 dark:bg-green-500/10 border border-green-200/50 dark:border-green-500/10">
+                  <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
+                  <span className="text-xs font-medium text-green-600 dark:text-green-400">Запис створено за 30 секунд. Ви спите — бот працює.</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-center">
+                  <div className="p-2 rounded-lg bg-green-100/30 dark:bg-green-500/5">
+                    <div className="text-lg font-bold text-green-500">30 сек</div>
+                    <div className="text-[10px] text-muted-foreground">час запису</div>
+                  </div>
+                  <div className="p-2 rounded-lg bg-green-100/30 dark:bg-green-500/5">
+                    <div className="text-lg font-bold text-green-500">800 ₴</div>
+                    <div className="text-[10px] text-muted-foreground">заробіток</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Telegram Bots Section */}
-      <section id="bots" className="py-8 sm:py-10 relative overflow-hidden">
+      <section id="bots" className="py-8 sm:py-10 bg-secondary relative overflow-hidden">
         <div className="max-w-6xl mx-auto px-4 relative">
           <div className="text-center mb-6 sm:mb-8">
             <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-pink-100 to-yellow-100 dark:from-pink-500/15 dark:to-yellow-500/15 text-pink-600 dark:text-pink-400 text-xs font-medium mb-3">
@@ -182,7 +377,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Feature Showcase - функціональні секції */}
+      {/* Feature Showcase */}
       <FeatureShowcase />
 
       {/* How It Works */}
@@ -223,7 +418,7 @@ export default function HomePage() {
       <TargetAudienceSection />
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-8 sm:py-10 relative overflow-hidden">
+      <section id="pricing" className="py-10 sm:py-14 relative overflow-hidden">
         <div className="max-w-6xl mx-auto px-4 relative">
           <div className="text-center mb-6 sm:mb-8">
             <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-500/15 dark:to-pink-500/15 text-purple-600 dark:text-purple-400 text-xs font-medium mb-3">
@@ -234,7 +429,7 @@ export default function HomePage() {
               Прозора <span className="gradient-text">ціна</span>
             </h2>
             <p className="text-muted-foreground dark:text-gray-300 text-sm max-w-2xl mx-auto">
-              14 днів безкоштовно для всіх нових користувачів
+              14 днів безкоштовно. Без кредитної картки. Скасувати будь-коли.
             </p>
           </div>
 
@@ -250,7 +445,7 @@ export default function HomePage() {
                 <span className="text-2xl sm:text-3xl font-bold dark:text-white">500</span>
                 <span className="text-muted-foreground dark:text-gray-400 text-sm"> грн/міс</span>
               </div>
-              <ul className="space-y-2">
+              <ul className="space-y-2 mb-5">
                 {['Всі функції платформи', 'Telegram боти', 'Google Calendar', 'Власний мініс-сайт', 'Підтримка'].map((item, i) => (
                   <li key={i} className="flex items-center gap-2 text-xs sm:text-sm dark:text-gray-300">
                     <CheckCircle2 className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
@@ -258,6 +453,12 @@ export default function HomePage() {
                   </li>
                 ))}
               </ul>
+              <Link
+                href="/admin"
+                className="block w-full text-center px-4 py-2.5 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-xl text-sm font-semibold hover:shadow-lg hover:shadow-pink-500/25 transition-all"
+              >
+                Спробувати 14 днів безкоштовно
+              </Link>
             </div>
 
             {/* Company Small */}
@@ -268,7 +469,7 @@ export default function HomePage() {
                 <span className="text-2xl sm:text-3xl font-bold dark:text-white">450</span>
                 <span className="text-muted-foreground dark:text-gray-400 text-sm"> грн/спеціаліст</span>
               </div>
-              <ul className="space-y-2">
+              <ul className="space-y-2 mb-5">
                 {['Все з індивідуального', 'Декілька спеціалістів', 'Спільна база клієнтів', 'Аналітика по команді', 'Пріоритетна підтримка'].map((item, i) => (
                   <li key={i} className="flex items-center gap-2 text-xs sm:text-sm dark:text-gray-300">
                     <CheckCircle2 className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
@@ -276,6 +477,12 @@ export default function HomePage() {
                   </li>
                 ))}
               </ul>
+              <Link
+                href="/admin"
+                className="block w-full text-center px-4 py-2.5 border-2 border-pink-200 dark:border-pink-500/30 text-pink-600 dark:text-pink-400 rounded-xl text-sm font-semibold hover:bg-pink-50 dark:hover:bg-pink-500/10 transition-all"
+              >
+                Почати безкоштовно
+              </Link>
             </div>
 
             {/* Company Large */}
@@ -286,7 +493,7 @@ export default function HomePage() {
                 <span className="text-2xl sm:text-3xl font-bold dark:text-white">400</span>
                 <span className="text-muted-foreground dark:text-gray-400 text-sm"> грн/спеціаліст</span>
               </div>
-              <ul className="space-y-2">
+              <ul className="space-y-2 mb-5">
                 {['Все з попередніх', 'Максимальна знижка', 'Індивідуальне налаштування', 'Виділений менеджер', 'SLA підтримка'].map((item, i) => (
                   <li key={i} className="flex items-center gap-2 text-xs sm:text-sm dark:text-gray-300">
                     <CheckCircle2 className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
@@ -294,7 +501,74 @@ export default function HomePage() {
                   </li>
                 ))}
               </ul>
+              <Link
+                href="/admin"
+                className="block w-full text-center px-4 py-2.5 border-2 border-gray-200 dark:border-white/15 text-foreground dark:text-white rounded-xl text-sm font-semibold hover:bg-gray-50 dark:hover:bg-white/5 transition-all"
+              >
+                Зв&apos;язатися з нами
+              </Link>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="py-10 sm:py-14 bg-secondary relative overflow-hidden">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="text-center mb-6 sm:mb-8">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-yellow-100 to-pink-100 dark:from-yellow-500/15 dark:to-pink-500/15 text-yellow-600 dark:text-yellow-400 text-xs font-medium mb-3">
+              <Star className="w-3.5 h-3.5" />
+              <span>Відгуки</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold dark:text-white">
+              Що кажуть <span className="gradient-text">спеціалісти</span>
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-4 sm:gap-5">
+            {[
+              {
+                name: 'Олена К.',
+                role: 'Косметолог, Київ',
+                text: 'Раніше витрачала 2 години на день на переписки з клієнтами. Тепер бот робить все сам — я просто бачу готовий розклад вранці. За перший місяць записів стало на 30% більше.',
+                stars: 5
+              },
+              {
+                name: 'Марина Д.',
+                role: 'Масажний салон, Харків',
+                text: 'Підключила 4 спеціалістів. Клієнти обирають майстра та час самі, без дзвінків адміністратору. Google Calendar синхронізується ідеально. Рекомендую!',
+                stars: 5
+              },
+              {
+                name: 'Андрій В.',
+                role: 'Стоматологія, Львів',
+                text: 'Налаштував за один вечір. Бот відповідає клієнтам навіть вночі та у вихідні. Ми перестали втрачати запити — ROI окупився за перший тиждень.',
+                stars: 5
+              }
+            ].map((review, i) => (
+              <div key={i} className="p-5 rounded-2xl bg-card dark:bg-white/5 border border-pink-100 dark:border-pink-500/15 shadow-soft">
+                {/* Stars */}
+                <div className="flex gap-0.5 mb-3">
+                  {Array.from({ length: review.stars }).map((_, j) => (
+                    <Star key={j} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  ))}
+                </div>
+                {/* Text */}
+                <p className="text-xs sm:text-sm text-muted-foreground dark:text-gray-300 mb-4 leading-relaxed">
+                  &ldquo;{review.text}&rdquo;
+                </p>
+                {/* Author */}
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center text-white text-xs font-bold">
+                    {review.name.charAt(0)}
+                  </div>
+                  <div>
+                    <div className="text-sm font-semibold dark:text-white">{review.name}</div>
+                    <div className="text-xs text-muted-foreground dark:text-gray-400">{review.role}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -303,35 +577,30 @@ export default function HomePage() {
       <FAQAccordion />
 
       {/* CTA Section */}
-      <section id="demo" className="py-10 sm:py-12 relative overflow-hidden">
+      <section id="demo" className="py-12 sm:py-16 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-pink-500 via-rose-500 to-pink-600" />
 
         <div className="max-w-4xl mx-auto px-4 text-center relative">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 text-white text-xs font-medium mb-4 backdrop-blur-sm">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 text-white text-xs font-medium mb-5 backdrop-blur-sm">
             <Heart className="w-3.5 h-3.5" />
-            <span>14 днів безкоштовно</span>
+            <span>Перестаньте втрачати клієнтів</span>
           </div>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3">
-            Готові автоматизувати записи?
+            Ваш перший запис через бота <br className="hidden sm:block" />
+            може прийти сьогодні ввечері
           </h2>
-          <p className="text-sm sm:text-base text-white/80 mb-6 max-w-2xl mx-auto">
-            Приєднуйтесь до спеціалістів, які вже економлять час на рутині
+          <p className="text-sm sm:text-base text-white/80 mb-7 max-w-2xl mx-auto">
+            14 днів безкоштовно. Без кредитної картки. Скасувати будь-коли.<br/>
+            Налаштування займає 15 хвилин.
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link
-              href="https://t.me/doctor_i_want_procedure_bot"
-              className="group inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-white text-pink-600 rounded-full text-sm font-medium hover:shadow-xl hover:shadow-white/30 transition-all hover:-translate-y-0.5"
-            >
-              <MessageCircle className="w-4 h-4" />
-              Написати в Telegram
-            </Link>
-            <Link
-              href="/admin"
-              className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-white/10 text-white border border-white/30 rounded-full text-sm font-medium hover:bg-white/20 transition-all backdrop-blur-sm"
-            >
-              Увійти в кабінет
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+          <BottomCTA />
+          {/* Confidence line */}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 justify-center text-xs text-white/35">
+            <span>Налаштування за 15 хвилин</span>
+            <span>·</span>
+            <span>Працює 24/7</span>
+            <span>·</span>
+            <span>Підтримка в Telegram</span>
           </div>
         </div>
       </section>

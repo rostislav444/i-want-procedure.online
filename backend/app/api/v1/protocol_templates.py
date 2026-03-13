@@ -69,7 +69,7 @@ async def get_template_for_service(
     # Get service with category
     service_result = await db.execute(
         select(Service)
-        .options(selectinload(Service.category))
+        .options(selectinload(Service.global_category))
         .where(
             Service.id == service_id,
             Service.company_id == current_user.company_id,
@@ -96,7 +96,7 @@ async def get_template_for_service(
     if template:
         return template
 
-    # 2. Check for category default template
+    # 2. Check for category default template (using old category_id if still set)
     if service.category_id:
         result = await db.execute(
             select(ProtocolTemplate).where(

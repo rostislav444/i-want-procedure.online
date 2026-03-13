@@ -116,6 +116,30 @@ def remove_keyboard() -> ReplyKeyboardRemove:
     return ReplyKeyboardRemove()
 
 
+def location_keyboard() -> ReplyKeyboardMarkup:
+    """Keyboard for sharing location or skipping"""
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="📍 Поділитися геопозицією", request_location=True)],
+            [KeyboardButton(text="Пропустити")],
+        ],
+        resize_keyboard=True,
+        one_time_keyboard=True,
+    )
+
+
+def city_results_keyboard(cities: list) -> InlineKeyboardMarkup:
+    """Keyboard with city search results"""
+    buttons = []
+    for city in cities:
+        label = f"📍 {city.name}, {city.oblast}"
+        buttons.append([InlineKeyboardButton(
+            text=label,
+            callback_data=f"city_{city.id}"
+        )])
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+
 def clients_list_keyboard(clients: list) -> InlineKeyboardMarkup:
     """Keyboard with list of recent clients to send payment requisites"""
     buttons = []

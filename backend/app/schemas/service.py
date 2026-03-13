@@ -9,6 +9,7 @@ class ServiceCategoryCreate(BaseModel):
     name: str
     description: Optional[str] = None
     parent_id: Optional[int] = None
+    global_category_id: Optional[int] = None
     order: int = 0
 
 
@@ -134,7 +135,7 @@ class ServiceCreate(BaseModel):
     description: Optional[str] = None
     duration_minutes: int = 60
     price: Decimal
-    category_id: Optional[int] = None
+    global_category_id: Optional[int] = None
     specialty_id: Optional[int] = None
     position_id: Optional[int] = None
     doctor_id: Optional[int] = None
@@ -150,15 +151,16 @@ class ServiceUpdate(BaseModel):
     description: Optional[str] = None
     duration_minutes: Optional[int] = None
     price: Optional[Decimal] = None
-    category_id: Optional[int] = None
+    global_category_id: Optional[int] = None
     specialty_id: Optional[int] = None
     position_id: Optional[int] = None
     is_active: Optional[bool] = None
 
 
-class ServiceCategoryBrief(BaseModel):
+class GlobalCategoryBrief(BaseModel):
     id: int
     name: str
+    icon: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -176,7 +178,7 @@ class SpecialtyBrief(BaseModel):
 class ServiceResponse(BaseModel):
     id: int
     company_id: int
-    category_id: Optional[int] = None
+    global_category_id: Optional[int] = None
     specialty_id: Optional[int] = None
     position_id: Optional[int] = None
     doctor_id: Optional[int] = None
@@ -188,7 +190,7 @@ class ServiceResponse(BaseModel):
     price: Decimal
     is_active: bool
     created_at: datetime
-    category: Optional[ServiceCategoryBrief] = None
+    global_category: Optional[GlobalCategoryBrief] = None
     specialty: Optional[SpecialtyBrief] = None
     price_options: list[ServicePriceOptionResponse] = []
 
@@ -199,7 +201,7 @@ class ServiceResponse(BaseModel):
 class ServiceDetailResponse(BaseModel):
     id: int
     company_id: int
-    category_id: Optional[int] = None
+    global_category_id: Optional[int] = None
     specialty_id: Optional[int] = None
     position_id: Optional[int] = None
     doctor_id: Optional[int] = None
@@ -212,7 +214,7 @@ class ServiceDetailResponse(BaseModel):
     steps: list[ServiceStepResponse] = []
     products: list[ServiceProductResponse] = []
     price_options: list[ServicePriceOptionResponse] = []
-    category: Optional[ServiceCategoryResponse] = None
+    global_category: Optional[GlobalCategoryBrief] = None
     specialty: Optional[SpecialtyBrief] = None
 
     class Config:

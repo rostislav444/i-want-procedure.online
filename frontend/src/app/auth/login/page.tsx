@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { authApi, googleApi, TelegramAuthData } from '@/lib/api'
+import { authApi, companyApi, googleApi, TelegramAuthData } from '@/lib/api'
 import TelegramLoginButton from '@/components/TelegramLoginButton'
 
 const TELEGRAM_BOT_NAME = process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME || ''
@@ -20,6 +20,16 @@ function LoginForm() {
   const [password, setPassword] = useState('')
   const [googleLoading, setGoogleLoading] = useState(false)
 
+  const redirectAfterLogin = async () => {
+    try {
+      const company = await companyApi.getMyCompany()
+      localStorage.setItem('company_type', company.type)
+      router.push(company.type === 'educator' ? '/education/admin' : '/admin')
+    } catch {
+      router.push('/admin')
+    }
+  }
+
   // Handle token from Google OAuth callback
   useEffect(() => {
     const token = searchParams.get('token')
@@ -29,7 +39,7 @@ function LoginForm() {
     if (token) {
       localStorage.setItem('token', token)
       document.cookie = `token=${token}; path=/; max-age=${60 * 60 * 24 * 7}`
-      router.push('/admin')
+      redirectAfterLogin()
     } else if (errorParam) {
       if (errorParam === 'invalid_state') {
         setError('Невірний стан авторизації. Спробуйте ще раз.')
@@ -49,9 +59,7 @@ function LoginForm() {
       const data = await authApi.telegramLogin(user)
       localStorage.setItem('token', data.access_token)
       document.cookie = `token=${data.access_token}; path=/; max-age=${60 * 60 * 24 * 7}`
-
-      // After login, always go to admin
-      router.push('/admin')
+      await redirectAfterLogin()
     } catch (err: any) {
       const detail = err.response?.data?.detail
       if (detail?.includes('not found')) {
@@ -73,9 +81,7 @@ function LoginForm() {
       const data = await authApi.login(email, password)
       localStorage.setItem('token', data.access_token)
       document.cookie = `token=${data.access_token}; path=/; max-age=${60 * 60 * 24 * 7}`
-
-      // After login, always go to admin
-      router.push('/admin')
+      await redirectAfterLogin()
     } catch (err: any) {
       const detail = err.response?.data?.detail
       setError(detail || 'Невірний email або пароль')

@@ -61,7 +61,10 @@ async def get_confirmed_clients_count(db, company_id: int) -> int:
 async def get_or_create_subscription(db, company_id: int) -> Subscription:
     """Get existing subscription or create a trial one."""
     result = await db.execute(
-        select(Subscription).where(Subscription.company_id == company_id)
+        select(Subscription)
+        .where(Subscription.company_id == company_id)
+        .order_by(Subscription.created_at.desc())
+        .limit(1)
     )
     subscription = result.scalar_one_or_none()
 
@@ -323,6 +326,43 @@ async def monobank_webhook(
                     logger.info(
                         f"Subscription {subscription.id} activated for company {subscription.company_id}"
                     )
+
+                    # Create ReferralEarning if the company owner was referred by an educator
+                    try:
+                        from app.models.referral import Referral, ReferralEarning
+                        from app.models.user import User as UserModel
+                        # Find the owner user of this company
+                        from app.models.company_member import CompanyMember
+                        owner_result = await db.execute(
+                            select(CompanyMember)
+                            .where(
+                                CompanyMember.company_id == subscription.company_id,
+                                CompanyMember.is_owner == True,
+                            )
+                        )
+                        owner_member = owner_result.scalar_one_or_none()
+                        if owner_member:
+                            ref_result = await db.execute(
+                                select(Referral).where(
+                                    Referral.referred_user_id == owner_member.user_id,
+                                    Referral.is_active == True,
+                                )
+                            )
+                            referral = ref_result.scalar_one_or_none()
+                            if referral:
+                                commission = int(payment.amount * referral.commission_pct / 100)
+                                earning = ReferralEarning(
+                                    referral_id=referral.id,
+                                    payment_id=payment.id,
+                                    amount=commission,
+                                    commission_pct=referral.commission_pct,
+                                )
+                                db.add(earning)
+                                logger.info(
+                                    f"ReferralEarning created: {commission} kopecks for referral {referral.id}"
+                                )
+                    except Exception as e:
+                        logger.warning(f"Failed to create ReferralEarning: {e}")
 
     elif verified_status in ("failure", "reversed", "expired"):
         if payment.status == PaymentStatus.PENDING:

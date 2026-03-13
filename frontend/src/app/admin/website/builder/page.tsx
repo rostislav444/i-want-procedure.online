@@ -445,7 +445,7 @@ export default function BuilderPage() {
         <div className="flex items-center gap-3">
           {company && (
             <a
-              href={`/site/${company.slug}`}
+              href={`/marketplace/${company.id}-${company.slug}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"

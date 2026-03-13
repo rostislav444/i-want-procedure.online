@@ -367,6 +367,14 @@ html {
   scroll-behavior: smooth;
 }
 
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
@@ -397,6 +405,32 @@ html.dark ::-webkit-scrollbar-thumb,
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+/* Hero gradient text (for dark hero sections) */
+.hero-gradient-text {
+  background: linear-gradient(135deg, #f472b6, #c084fc, #818cf8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Hero mesh gradient background */
+.hero-mesh-gradient {
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 40%, rgba(236, 72, 153, 0.08) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 60% at 80% 20%, rgba(139, 92, 246, 0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 80% at 50% 80%, rgba(59, 130, 246, 0.04) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 70% 60%, rgba(244, 114, 182, 0.05) 0%, transparent 70%);
+}
+
+html.dark .hero-mesh-gradient,
+.dark .hero-mesh-gradient {
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 40%, rgba(236, 72, 153, 0.15) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 60% at 80% 20%, rgba(139, 92, 246, 0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 80% at 50% 80%, rgba(59, 130, 246, 0.08) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 70% 60%, rgba(244, 114, 182, 0.1) 0%, transparent 70%);
 }
 
 /* Glass effect */
@@ -677,4 +711,12 @@ html.dark .telegram-chat-bg,
 
 .text-glitch:hover {
   animation: glitch 0.3s ease-in-out;
+}
+
+.field {
+  @apply w-full px-3 py-2 rounded-lg border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50;
+}
+
+.label {
+  @apply text-xs font-medium text-muted-foreground uppercase tracking-wide;
 }

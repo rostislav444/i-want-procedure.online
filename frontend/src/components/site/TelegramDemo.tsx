@@ -202,7 +202,7 @@ export default function TelegramDemo() {
           </p>
         </div>
         <TelegramChat
-          botName="Procedure Bot"
+          botName="Beautica Bot"
           botAvatar="/img/logo-client-telegram-2.png"
           messages={clientBotMessages}
           accentColor="bg-gradient-to-r from-pink-500 to-rose-500"
@@ -221,7 +221,7 @@ export default function TelegramDemo() {
           </p>
         </div>
         <TelegramChat
-          botName="Doctor Procedure"
+          botName="Doctor Beautica"
           botAvatar="/img/logo-doctor-telegram.jpg"
           messages={doctorBotMessages}
           accentColor="bg-gradient-to-r from-amber-500 to-orange-500"

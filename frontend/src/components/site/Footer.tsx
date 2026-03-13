@@ -16,7 +16,7 @@ export default function Footer() {
             <Link href="/terms" className="hover:text-pink-500 transition-colors">Умови використання</Link>
           </div>
           <div className="text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} Procedure
+            &copy; {new Date().getFullYear()} Beautica
           </div>
         </div>
       </div>

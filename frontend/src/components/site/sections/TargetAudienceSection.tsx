@@ -38,7 +38,7 @@ export default function TargetAudienceSection() {
             <span>Для кого</span>
           </div>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold dark:text-white">
-            Для кого <span className="gradient-text">Procedure?</span>
+            Для кого <span className="gradient-text">Beautica?</span>
           </h2>
         </div>
 

@@ -39,7 +39,7 @@ export function ServicesSection({ content, theme, company, services, categories,
   // Group services by category
   const servicesByCategoryMap: Record<string, Service[]> = {}
   services.forEach((service) => {
-    const catId = String(service.category_id ?? 'null')
+    const catId = String(service.global_category_id ?? 'null')
     if (!servicesByCategoryMap[catId]) {
       servicesByCategoryMap[catId] = []
     }

@@ -78,9 +78,10 @@ export const authApi = {
     first_name: string
     last_name: string
     company_name: string
-    company_type: 'solo' | 'clinic'
-  }) => {
-    const response = await api.post('/auth/register', data)
+    company_type: 'solo' | 'clinic' | 'educator'
+  }, ref?: string) => {
+    const url = ref ? `/auth/register?ref=${encodeURIComponent(ref)}` : '/auth/register'
+    const response = await api.post(url, data)
     return response.data
   },
   getMe: async () => {
@@ -140,9 +141,11 @@ export interface ServiceCategory {
 export interface Service {
   id: number
   company_id: number
-  category_id?: number
+  global_category_id?: number
   position_id?: number
   doctor_id?: number
+  global_template_id?: number
+  is_custom?: boolean
   name: string
   description?: string
   duration_minutes: number
@@ -152,7 +155,7 @@ export interface Service {
   steps?: ServiceStep[]
   products?: ServiceProduct[]
   price_options?: ServicePriceOption[]
-  category?: ServiceCategory
+  global_category?: { id: number; name: string; icon?: string }
 }
 
 // Services API
@@ -170,8 +173,10 @@ export const servicesApi = {
     description?: string
     duration_minutes: number
     price: number
-    category_id?: number
+    global_category_id?: number
     position_id?: number
+    global_template_id?: number
+    is_custom?: boolean
     steps?: Omit<ServiceStep, 'id' | 'service_id'>[]
     products?: Omit<ServiceProduct, 'id' | 'service_id'>[]
     price_options?: Omit<ServicePriceOption, 'id' | 'service_id'>[]
@@ -184,7 +189,7 @@ export const servicesApi = {
     description?: string
     duration_minutes: number
     price: number
-    category_id?: number
+    global_category_id?: number
     position_id?: number | null
     is_active: boolean
   }>): Promise<Service> => {
@@ -244,9 +249,19 @@ export const servicesApi = {
       duration_minutes: number
       price: number
       category_name: string
+      global_category_id?: number
+      global_template_id?: number
       price_options?: Array<{ name: string; price: number; duration_minutes?: number }>
     }>
     categories: string[]
+    new_categories?: Array<{
+      id: number
+      parent_id?: number
+      name: string
+      name_en?: string
+      icon?: string
+      is_new: boolean
+    }>
     estimated_tokens: number
   }> => {
     // Start the job
@@ -287,6 +302,7 @@ export const categoriesApi = {
     description?: string
     parent_id?: number
     order?: number
+    global_category_id?: number
   }): Promise<ServiceCategory> => {
     const response = await api.post('/services/categories', data)
     return response.data
@@ -302,6 +318,49 @@ export const categoriesApi = {
   },
   delete: async (id: number): Promise<void> => {
     await api.delete(`/services/categories/${id}`)
+  },
+}
+
+// Global Catalog types
+export interface GlobalCategory {
+  id: number
+  parent_id?: number
+  name: string
+  name_en?: string
+  description?: string
+  icon?: string
+  order: number
+  is_active: boolean
+  is_ai_created?: boolean
+  children?: GlobalCategory[]
+  templates?: GlobalTemplate[]
+}
+
+export interface GlobalTemplate {
+  id: number
+  category_id: number
+  name: string
+  name_en?: string
+  description?: string
+  default_duration_minutes: number
+  is_active: boolean
+  order: number
+  category?: { id: number; name: string }
+}
+
+// Global Catalog API
+export const globalCatalogApi = {
+  getCategoriesTree: async (): Promise<GlobalCategory[]> => {
+    const response = await api.get('/global-catalog/categories/tree')
+    return response.data
+  },
+  getTemplates: async (params?: { category_id?: number; search?: string }): Promise<GlobalTemplate[]> => {
+    const response = await api.get('/global-catalog/templates', { params })
+    return response.data
+  },
+  adopt: async (template_ids: number[]): Promise<{ adopted: number; services: string[] }> => {
+    const response = await api.post('/global-catalog/adopt', { template_ids })
+    return response.data
   },
 }
 
@@ -687,7 +746,7 @@ export interface CompanyMembership {
   id: number
   name: string
   slug: string
-  type: 'solo' | 'clinic'
+  type: 'solo' | 'clinic' | 'educator'
   logo_url: string | null
   is_owner: boolean
   is_manager: boolean
@@ -695,14 +754,43 @@ export interface CompanyMembership {
 }
 
 // Company Types
+export interface CityInfo {
+  id: number
+  name: string
+  oblast: string
+  latitude: number | null
+  longitude: number | null
+}
+
+export interface CitySearchResult {
+  id: number
+  name: string
+  oblast: string
+  country: string
+  latitude: number | null
+  longitude: number | null
+  is_regional_center: boolean
+  full_name: string
+}
+
+export interface AddressSearchResult {
+  display_name: string
+  address: string | null
+  city: string
+  latitude: number
+  longitude: number
+}
+
 export interface Company {
   id: number
   name: string
   slug: string
-  type: 'solo' | 'clinic'
+  type: 'solo' | 'clinic' | 'educator'
   description: string | null
   phone: string | null
   address: string | null
+  city_id: number | null
+  city_info: CityInfo | null
   telegram: string | null
   invite_code: string
   team_invite_code: string
@@ -725,13 +813,23 @@ export interface Company {
   specialization: string | null
   working_hours: string | null
   social_links: string | null
-  // Payment requisites
+  // Payment settings
+  payment_type: string | null
   payment_iban: string | null
   payment_bank_name: string | null
   payment_recipient_name: string | null
   payment_card_number: string | null
   payment_monobank_jar: string | null
   has_monobank_token: boolean
+  // Educator profile fields
+  bio: string | null
+  instagram_url: string | null
+  youtube_url: string | null
+  website_url: string | null
+  students_count: number
+  educator_tagline: string | null
+  educator_credentials: string | null
+  educator_video_url: string | null
 }
 
 // Company API
@@ -744,7 +842,7 @@ export const companyApi = {
     const response = await api.get('/companies/me')
     return response.data
   },
-  createCompany: async (data: { name: string; type: 'solo' | 'clinic' }) => {
+  createCompany: async (data: { name: string; type: 'solo' | 'clinic' | 'educator' }) => {
     const response = await api.post('/companies/me', data)
     return response.data
   },
@@ -754,6 +852,7 @@ export const companyApi = {
     description: string
     phone: string
     address: string
+    city_id: number
     telegram: string
     template_type: string
     industry_theme: string
@@ -768,14 +867,40 @@ export const companyApi = {
     specialization: string
     working_hours: string
     social_links: string
+    payment_type: string
     payment_iban: string
     payment_bank_name: string
     payment_recipient_name: string
     payment_card_number: string
     payment_monobank_jar: string
     monobank_token: string
+    // Educator profile
+    bio: string
+    instagram_url: string
+    youtube_url: string
+    website_url: string
+    students_count: number
+    educator_tagline: string
+    educator_credentials: string
+    educator_video_url: string
   }>): Promise<Company> => {
     const response = await api.patch('/companies/me', data)
+    return response.data
+  },
+}
+
+// Cities API
+export const citiesApi = {
+  search: async (q: string = '', limit: number = 10): Promise<CitySearchResult[]> => {
+    const response = await api.get('/cities/search', { params: { q, limit } })
+    return response.data
+  },
+  searchAddress: async (q: string, city?: string): Promise<AddressSearchResult[]> => {
+    const response = await api.get('/cities/search-address', { params: { q, city } })
+    return response.data
+  },
+  reverseGeocode: async (lat: number, lon: number) => {
+    const response = await api.get('/cities/reverse-geocode', { params: { lat, lon } })
     return response.data
   },
 }
@@ -803,6 +928,14 @@ export const uploadApi = {
     formData.append('file', file)
     formData.append('file_type', fileType)
     const response = await api.post('/uploads/protocol-photo', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    return response.data
+  },
+  uploadOfferingCover: async (file: File): Promise<{ url: string }> => {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response = await api.post('/uploads/offering-cover', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
     return response.data
@@ -2130,6 +2263,368 @@ export const billingApi = {
     description?: string
   }): Promise<ClientInvoiceResult> => {
     const response = await api.post('/billing/client-invoice', null, { params })
+    return response.data
+  },
+}
+
+// ===== Education Types =====
+
+export interface TopicCategory {
+  id: number
+  parent_id?: number | null
+  name: string
+  name_en?: string | null
+  icon?: string | null
+  order: number
+  is_active: boolean
+  children?: TopicCategory[]
+}
+
+export type OfferingType = 'course' | 'guide' | 'consultation' | 'seminar' | 'masterclass' | 'certification'
+
+export interface Offering {
+  id: number
+  company_id: number
+  topic_category_id?: number | null
+  type: OfferingType
+  title: string
+  slug: string
+  description?: string | null
+  short_description?: string | null
+  cover_image_url?: string | null
+  price: number
+  currency: string
+  is_digital: boolean
+  digital_file_url?: string | null
+  promo_video_url?: string | null
+  content_url?: string | null
+  prerequisites?: string | null
+  duration_hours?: number | null
+  is_active: boolean
+  order: number
+  created_at: string
+  topic_category?: TopicCategory | null
+  upcoming_events_count: number
+}
+
+export interface OfferingCreate {
+  topic_category_id?: number | null
+  type: OfferingType
+  title: string
+  description?: string | null
+  short_description?: string | null
+  cover_image_url?: string | null
+  price?: number
+  is_digital?: boolean
+  digital_file_url?: string | null
+  promo_video_url?: string | null
+  content_url?: string | null
+  prerequisites?: string | null
+  duration_hours?: number | null
+  order?: number
+  // Curriculum / enrichment
+  learning_outcomes?: string[]
+  target_audience?: string | null
+  level?: string | null
+  curriculum?: Array<{ section_title: string; lessons: Array<{ title: string; duration_min: number; type: string }> }>
+  language?: string
+  certificate_included?: boolean
+  what_includes?: string[]
+}
+
+export interface EducatorEvent {
+  id: number
+  company_id: number
+  offering_id?: number | null
+  title: string
+  description?: string | null
+  cover_image_url?: string | null
+  start_at: string
+  end_at?: string | null
+  is_multi_day: boolean
+  schedule_details?: string | null
+  city_id?: number | null
+  city_info?: { id: number; name: string; oblast: string } | null
+  venue_name?: string | null
+  venue_address?: string | null
+  is_online: boolean
+  price: number
+  early_bird_price?: number | null
+  early_bird_until?: string | null
+  max_participants?: number | null
+  is_published: boolean
+  is_cancelled: boolean
+  created_at: string
+  updated_at: string
+  registrations_count: number
+  spots_left?: number | null
+  ticket_types?: TicketType[]
+  online_link?: string | null
+}
+
+export interface TicketType {
+  id: number
+  event_id: number
+  name: string
+  description?: string | null
+  price: number
+  quantity?: number | null
+  sold_count: number
+  spots_left?: number | null
+  is_active: boolean
+  order: number
+}
+
+export interface OfferingQuestionAdmin {
+  id: number
+  visitor_name: string
+  visitor_email?: string | null
+  question: string
+  answer?: string | null
+  is_answered: boolean
+  is_visible: boolean
+  offering_id: number
+  created_at: string
+  answered_at?: string | null
+}
+
+export interface TicketTypeCreate {
+  name: string
+  description?: string | null
+  price: number
+  quantity?: number | null
+  is_active?: boolean
+  order?: number
+}
+
+export interface EventCreate {
+  offering_id?: number | null
+  title: string
+  description?: string | null
+  cover_image_url?: string | null
+  start_at: string
+  end_at?: string | null
+  is_multi_day?: boolean
+  schedule_details?: string | null
+  city_id?: number | null
+  venue_name?: string | null
+  venue_address?: string | null
+  is_online?: boolean
+  online_link?: string | null
+  price?: number
+  early_bird_price?: number | null
+  early_bird_until?: string | null
+  max_participants?: number | null
+  is_published?: boolean
+  is_cancelled?: boolean
+}
+
+export interface EventRegistration {
+  id: number
+  event_id: number
+  user_id?: number | null
+  full_name: string
+  email?: string | null
+  phone?: string | null
+  telegram?: string | null
+  status: 'pending' | 'confirmed' | 'cancelled' | 'waitlist'
+  amount_paid: number
+  notes?: string | null
+  created_at: string
+}
+
+export interface MyEventInfo {
+  id: number
+  title: string
+  description?: string | null
+  cover_image_url?: string | null
+  event_type?: string | null
+  start_at: string
+  end_at?: string | null
+  is_multi_day: boolean
+  city_info?: { id: number; name: string; oblast: string } | null
+  is_online: boolean
+  online_link?: string | null
+  venue_name?: string | null
+  venue_address?: string | null
+  price: number
+  educator_name: string
+  educator_slug: string
+  educator_logo_url?: string | null
+}
+
+export interface MyRegistration {
+  id: number
+  event_id: number
+  status: 'pending' | 'confirmed' | 'cancelled' | 'waitlist'
+  created_at: string
+  event: MyEventInfo
+}
+
+// ===== Education API =====
+
+export const educationApi = {
+  // Categories
+  getCategories: async (): Promise<TopicCategory[]> => {
+    const response = await api.get('/education/categories')
+    return response.data
+  },
+  getCategoriesTree: async (): Promise<TopicCategory[]> => {
+    const response = await api.get('/education/categories/tree')
+    return response.data
+  },
+
+  // Offerings
+  getOfferings: async (): Promise<Offering[]> => {
+    const response = await api.get('/education/offerings')
+    return response.data
+  },
+  getOffering: async (id: number): Promise<Offering> => {
+    const response = await api.get(`/education/offerings/${id}`)
+    return response.data
+  },
+  createOffering: async (data: OfferingCreate): Promise<Offering> => {
+    const response = await api.post('/education/offerings', data)
+    return response.data
+  },
+  updateOffering: async (id: number, data: Partial<OfferingCreate>): Promise<Offering> => {
+    const response = await api.patch(`/education/offerings/${id}`, data)
+    return response.data
+  },
+  deleteOffering: async (id: number): Promise<void> => {
+    await api.delete(`/education/offerings/${id}`)
+  },
+
+  // Events
+  getEvents: async (): Promise<EducatorEvent[]> => {
+    const response = await api.get('/education/events')
+    return response.data
+  },
+  getEvent: async (id: number): Promise<EducatorEvent> => {
+    const response = await api.get(`/education/events/${id}`)
+    return response.data
+  },
+  createEvent: async (data: EventCreate): Promise<EducatorEvent> => {
+    const response = await api.post('/education/events', data)
+    return response.data
+  },
+  updateEvent: async (id: number, data: Partial<EventCreate>): Promise<EducatorEvent> => {
+    const response = await api.patch(`/education/events/${id}`, data)
+    return response.data
+  },
+  deleteEvent: async (id: number): Promise<void> => {
+    await api.delete(`/education/events/${id}`)
+  },
+
+  // Registrations
+  getEventRegistrations: async (eventId: number): Promise<EventRegistration[]> => {
+    const response = await api.get(`/education/events/${eventId}/registrations`)
+    return response.data
+  },
+  updateRegistrationStatus: async (eventId: number, regId: number, status: string): Promise<EventRegistration> => {
+    const response = await api.patch(`/education/events/${eventId}/registrations/${regId}`, { status })
+    return response.data
+  },
+
+  // My registrations (for cosmetologists)
+  getMyRegistrations: async (): Promise<MyRegistration[]> => {
+    const response = await api.get('/education/my-registrations')
+    return response.data
+  },
+
+  // Ticket types
+  getTicketTypes: async (eventId: number): Promise<TicketType[]> => {
+    const response = await api.get(`/education/events/${eventId}/ticket-types`)
+    return response.data
+  },
+  createTicketType: async (eventId: number, data: TicketTypeCreate): Promise<TicketType> => {
+    const response = await api.post(`/education/events/${eventId}/ticket-types`, data)
+    return response.data
+  },
+  updateTicketType: async (eventId: number, ticketTypeId: number, data: Partial<TicketTypeCreate>): Promise<TicketType> => {
+    const response = await api.patch(`/education/events/${eventId}/ticket-types/${ticketTypeId}`, data)
+    return response.data
+  },
+  deleteTicketType: async (eventId: number, ticketTypeId: number): Promise<void> => {
+    await api.delete(`/education/events/${eventId}/ticket-types/${ticketTypeId}`)
+  },
+
+  // Questions (Q&A)
+  getQuestions: async (): Promise<OfferingQuestionAdmin[]> => {
+    const response = await api.get('/education/questions')
+    return response.data
+  },
+  answerQuestion: async (questionId: number, answer: string): Promise<OfferingQuestionAdmin> => {
+    const response = await api.post(`/education/questions/${questionId}/answer`, { answer })
+    return response.data
+  },
+  hideQuestion: async (questionId: number): Promise<void> => {
+    await api.delete(`/education/questions/${questionId}`)
+  },
+}
+
+// ===== Referral Types =====
+
+export interface ReferralDashboard {
+  total_referred: number
+  active_referred: number
+  total_earned: number
+  available_balance: number
+  total_paid_out: number
+  referral_code: string | null
+  referral_link: string
+  commission_pct: number
+}
+
+export interface ReferredUser {
+  id: number
+  referred_user_name: string
+  referred_company_name?: string | null
+  is_active: boolean
+  total_earned: number
+  created_at: string
+}
+
+export interface ReferralEarning {
+  id: number
+  amount: number
+  commission_pct: number
+  payment_amount: number
+  referred_company_name?: string | null
+  created_at: string
+}
+
+export interface ReferralPayout {
+  id: number
+  amount: number
+  status: string
+  payout_method?: string | null
+  notes?: string | null
+  created_at: string
+  completed_at?: string | null
+}
+
+// ===== Referral API =====
+
+export const referralApi = {
+  getDashboard: async (): Promise<ReferralDashboard> => {
+    const response = await api.get('/referrals/dashboard')
+    return response.data
+  },
+  getReferredUsers: async (): Promise<ReferredUser[]> => {
+    const response = await api.get('/referrals/referred-users')
+    return response.data
+  },
+  getEarnings: async (): Promise<ReferralEarning[]> => {
+    const response = await api.get('/referrals/earnings')
+    return response.data
+  },
+  getPayouts: async (): Promise<ReferralPayout[]> => {
+    const response = await api.get('/referrals/payouts')
+    return response.data
+  },
+  requestPayout: async (data: { amount: number; payout_method: string; payout_details: string }): Promise<ReferralPayout> => {
+    const response = await api.post('/referrals/payouts/request', data)
     return response.data
   },
 }

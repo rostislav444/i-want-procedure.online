@@ -10,7 +10,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.user import User
 from app.models.company import Company
 from app.models.company_member import CompanyMember
+from app.models.city import City
 from app.core.config import settings
+from app.services.geocoding import search_cities, reverse_geocode, find_nearest_city
 from bots.doctor_bot.keyboards import (
     main_menu_keyboard,
     skip_keyboard,
@@ -18,6 +20,8 @@ from bots.doctor_bot.keyboards import (
     confirm_registration_keyboard,
     company_type_keyboard,
     remove_keyboard,
+    location_keyboard,
+    city_results_keyboard,
 )
 
 router = Router()
@@ -43,6 +47,7 @@ class RegistrationStates(StatesGroup):
     waiting_for_last_name = State()
     waiting_for_patronymic = State()
     waiting_for_city = State()
+    waiting_for_address = State()
     waiting_for_phone = State()
     waiting_for_email = State()
     confirm_registration = State()
@@ -195,22 +200,146 @@ async def process_patronymic(message: Message, state: FSMContext):
 
     await state.update_data(patronymic=patronymic)
     await state.set_state(RegistrationStates.waiting_for_city)
+
+    # Show popular cities (regional centers) as initial options
     await message.answer(
-        "Введіть ваше місто:",
-        reply_markup=remove_keyboard(),
+        "Оберіть ваше місто.\n\n"
+        "Введіть назву міста для пошуку або поділіться геопозицією:",
+        reply_markup=location_keyboard(),
     )
 
 
-@router.message(RegistrationStates.waiting_for_city)
-async def process_city(message: Message, state: FSMContext):
-    """Process city input"""
-    city = message.text.strip() if message.text else ""
+@router.message(RegistrationStates.waiting_for_city, F.location)
+async def process_city_location(message: Message, state: FSMContext, session: AsyncSession):
+    """Process city from shared geolocation"""
+    lat = message.location.latitude
+    lon = message.location.longitude
 
-    if not city or len(city) < 2:
-        await message.answer("Назва міста повинна містити мінімум 2 символи. Спробуйте ще раз:")
+    # Find nearest city in DB
+    city = await find_nearest_city(session, lat, lon)
+    if city:
+        await state.update_data(city=city.name, city_id=city.id, city_oblast=city.oblast)
+        await message.answer(
+            f"📍 Визначено місто: {city.name}, {city.oblast}",
+            reply_markup=remove_keyboard(),
+        )
+        # Try to get address from Nominatim
+        try:
+            geo_data = await reverse_geocode(lat, lon)
+            if geo_data.get("address"):
+                await state.update_data(address=geo_data["address"])
+                await message.answer(
+                    f"🏠 Визначена адреса: {geo_data['address']}\n\n"
+                    "Якщо адреса вірна, натисніть 'Далі'. "
+                    "Або введіть адресу вручну (вулиця, будинок):",
+                    reply_markup=skip_keyboard(f"Далі ({geo_data['address']})") if len(geo_data['address']) < 30 else skip_keyboard("Далі"),
+                )
+                await state.set_state(RegistrationStates.waiting_for_address)
+                return
+        except Exception:
+            pass
+
+        # No address detected, ask for it
+        await state.set_state(RegistrationStates.waiting_for_address)
+        await message.answer(
+            "Введіть вашу адресу (вулиця, будинок) або натисніть 'Пропустити':",
+            reply_markup=skip_keyboard(),
+        )
+    else:
+        await message.answer(
+            "Не вдалося визначити місто за геопозицією.\n"
+            "Введіть назву міста для пошуку:",
+            reply_markup=remove_keyboard(),
+        )
+
+
+@router.message(RegistrationStates.waiting_for_city, F.text)
+async def process_city_text(message: Message, state: FSMContext, session: AsyncSession):
+    """Process city text search"""
+    text = message.text.strip() if message.text else ""
+
+    if text == "Пропустити":
+        await state.update_data(city=None, city_id=None)
+        await state.set_state(RegistrationStates.waiting_for_phone)
+        await message.answer(
+            "Поділіться вашим номером телефону:",
+            reply_markup=contact_keyboard(),
+        )
         return
 
-    await state.update_data(city=city)
+    if not text or len(text) < 2:
+        await message.answer("Введіть мінімум 2 символи для пошуку міста:")
+        return
+
+    # Search cities in DB
+    cities = await search_cities(session, text, limit=5)
+
+    if not cities:
+        await message.answer(
+            "Місто не знайдено. Спробуйте ввести інший варіант назви "
+            "або поділіться геопозицією:",
+            reply_markup=location_keyboard(),
+        )
+        return
+
+    if len(cities) == 1:
+        # Auto-select if only one match
+        city = cities[0]
+        await state.update_data(city=city.name, city_id=city.id, city_oblast=city.oblast)
+        await message.answer(
+            f"📍 Обрано: {city.name}, {city.oblast}",
+            reply_markup=remove_keyboard(),
+        )
+        await state.set_state(RegistrationStates.waiting_for_address)
+        await message.answer(
+            "Введіть вашу адресу (вулиця, будинок) або натисніть 'Пропустити':",
+            reply_markup=skip_keyboard(),
+        )
+        return
+
+    # Show results as inline buttons
+    await message.answer(
+        "Оберіть місто зі списку:",
+        reply_markup=city_results_keyboard(cities),
+    )
+
+
+@router.callback_query(F.data.startswith("city_"), RegistrationStates.waiting_for_city)
+async def process_city_selection(callback: CallbackQuery, state: FSMContext, session: AsyncSession):
+    """Process city selection from inline buttons"""
+    city_id = int(callback.data.split("_")[1])
+    result = await session.execute(select(City).where(City.id == city_id))
+    city = result.scalar_one_or_none()
+
+    if not city:
+        await callback.answer("Місто не знайдено")
+        return
+
+    await state.update_data(city=city.name, city_id=city.id, city_oblast=city.oblast)
+    await callback.message.answer(
+        f"📍 Обрано: {city.name}, {city.oblast}",
+        reply_markup=remove_keyboard(),
+    )
+    await state.set_state(RegistrationStates.waiting_for_address)
+    await callback.message.answer(
+        "Введіть вашу адресу (вулиця, будинок) або натисніть 'Пропустити':",
+        reply_markup=skip_keyboard(),
+    )
+    await callback.answer()
+
+
+@router.message(RegistrationStates.waiting_for_address)
+async def process_address(message: Message, state: FSMContext):
+    """Process address input"""
+    if message.text == "Пропустити" or (message.text and message.text.startswith("Далі")):
+        # Keep existing address from geolocation or set None
+        if message.text == "Пропустити":
+            await state.update_data(address=None)
+    else:
+        address = message.text.strip() if message.text else None
+        if address:
+            await state.update_data(address=address)
+
     await state.set_state(RegistrationStates.waiting_for_phone)
     await message.answer(
         "Поділіться вашим номером телефону:",
@@ -290,6 +419,15 @@ async def process_email(message: Message, state: FSMContext, session: AsyncSessi
     else:
         company_display = f"👤 ФОП: {data['first_name']} {data['last_name']}"
 
+    # Build city display
+    city_display = ""
+    if data.get('city'):
+        city_display = data['city']
+        if data.get('city_oblast'):
+            city_display += f", {data['city_oblast']}"
+    else:
+        city_display = "Не вказано"
+
     summary = (
         "Перевірте ваші дані:\n\n"
         f"{company_display}\n\n"
@@ -298,7 +436,9 @@ async def process_email(message: Message, state: FSMContext, session: AsyncSessi
     )
     if data.get('patronymic'):
         summary += f"По-батькові: {data['patronymic']}\n"
-    summary += f"Місто: {data['city']}\n"
+    summary += f"📍 Місто: {city_display}\n"
+    if data.get('address'):
+        summary += f"🏠 Адреса: {data['address']}\n"
     summary += f"Телефон: {data['phone']}\n"
     if data.get('telegram_username'):
         summary += f"Telegram: @{data['telegram_username']}\n"
@@ -320,7 +460,9 @@ async def confirm_registration(callback: CallbackQuery, state: FSMContext, sessi
         first_name=data['first_name'],
         last_name=data['last_name'],
         patronymic=data.get('patronymic'),
-        city=data.get('city'),
+        city=data.get('city'),  # legacy string field
+        city_id=data.get('city_id'),
+        address=data.get('address'),
         phone=data.get('phone'),
         email=data.get('email'),
         telegram_id=data['telegram_id'],
@@ -364,6 +506,8 @@ async def confirm_registration(callback: CallbackQuery, state: FSMContext, sessi
             name=company_name,
             slug=slug,
             type=company_type,
+            city_id=data.get('city_id'),
+            address=data.get('address'),
         )
         session.add(company)
         await session.flush()  # Get company.id

@@ -3,7 +3,7 @@ from datetime import datetime
 from enum import Enum
 from typing import TYPE_CHECKING
 
-from sqlalchemy import String, DateTime, Text, func
+from sqlalchemy import String, DateTime, Text, Integer, ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -19,6 +19,9 @@ if TYPE_CHECKING:
     from app.models.position import Position
     from app.models.landing_version import LandingVersion
     from app.models.inventory import InventoryCategory, AttributeGroup, InventoryItem, StockMovement
+    from app.models.city import City
+    from app.models.education import EducatorOffering, EducatorEvent
+    from app.models.referral import Referral
 
 
 def generate_invite_code() -> str:
@@ -28,6 +31,7 @@ def generate_invite_code() -> str:
 class CompanyType(str, Enum):
     SOLO = "solo"
     CLINIC = "clinic"
+    EDUCATOR = "educator"
 
 
 class IndustryTheme(str, Enum):
@@ -62,7 +66,8 @@ class Company(Base):
     type: Mapped[CompanyType] = mapped_column(String(20), default=CompanyType.SOLO)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     phone: Mapped[str | None] = mapped_column(String(50), nullable=True)
-    address: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    address: Mapped[str | None] = mapped_column(String(500), nullable=True)  # street + building
+    city_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("cities.id"), nullable=True)
     telegram: Mapped[str | None] = mapped_column(String(100), nullable=True)
     invite_code: Mapped[str] = mapped_column(
         String(20), unique=True, index=True, default=generate_invite_code
@@ -96,6 +101,8 @@ class Company(Base):
     working_hours: Mapped[str | None] = mapped_column(Text, nullable=True)  # e.g. "Пн-Пт: 9:00-18:00"
     social_links: Mapped[str | None] = mapped_column(Text, nullable=True)  # JSON: {"instagram": "...", "facebook": "..."}
 
+    # Payment settings
+    payment_type: Mapped[str | None] = mapped_column(String(30), nullable=True)  # 'fop_acquiring', 'monobank_jar', 'requisites'
     # Payment requisites
     payment_iban: Mapped[str | None] = mapped_column(String(34), nullable=True)  # UA + 27 digits
     payment_bank_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
@@ -107,7 +114,20 @@ class Company(Base):
     # AI-generated landing page HTML (full page)
     landing_html: Mapped[str | None] = mapped_column(Text, nullable=True)
 
+    # Educator-specific fields (only used when type == 'educator')
+    educator_tagline: Mapped[str | None] = mapped_column(String(300), nullable=True)
+    educator_credentials: Mapped[str | None] = mapped_column(Text, nullable=True)
+    educator_video_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    bio: Mapped[str | None] = mapped_column(Text, nullable=True)
+    instagram_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    youtube_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    website_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    students_count: Mapped[int] = mapped_column(Integer, default=0)
+    referral_code: Mapped[str | None] = mapped_column(String(50), unique=True, index=True, nullable=True)
+    referral_commission_pct: Mapped[int] = mapped_column(Integer, default=20)
+
     # Relationships
+    city_ref: Mapped["City | None"] = relationship(lazy="joined")
     services: Mapped[list["Service"]] = relationship(back_populates="company")
     service_categories: Mapped[list["ServiceCategory"]] = relationship(back_populates="company")
     appointments: Mapped[list["Appointment"]] = relationship(back_populates="company")
@@ -180,5 +200,20 @@ class Company(Base):
     )
     expenses: Mapped[list["Expense"]] = relationship(
         back_populates="company",
+        cascade="all, delete-orphan"
+    )
+
+    # Education (educator-only)
+    offerings: Mapped[list["EducatorOffering"]] = relationship(
+        back_populates="company",
+        cascade="all, delete-orphan"
+    )
+    educator_events: Mapped[list["EducatorEvent"]] = relationship(
+        back_populates="company",
+        cascade="all, delete-orphan"
+    )
+    referrals_given: Mapped[list["Referral"]] = relationship(
+        back_populates="referrer_company",
+        foreign_keys="Referral.referrer_company_id",
         cascade="all, delete-orphan"
     )
