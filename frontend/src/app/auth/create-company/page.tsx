@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { companyApi, authApi } from '@/lib/api'
 import { Building2, User } from 'lucide-react'
 
-type CompanyType = 'solo' | 'clinic'
+type CompanyType = 'solo' | 'clinic' | 'educator'
 
 export default function CreateCompanyPage() {
   const router = useRouter()

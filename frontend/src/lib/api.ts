@@ -848,7 +848,7 @@ export const companyApi = {
   },
   updateCompany: async (data: Partial<{
     name: string
-    type: 'solo' | 'clinic'
+    type: 'solo' | 'clinic' | 'educator'
     description: string
     phone: string
     address: string
