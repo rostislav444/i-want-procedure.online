@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -183,7 +183,7 @@ function CardSkeleton() {
   )
 }
 
-export default function MarketplacePage() {
+function MarketplacePageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -439,5 +439,13 @@ export default function MarketplacePage() {
 
       <Footer />
     </main>
+  )
+}
+
+export default function MarketplacePage() {
+  return (
+    <Suspense>
+      <MarketplacePageContent />
+    </Suspense>
   )
 }
