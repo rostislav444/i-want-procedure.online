@@ -77,6 +77,7 @@ async def get_or_create_subscription(db, company_id: int) -> Subscription:
         )
         db.add(subscription)
         await db.flush()
+        await db.refresh(subscription)
 
     return subscription
 
@@ -152,6 +153,7 @@ async def get_billing_overview(
     ):
         subscription.price = get_plan_price(subscription.plan)
         await db.flush()
+        await db.refresh(subscription)
 
     sub_response = await build_subscription_response(subscription, confirmed_count)
 
