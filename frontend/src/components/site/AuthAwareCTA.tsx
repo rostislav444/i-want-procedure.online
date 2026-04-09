@@ -12,7 +12,7 @@ export function HeroCTA() {
   }, [])
 
   return (
-    <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start mb-5">
+    <div className="flex flex-col sm:flex-row gap-3 justify-center mb-5">
       {loggedIn ? (
         <Link
           href="/admin"

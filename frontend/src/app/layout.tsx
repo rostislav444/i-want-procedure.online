@@ -7,8 +7,8 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin', 'cyrillic'] })
 
 export const metadata: Metadata = {
-  title: 'Beautica — CRM для спеціалістів краси',
-  description: 'Система записи на процедуры',
+  title: 'Procedure — Telegram-first CRM для спеціалістів краси',
+  description: 'Запис у Telegram, календар, клієнти, протоколи, склад і фінанси в одній системі.',
   icons: {
     icon: '/icon.svg',
     apple: '/apple-icon.svg',
